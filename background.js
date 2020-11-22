@@ -18,7 +18,7 @@ async function start() {
 
 async function initBookmark() {
     bookmark = undefined;
-    chrome.storage.sync.remove("bookmark");
+    await removeData("bookmark");
     bookmark = await onPlaceholder();
     await setData("bookmark", bookmark);
     onChange();
