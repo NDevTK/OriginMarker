@@ -5,7 +5,7 @@ var bookmark;
 
 start();
 async function start() {
-    bookmark = await getData("_bookmark");
+    bookmark = await getData("bookmark");
     if (bookmark === undefined) {
         initBookmark();
     }
@@ -17,9 +17,9 @@ async function start() {
 
 async function initBookmark() {
     bookmark = undefined;
-    chrome.storage.sync.remove("_bookmark");
+    chrome.storage.sync.remove("bookmark");
     bookmark = await onPlaceholder();
-    setData("_bookmark", bookmark);
+    setData("bookmark", bookmark);
     onChange();
 }
 
@@ -37,8 +37,15 @@ function onChange() {
         active: true,
         currentWindow: true
     }, tab => {
-        let active = new URL(tab[0].url).origin;
-        if (origin === active || active.startsWith("_")) return
+        try {
+            var active = new URL(tab[0].url).origin;
+        } catch {
+            chrome.bookmarks.update(bookmark, {
+                title: unknown
+            });
+            return
+        }
+        if (origin === active) return
         origin = active;
         onOrigin();
     });
@@ -46,7 +53,7 @@ function onChange() {
 
 function onBookmarkChange(id, e) {
     if (id !== bookmark) return
-    setData(origin, e.title);
+    setData("_" + origin, e.title);
 }
 
 function onBookmarkRemove(id) {
@@ -56,7 +63,7 @@ function onBookmarkRemove(id) {
 }
 
 async function onOrigin() {
-    let marker = await getData(origin);
+    let marker = await getData("_" + origin);
     if (marker === undefined) marker = unknown;
     chrome.bookmarks.update(bookmark, {
         title: marker
