@@ -5,7 +5,8 @@
   "permissions": [
     "tabs",
     "bookmarks",
-    "storage"
+    "storage",
+    "webNavigation"
   ],
   "background": {
     "scripts":["background.js"]
