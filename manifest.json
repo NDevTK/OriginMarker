@@ -4,8 +4,8 @@
   "description": "Origin dependent marker",
   "permissions": [
     "tabs",
-	"bookmarks",
-	"storage"
+    "bookmarks",
+    "storage"
   ],
   "background": {
     "scripts":["background.js"]
