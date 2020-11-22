@@ -1,6 +1,7 @@
+'use strict';
 const placeholder = "*";
 const unknown = "Marker";
-var origin;
+var active_origin;
 var bookmark;
 
 start();
@@ -28,7 +29,15 @@ function onPlaceholder() {
         chrome.bookmarks.onCreated.addListener((id, e) => {
             if (e.title === placeholder) resolve(id);
         });
-    })
+    });
+}
+
+function onUnknown() {
+    if (active_origin === undefined) return
+    chrome.bookmarks.update(bookmark, {
+        title: unknown
+    });
+    active_origin = undefined;
 }
 
 function onChange() {
@@ -36,27 +45,30 @@ function onChange() {
     chrome.tabs.query({
         active: true,
         currentWindow: true
-    }, tab => {
+    }, async tab => {
+        if (tab[0] === undefined) return onUnknown();
         try {
             var active = new URL(tab[0].url).origin;
         } catch {
-            chrome.bookmarks.update(bookmark, {
-                title: unknown
-            });
-            return
+            return onUnknown();
         }
-        if (origin === active) return
-        origin = active;
-        onOrigin();
+        if (active_origin === active) return
+        active_origin = active;
+
+        var marker = await getData("_" + active_origin);
+        if (marker === undefined) marker = unknown;
+        chrome.bookmarks.update(bookmark, {
+            title: marker
+        });
     });
 }
 
 function onBookmarkChange(id, e) {
-    if (id !== bookmark) return
+    if (id !== bookmark || active_origin === undefined) return
     if (e.title === unknown) {
-        chrome.storage.sync.remove("_" + origin);
+        chrome.storage.sync.remove("_" + active_origin);
     } else {
-        setData("_" + origin, e.title);
+        setData("_" + active_origin, e.title);
     }
 }
 
@@ -64,14 +76,6 @@ function onBookmarkRemove(id) {
     if (id === bookmark) {
         initBookmark();
     }
-}
-
-async function onOrigin() {
-    let marker = await getData("_" + origin);
-    if (marker === undefined) marker = unknown;
-    chrome.bookmarks.update(bookmark, {
-        title: marker
-    });
 }
 
 function setData(key, value) {
