@@ -53,7 +53,11 @@ function onChange() {
 
 function onBookmarkChange(id, e) {
     if (id !== bookmark) return
-    setData("_" + origin, e.title);
+    if (e.title === unknown) {
+        chrome.storage.sync.remove("_" + origin);
+    } else {
+        setData("_" + origin, e.title);
+    }
 }
 
 function onBookmarkRemove(id) {
