@@ -1,0 +1,14 @@
+{
+  "name": "OriginMarker",
+  "version": "1.0",
+  "description": "Origin dependent marker",
+  "permissions": [
+    "tabs",
+	"bookmarks",
+	"storage"
+  ],
+  "background": {
+    "scripts":["background.js"]
+  },
+  "manifest_version": 2
+}
