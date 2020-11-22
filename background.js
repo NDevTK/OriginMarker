@@ -20,7 +20,7 @@ async function initBookmark() {
     bookmark = undefined;
     chrome.storage.sync.remove("bookmark");
     bookmark = await onPlaceholder();
-    setData("bookmark", bookmark);
+    await setData("bookmark", bookmark);
     onChange();
 }
 
@@ -63,12 +63,12 @@ function onChange() {
     });
 }
 
-function onBookmarkChange(id, e) {
+async function onBookmarkChange(id, e) {
     if (id !== bookmark || active_origin === undefined) return
     if (e.title === unknown) {
-        chrome.storage.sync.remove("_" + active_origin);
+        await removeData("_" + active_origin);
     } else {
-        setData("_" + active_origin, e.title);
+        await setData("_" + active_origin, e.title);
     }
 }
 
@@ -90,8 +90,16 @@ function setData(key, value) {
 
 function getData(key) {
     return new Promise(resolve => {
-        chrome.storage.sync.get([key], function(result) {
+        chrome.storage.sync.get(key, function(result) {
             resolve(result[key]);
+        });
+    });
+}
+
+function removeData(key) {
+    return new Promise(resolve => {
+        chrome.storage.sync.remove(key, function(result) {
+            resolve(result);
         });
     });
 }
