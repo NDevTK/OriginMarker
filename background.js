@@ -19,7 +19,7 @@ async function start() {
 }
 
 function onfocusChanged(windowId) {
-    if(windowId !== chrome.windows.WINDOW_ID_NONE) focused = windowId;
+    if (windowId !== chrome.windows.WINDOW_ID_NONE) focused = windowId;
     checkOrigin();
 }
 
@@ -65,7 +65,7 @@ async function changeOrigin(url) {
 
 function onChange(tabId, changeInfo, tab) {
     if (changeInfo.url === undefined || bookmark === undefined) return
-    if (focused !== false && focused !== tab.windowId) return
+    if (focused !== tab.windowId) return
     if (tab.active) changeOrigin(tab.url);
 }
 
@@ -75,7 +75,9 @@ function checkOrigin() {
         active: true,
         currentWindow: true
     }, tab => {
-        if (tab[0] === undefined) return onUnknown();
+        if (tab.length !== 1) return onUnknown();
+        if (tab[0].active === false) return
+        focused = tab[0].windowId;
         changeOrigin(tab[0].url);
     });
 }
