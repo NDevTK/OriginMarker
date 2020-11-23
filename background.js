@@ -20,7 +20,7 @@ async function start() {
 
 function onfocusChanged(e) {
     if(e.windowId !== -1) return
-	focused = e.windowId;
+    focused = e.windowId;
     checkOrigin();
 }
 
