@@ -12,6 +12,7 @@ async function start() {
     }
     chrome.tabs.onUpdated.addListener(onChange);
     chrome.tabs.onActivated.addListener(checkOrigin);
+    chrome.windows.onFocusChanged.addListener(checkOrigin);
     chrome.bookmarks.onChanged.addListener(onBookmarkChange);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
