@@ -11,7 +11,7 @@ async function start() {
         initBookmark();
     }
     chrome.tabs.onUpdated.addListener(onChange);
-    chrome.tabs.onActivated.addListener(onChange);
+    chrome.tabs.onActivated.addListener(checkOrigin);
     chrome.bookmarks.onChanged.addListener(onBookmarkChange);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
@@ -22,7 +22,7 @@ async function initBookmark() {
     bookmark = await onPlaceholder();
     await setData("bookmark", bookmark);
     onUnknown();
-    onChange();
+    checkOrigin();
 }
 
 function onPlaceholder() {
@@ -40,26 +40,35 @@ function onUnknown() {
     active_origin = undefined;
 }
 
-function onChange() {
+async function changeOrigin(url) {
+    try {
+        var active = new URL(url).origin;
+    } catch {
+        return onUnknown();
+    }
+    if (active_origin === active) return
+    active_origin = active;
+
+    var marker = await getData("_" + active_origin);
+    if (marker === undefined) marker = unknown;
+    chrome.bookmarks.update(bookmark, {
+        title: marker
+    });
+}
+
+function onChange(tabId, changeInfo, tab) {
+    if (changeInfo.url === undefined) return
+    if (tab.active) changeOrigin(tab.url);
+}
+
+function checkOrigin() {
     if (bookmark === undefined) return
     chrome.tabs.query({
         active: true,
         currentWindow: true
-    }, async tab => {
+    }, tab => {
         if (tab[0] === undefined) return onUnknown();
-        try {
-            var active = new URL(tab[0].url).origin;
-        } catch {
-            return onUnknown();
-        }
-        if (active_origin === active) return
-        active_origin = active;
-
-        var marker = await getData("_" + active_origin);
-        if (marker === undefined) marker = unknown;
-        chrome.bookmarks.update(bookmark, {
-            title: marker
-        });
+        changeOrigin(tab[0].url);
     });
 }
 
