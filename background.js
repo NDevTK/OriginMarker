@@ -18,8 +18,8 @@ async function start() {
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
 
-function onfocusChanged(e) {
-    if(e.windowId !== -1) focused = e.windowId;
+function onfocusChanged(windowId) {
+    if(windowId !== -1) focused = windowId;
     checkOrigin();
 }
 
