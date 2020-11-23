@@ -21,6 +21,7 @@ async function initBookmark() {
     await removeData("bookmark");
     bookmark = await onPlaceholder();
     await setData("bookmark", bookmark);
+    onUnknown();
     onChange();
 }
 
@@ -33,7 +34,6 @@ function onPlaceholder() {
 }
 
 function onUnknown() {
-    if (active_origin === undefined) return
     chrome.bookmarks.update(bookmark, {
         title: unknown
     });
