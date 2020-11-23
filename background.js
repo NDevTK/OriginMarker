@@ -19,7 +19,7 @@ async function start() {
 }
 
 function onfocusChanged(windowId) {
-    if(windowId !== -1) focused = windowId;
+    if(windowId !== chrome.windows.WINDOW_ID_NONE) focused = windowId;
     checkOrigin();
 }
 
