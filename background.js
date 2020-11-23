@@ -57,7 +57,7 @@ async function changeOrigin(url) {
 }
 
 function onChange(tabId, changeInfo, tab) {
-    if (changeInfo.url === undefined) return
+    if (changeInfo.url === undefined || bookmark === undefined) return
     if (tab.active) changeOrigin(tab.url);
 }
 
