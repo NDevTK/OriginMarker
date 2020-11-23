@@ -1,6 +1,7 @@
 'use strict';
 const placeholder = "*";
 const unknown = "Marker";
+var focused = false;
 var active_origin;
 var bookmark;
 
@@ -12,9 +13,14 @@ async function start() {
     }
     chrome.tabs.onUpdated.addListener(onChange);
     chrome.tabs.onActivated.addListener(checkOrigin);
-    chrome.windows.onFocusChanged.addListener(checkOrigin);
+    chrome.windows.onFocusChanged.addListener(onfocusChanged);
     chrome.bookmarks.onChanged.addListener(onBookmarkChange);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
+}
+
+function onfocusChanged(e) {
+    focused = e.windowId;
+    checkOrigin();
 }
 
 async function initBookmark() {
@@ -59,6 +65,7 @@ async function changeOrigin(url) {
 
 function onChange(tabId, changeInfo, tab) {
     if (changeInfo.url === undefined || bookmark === undefined) return
+    if (focused !== false && focused !== tab.windowId) return
     if (tab.active) changeOrigin(tab.url);
 }
 
