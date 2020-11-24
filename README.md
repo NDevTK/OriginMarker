@@ -11,3 +11,6 @@ Rename the folder/marker on the origin
 # Automatic mode
 If no Marker name is set emojis will be used to identify the origin.  
 This works by using a sha256 hash of the origin encoded into emoji.
+
+# Origin
+The Origin is based of the protocol, hostname and port number of a URL
