@@ -39,6 +39,9 @@ function onPlaceholder() {
         chrome.bookmarks.onCreated.addListener((id, e) => {
             if (e.title === placeholder) resolve(id);
         });
+		chrome.bookmarks.onChanged.addListener((id, e) => {
+            if (e.title === placeholder) resolve(id);
+        });
     });
 }
 
