@@ -62,7 +62,7 @@ async function changeOrigin(url) {
     active_origin = active;
 
     var marker = await getData("_" + active_origin);
-    if (auto === true) {
+    if (auto === true && marker === undefined) {
         marker = await encodeOrigin();
     } else {
         marker = unknown;
