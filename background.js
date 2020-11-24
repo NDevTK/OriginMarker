@@ -62,11 +62,15 @@ async function changeOrigin(url) {
     active_origin = active;
 
     var marker = await getData("_" + active_origin);
-    if (auto === true && marker === undefined) {
-        marker = await encodeOrigin();
-    } else {
-        marker = unknown;
+
+    if (marker === undefined) {
+        if (auto === true) {
+            marker = await encodeOrigin();
+        } else {
+            marker = unknown;
+        }
     }
+
     ignore_change = true;
     chrome.bookmarks.update(bookmark, {
         title: marker
