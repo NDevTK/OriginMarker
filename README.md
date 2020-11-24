@@ -1,4 +1,4 @@
-# Origin Marker
+# Origin Marker 🎆
 A browser extension to allow users to easily identify some phishing attempts also includes a universal automatic mode all done client side.  
 ![Example of automatic mode using chrome](Chrome.png) ![Example of automatic mode using firefox](Firefox.png)
 
