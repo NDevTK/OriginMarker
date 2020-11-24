@@ -5,7 +5,6 @@ var auto = true;
 var ignore_change = false;
 var active_origin;
 var bookmark;
-var charset;
 
 start();
 async function start() {
