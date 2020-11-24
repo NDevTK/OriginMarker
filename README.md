@@ -1,5 +1,5 @@
 # OriginMarker
-A browser extension to allow users to easily identify some phishing attempts also includes an universal automatic mode.
+A browser extension to allow users to easily identify some phishing attempts also includes an universal automatic mode.  
 ![Example of automatic mode](Screenshot.png)
 
 # How to setup
