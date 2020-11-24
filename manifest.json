@@ -4,11 +4,16 @@
   "description": "Origin dependent marker",
   "permissions": [
     "tabs",
-    "bookmarks",
-    "storage"
+	"bookmarks",
+	"storage"
   ],
   "background": {
     "scripts":["static.js", "background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+	  "id": "originmarker@ndevtk"
+    }
   },
   "manifest_version": 2
 }
