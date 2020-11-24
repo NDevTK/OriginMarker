@@ -1,6 +1,7 @@
 # Origin Marker 🎆
 A browser extension to allow users to easily identify some phishing domains also includes a universal automatic mode all done client side.  
-With a marker in the bookmarks bar that changes based off the active origin/domain the user is viewing.
+With a marker in the bookmarks bar that changes based off the active origin/domain the user is viewing.  
+It can be renamed per origin manually or automatic using the hash of the origin encoded in emoji.
 ![Example of automatic mode using chrome](Chrome.png) ![Example of automatic mode using firefox](Firefox.png)
 
 # How to setup
