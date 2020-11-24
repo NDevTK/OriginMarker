@@ -3,10 +3,10 @@ A browser extension to allow users to easily identify some phishing attempts als
 ![Example of automatic mode using chrome](Chrome.png) ![Example of automatic mode using firefox](Firefox.png)
 
 # How to setup
-Get the extension then create a folder in the bookmarks bar (location of your choice) with the name of * it will then automatically get renamed to "Marker"
+Get the extension then create a folder in the bookmarks bar (location of your choice) with the name of * it will then automatically get renamed.
 
 # How to use
-Rename the folder/marker on the origin
+Rename the folder/marker on the origin or just use Automatic mode.
 
 # Automatic mode
 If no Marker name is set emojis will be used to identify the origin.  
