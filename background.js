@@ -6,6 +6,7 @@ const source = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
 var encoding = base2base(source, emoji);
 var focused = false;
 var auto = true;
+var ignore_change = false;
 var active_origin;
 var bookmark;
 var charset;
@@ -67,8 +68,11 @@ async function changeOrigin(url) {
     } else {
         marker = unknown;
     }
+    ignore_change = true;
     chrome.bookmarks.update(bookmark, {
         title: marker
+    }, _ => {
+        ignore_change = false;
     });
 }
 
@@ -92,7 +96,7 @@ function checkOrigin() {
 }
 
 async function onBookmarkChange(id, e) {
-    if (id !== bookmark || active_origin === undefined) return
+    if (id !== bookmark || active_origin === undefined || ignore_change === true) return
     if (e.title === unknown) {
         await removeData("_" + active_origin);
     } else {
