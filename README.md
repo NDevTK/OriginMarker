@@ -1,5 +1,6 @@
 # Origin Marker 🎆
 A browser extension to allow users to easily identify some phishing attempts also includes a universal automatic mode all done client side.  
+With a marker that changes based off the active origin/domain the user is viewing.
 ![Example of automatic mode using chrome](Chrome.png) ![Example of automatic mode using firefox](Firefox.png)
 
 # How to setup
