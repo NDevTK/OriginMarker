@@ -1,6 +1,6 @@
 # Origin Marker
 A browser extension to allow users to easily identify some phishing attempts also includes a universal automatic mode all done client side.  
-![Example of automatic mode](Chrome.png) ![Example of automatic mode](Firefox.png)
+![Example of automatic mode using chrome](Chrome.png) ![Example of automatic mode using firefox](Firefox.png)
 
 # How to setup
 Get the extension then create a folder in the bookmarks bar (location of your choice) with the name of * it will then automatically get renamed to "Marker"
