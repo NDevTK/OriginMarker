@@ -9,5 +9,5 @@ Get the extension then create a folder in the bookmarks bar (location of your ch
 Rename the folder/marker on the origin
 
 # Automatic mode
-If no Marker name is set 4 emojis will be used to identify the origin.  
-This works by using the first 9 letters of a sha256 hash of the origin encoded into emoji.
+If no Marker name is set emojis will be used to identify the origin.  
+This works by using a sha256 hash of the origin encoded into emoji.
