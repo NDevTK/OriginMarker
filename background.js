@@ -134,7 +134,7 @@ function removeData(key) {
 
 async function encodeOrigin() {
     let hash = await sha256(active_origin);
-    return encoding(hash.substr(0, 9));
+    return encoding(hash);
 }
 
 async function sha256(data) {
