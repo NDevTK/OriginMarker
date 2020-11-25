@@ -17,7 +17,7 @@ This works by using a sha256 hash of the origin encoded into emoji.
 
 # Personal Automatic mode (ID: **)
 Like Universal mode but with a personal salt.
-For Origin it will be different emojis then other users. 
+It will be different emojis per origin then other users. 
 
 # Manual only (ID: ***)
 Markers will not get a automatic value.
