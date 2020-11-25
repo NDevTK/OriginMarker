@@ -8,7 +8,7 @@ It can be renamed per origin manually or automatic using the hash of the origin 
 Get the extension then create a folder in the bookmarks bar (location of your choice) with the ID of the mode like ** it will then automatically get renamed.
 
 # How to use
-Rename the folder/marker on the origin or just use Automatic mode.
+Rename the folder/marker on the origin or just use Automatic mode.  
 When you rename a marker it will not change the mode so you can have a marker named *
 # Universal Automatic mode (ID: *)
 If no Marker name is set emojis will be used to identify the origin.  
