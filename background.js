@@ -3,6 +3,8 @@ var encoding = base2base(source, emoji);
 var focused = false;
 var auto = true;
 var ignore_change = false;
+var mode;
+var salt;
 var active_origin;
 var bookmark;
 
@@ -12,6 +14,8 @@ async function start() {
     if (bookmark === undefined) {
         initBookmark();
     }
+    mode = await getData("mode");
+    setMode(mode);
     chrome.tabs.onUpdated.addListener(onChange);
     chrome.tabs.onActivated.addListener(checkOrigin);
     chrome.windows.onFocusChanged.addListener(onfocusChanged);
@@ -35,13 +39,40 @@ async function initBookmark() {
 
 function onPlaceholder() {
     return new Promise(resolve => {
-        chrome.bookmarks.onCreated.addListener((id, e) => {
-            if (e.title === placeholder) resolve(id);
+        chrome.bookmarks.onCreated.addListener(async (id, e) => {
+            if (await setMode(e.title) === true) resolve(id);
         });
-        chrome.bookmarks.onChanged.addListener((id, e) => {
-            if (e.title === placeholder) resolve(id);
+        chrome.bookmarks.onChanged.addListener(async (id, e) => {
+            if (await setMode(e.title) === true) resolve(id);
         });
     });
+}
+
+async function setMode(data) {
+    switch (data) {
+        case "*":
+            auto = true;
+            salt = "";
+            break;
+        case "**":
+            auto = true;
+            salt = await getData("salt");
+            if (salt === undefined) {
+                salt = generateRandom();
+                await setData("salt", salt);
+            }
+            break;
+        case "***":
+            auto = false;
+            break
+        default:
+            return false
+    }
+    if (mode !== data) {
+        await setData("mode", data);
+        mode = data;
+    }
+    return true;
 }
 
 function onUnknown() {
@@ -99,6 +130,7 @@ function checkOrigin() {
 
 async function onBookmarkChange(id, e) {
     if (id !== bookmark || active_origin === undefined || ignore_change === true) return
+
     if (e.title === unknown) {
         await removeData("_" + active_origin);
     } else {
@@ -144,7 +176,7 @@ async function encodeOrigin() {
 }
 
 async function sha256(data) {
-    const msgUint8 = new TextEncoder().encode(data);
+    const msgUint8 = new TextEncoder().encode(data + salt);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -191,5 +223,23 @@ function base2base(srcAlphabet, dstAlphabet) {
         } while (newlen != 0)
 
         return result
+    }
+}
+
+function generateRandom(length = 50) {
+    let charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    if (window.crypto && window.crypto.getRandomValues) {
+        let values = new Uint32Array(length);
+        window.crypto.getRandomValues(values);
+        for (let i = 0; i < length; i++) {
+            result += charset[values[i] % charset.length];
+        }
+        return result;
+    } else {
+        for (let i = 0; i < length; i++) {
+            result += charset[Math.floor(Math.random() * charset.length)];
+        }
+        return result;
     }
 }
