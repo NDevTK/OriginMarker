@@ -11,7 +11,7 @@ var bookmark;
 start();
 async function start() {
     bookmark = await getData("bookmark");
-    if (bookmark === undefined) {
+    if (bookmark === undefined || await checkBookmark(bookmark) === false) {
         initBookmark();
     }
     mode = await getData("mode");
@@ -242,4 +242,12 @@ function generateRandom(length = 50) {
         }
         return result;
     }
+}
+
+function checkBookmark(id) {
+    return new Promise(resolve => {
+        chrome.bookmarks.get(id, r => {
+            resolve(r !== undefined);
+        });
+    });
 }
