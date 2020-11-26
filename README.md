@@ -5,7 +5,9 @@ It can be renamed per origin manually or automatic using the hash of the origin 
 ![Example of automatic mode using chrome](Chrome.png) ![Example of automatic mode using firefox](Firefox.png)
 
 # How to setup
-Get the extension then create a folder in the bookmarks bar (location of your choice) with the ID of the mode like * it will then automatically get renamed.
+1. Get the extension
+2. Add a folder in the bookmarks bar with the ID of the mode like *
+3. It will then automatically get renamed.
 
 # How to use
 Rename the folder/marker on the origin or just use Automatic mode.  
