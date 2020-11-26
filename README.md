@@ -6,7 +6,7 @@ It can be renamed per origin manually or automatic using the hash of the origin 
 
 # How to setup
 1. Get the extension
-2. Add a folder in the bookmarks bar with the ID of the mode like *
+2. Add a folder to the bookmarks bar with the ID of the mode like * as the name.
 3. It will then automatically get renamed.
 
 # How to use
