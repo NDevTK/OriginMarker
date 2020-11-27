@@ -9,6 +9,9 @@ It can be renamed per origin manually or automatic using the hash of the origin 
 2. Add a folder to the bookmarks bar with the ID of the mode like * as the name.
 3. It will then automatically get renamed.
 
+# Recommendation
+Do not enable bookmark sync between devices.
+
 # How to use
 Rename the folder/marker on the origin or just use Automatic mode.  
 When you rename a marker it will not change the mode so you can have a marker named *
