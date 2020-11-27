@@ -16,6 +16,7 @@ async function start() {
     }
     mode = await getData("mode");
     setMode(mode);
+    checkOrigin();
     chrome.tabs.onUpdated.addListener(onChange);
     chrome.tabs.onActivated.addListener(checkOrigin);
     chrome.windows.onFocusChanged.addListener(onfocusChanged);
@@ -34,7 +35,6 @@ async function initBookmark() {
     bookmark = await onPlaceholder();
     await setData("bookmark", bookmark);
     onUnknown();
-    checkOrigin();
 }
 
 function onPlaceholder() {
