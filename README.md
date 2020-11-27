@@ -1,4 +1,5 @@
-# Origin Marker 🎆
+# Origin Marker 🎆 
+Firefox: https://addons.mozilla.org/en-GB/firefox/addon/originmarker/  
 A browser extension to allow users to easily identify phishing domains all done client side.  
 With a marker in the bookmarks bar that changes based off the active origin/domain the user is viewing.  
 It can be renamed per origin manually or automatic using the hash of the origin encoded in emoji.  
