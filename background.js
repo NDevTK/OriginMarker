@@ -10,7 +10,7 @@ var bookmark;
 
 start();
 async function start() {
-    bookmark = await getData("bookmark");
+    bookmark = await getDataLocal("bookmark");
     if (bookmark === undefined || await checkBookmark(bookmark) === false) {
         initBookmark();
     }
@@ -32,7 +32,7 @@ async function initBookmark() {
     bookmark = undefined;
     await removeData("bookmark");
     bookmark = await onPlaceholder();
-    await setData("bookmark", bookmark);
+    await setDataLocal("bookmark", bookmark);
     onUnknown();
 }
 
@@ -142,6 +142,24 @@ function onBookmarkRemove(id) {
     if (id === bookmark) {
         initBookmark();
     }
+}
+
+function setDataLocal(key, value) {
+    return new Promise(resolve => {
+        chrome.storage.local.set({
+            [key]: value
+        }, function(result) {
+            resolve(result);
+        });
+    });
+}
+
+function getDataLocal(key) {
+    return new Promise(resolve => {
+        chrome.storage.local.get(key, function(result) {
+            resolve(result[key]);
+        });
+    });
 }
 
 function setData(key, value) {
