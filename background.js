@@ -16,7 +16,6 @@ async function start() {
     }
     mode = await getData("mode");
     setMode(mode);
-    checkOrigin();
     chrome.tabs.onUpdated.addListener(onChange);
     chrome.tabs.onActivated.addListener(checkOrigin);
     chrome.windows.onFocusChanged.addListener(onfocusChanged);
@@ -68,6 +67,7 @@ async function setMode(data) {
         default:
             return false
     }
+    checkOrigin();
     if (mode !== data) {
         await setData("mode", data);
         mode = data;
