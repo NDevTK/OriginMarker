@@ -12,7 +12,7 @@ start();
 async function start() {
     bookmark = await getDataLocal("bookmark");
     if (bookmark === undefined || await checkBookmark(bookmark) === false) {
-        initBookmark();
+        await initBookmark();
     }
     mode = await getData("mode");
     setMode(mode);
@@ -136,6 +136,7 @@ async function onBookmarkChange(id, e) {
 
     if (e.title === unknown) {
         await removeData("_" + active_origin);
+        checkOrigin();
     } else {
         await setData("_" + active_origin, e.title);
     }
