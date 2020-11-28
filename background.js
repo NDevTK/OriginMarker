@@ -16,6 +16,7 @@ async function start() {
     }
     mode = await getData("mode");
     setMode(mode);
+    checkOrigin();
     chrome.tabs.onUpdated.addListener(onChange);
     chrome.tabs.onActivated.addListener(checkOrigin);
     chrome.windows.onFocusChanged.addListener(onfocusChanged);
@@ -36,15 +37,18 @@ async function initBookmark() {
     onUnknown();
 }
 
-function onPlaceholder() {
-    return new Promise(resolve => {
-        chrome.bookmarks.onCreated.addListener(async (id, e) => {
-            if (await setMode(e.title) === true) resolve(id);
+async function onPlaceholder() {
+    while (true) {
+        let result = await new Promise(resolve => {
+            chrome.bookmarks.onCreated.addListener((id, e) => {
+                resolve([id, e.title]);
+            });
+            chrome.bookmarks.onChanged.addListener((id, e) => {
+                resolve([id, e.title]);
+            });
         });
-        chrome.bookmarks.onChanged.addListener(async (id, e) => {
-            if (await setMode(e.title) === true) resolve(id);
-        });
-    });
+        if (await setMode(result[1])) return result[0];
+    }
 }
 
 async function setMode(data) {
@@ -67,7 +71,6 @@ async function setMode(data) {
         default:
             return false
     }
-    checkOrigin();
     if (mode !== data) {
         await setData("mode", data);
         mode = data;
@@ -156,8 +159,12 @@ function setDataLocal(key, value) {
 
 function getDataLocal(key) {
     return new Promise(resolve => {
-        chrome.storage.local.get(key, function(result) {
-            resolve(result[key]);
+        chrome.storage.local.get(key, async function(result) {
+            if (result[key] !== undefined) return resolve(result[key]);
+            // Backwards compatibility
+            let synced = await getData(key);
+            if (synced !== undefined) await setDataLocal(key, synced);
+            resolve(synced);
         });
     });
 }
