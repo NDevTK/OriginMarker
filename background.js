@@ -93,7 +93,10 @@ async function changeOrigin(url) {
     }
     if (active_origin === active) return
     active_origin = active;
+    updateMarker();
+}
 
+async function updateMarker() {
     var marker = await getData("_" + active_origin);
 
     if (marker === undefined) {
@@ -136,7 +139,7 @@ async function onBookmarkChange(id, e) {
 
     if (e.title === unknown) {
         await removeData("_" + active_origin);
-        checkOrigin();
+        updateMarker();
     } else {
         await setData("_" + active_origin, e.title);
     }
