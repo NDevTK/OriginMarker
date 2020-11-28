@@ -144,6 +144,7 @@ async function onBookmarkChange(id, e) {
 function onBookmarkRemove(id) {
     if (id === bookmark) {
         initBookmark();
+        checkOrigin();
     }
 }
 
