@@ -80,10 +80,7 @@ async function setMode(data) {
 
 function onUnknown() {
     active_origin = undefined;
-    chrome.bookmarks.update(bookmark, {
-        title: unknown,
-	url: "about:blank"
-    });
+    updateMarker();
 }
 
 async function changeOrigin(url) {
