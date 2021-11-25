@@ -6,6 +6,7 @@ var mode;
 var salt;
 var active_origin;
 var bookmark;
+var ignore_change;
 
 start();
 async function start() {
@@ -107,9 +108,12 @@ async function updateMarker() {
         }
     }
 
+    ignore_change = true;
     chrome.bookmarks.update(bookmark, {
         title: marker,
         url: "about:blank"
+    }, _ => {
+        ignore_change = false;
     });
 }
 
