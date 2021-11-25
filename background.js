@@ -2,7 +2,6 @@
 var encoding = base2base(source, emoji);
 var focused = false;
 var auto = true;
-var ignore_change = false;
 var mode;
 var salt;
 var active_origin;
@@ -97,7 +96,7 @@ async function changeOrigin(url) {
 }
 
 async function updateMarker() {
-    var marker = await getData("_" + active_origin);
+    var marker = await getData("_" + await sha256(active_origin));
 
     if (marker === undefined) {
         if (auto === true) {
@@ -114,7 +113,7 @@ async function updateMarker() {
 
 function onChange(tabId, changeInfo, tab) {
     if (focused !== tab.windowId || changeInfo.url === undefined || bookmark === undefined || tab.active === false) return
-    if (tab.url === undefined) return onUnknown();
+    if (tab.url === undefined || changeInfo.status !== "complete") return onUnknown();
     changeOrigin(tab.url);
 }
 
@@ -132,13 +131,13 @@ function checkOrigin() {
 }
 
 async function onBookmarkChange(id, e) {
-    if (id !== bookmark || active_origin === undefined || ignore_change === true) return
+    if (id !== bookmark || active_origin === undefined) return
 
     if (e.title === unknown) {
-        await removeData("_" + active_origin);
+        await removeData("_" + await sha256(active_origin));
         updateMarker();
     } else {
-        await setData("_" + active_origin, e.title);
+        await setData("_" + await sha256(active_origin), e.title);
     }
 }
 
