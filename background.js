@@ -166,8 +166,8 @@ function setDataLocal(key, value) {
 
 function getDataLocal(key) {
     return new Promise(resolve => {
-        chrome.storage.local.get(key, async function(result) {
-		return resolve(result[key]);
+        chrome.storage.local.get(key, function(result) {
+		resolve(result[key]);
         });
     });
 }
