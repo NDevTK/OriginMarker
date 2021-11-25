@@ -107,11 +107,8 @@ async function updateMarker() {
         }
     }
 
-    ignore_change = true;
     chrome.bookmarks.update(bookmark, {
         title: marker
-    }, _ => {
-        ignore_change = false;
     });
 }
 
@@ -166,10 +163,6 @@ function getDataLocal(key) {
     return new Promise(resolve => {
         chrome.storage.local.get(key, async function(result) {
             if (result[key] !== undefined) return resolve(result[key]);
-            // Backwards compatibility
-            let synced = await getData(key);
-            if (synced !== undefined) await setDataLocal(key, synced);
-            resolve(synced);
         });
     });
 }
