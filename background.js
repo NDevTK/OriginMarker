@@ -137,7 +137,7 @@ function checkOrigin() {
 }
 
 async function onBookmarkChange(id, e) {
-    if (id !== bookmark || active_origin === undefined) return
+    if (id !== bookmark || active_origin === undefined || ignore_change) return
 
     if (e.title === unknown) {
         await removeData("_" + await sha256(active_origin));
