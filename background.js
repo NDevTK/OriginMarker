@@ -103,14 +103,13 @@ async function updateMarker() {
         } else {
             marker = unknown;
         }
+	// Suffix auto generated bookmarks.
+	marker += '*';    
     }
 
-    ignore_change = true;
     chrome.bookmarks.update(bookmark, {
         title: marker,
         url: "about:blank"
-    }, _ => {
-        ignore_change = false;
     });
 }
 
@@ -134,8 +133,8 @@ function checkOrigin() {
 }
 
 async function onBookmarkChange(id, e) {
-    if (id !== bookmark || active_origin === undefined || ignore_change) return
-
+    if (id !== bookmark || active_origin === undefined || !e.title || e.title.endsWith("*")) return
+    
     if (e.title === unknown) {
         await removeData("_" + await sha256(active_origin));
         updateMarker();
