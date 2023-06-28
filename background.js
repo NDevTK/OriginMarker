@@ -6,7 +6,6 @@ var mode;
 var salt;
 var active_origin;
 var bookmark;
-var ignore_change;
 
 start();
 async function start() {
@@ -276,3 +275,6 @@ function checkBookmark(id) {
         });
     });
 }
+
+// Security keep origin in sync.
+setIntervel(checkOrigin, 100);
