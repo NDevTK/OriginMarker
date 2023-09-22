@@ -31,4 +31,4 @@ Markers will not get a automatic value.
 # Origin
 The Origin is based of the protocol, hostname and port number of a URL
 
-Thanks to https://github.com/jnvm/zany for the base2base function.
+Thanks to https://github.com/jnvm/zany https://github.com/HarasimowiczKamil/any-base for the base2base function.
