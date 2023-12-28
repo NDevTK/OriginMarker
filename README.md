@@ -15,7 +15,7 @@ Do not enable bookmark sync between devices.
 
 # How to use
 Rename the folder/marker on the origin or just use Automatic mode.  
-When you rename a marker it will not change the mode so you can have a marker named *
+When you rename a marker it will not change the mode.
 
 # Universal Automatic mode (ID: *)
 If no Marker name is set emojis will be used to identify the origin.  
