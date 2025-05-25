@@ -11,6 +11,6 @@
       "id": "originmarker@ndevtk"
     }
   },
-  "icons": {"128": "icon.jpg", "48": "icon48.jpg"},
+  "icons": {"128": "icon.jpg", "48": "icon48.jpg", "32": "icon32.jpg"},
   "manifest_version": 3
 }
