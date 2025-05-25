@@ -13,7 +13,7 @@ var bookmark;
 start();
 async function start() {
     bookmark = await getDataLocal("bookmark");
-    if (bookmark === undefined || await checkBookmark(bookmark) === false) {
+    if (bookmark === undefined || await chrome.bookmarks.get(bookmark) === undefined) {
         await initBookmark();
     }
     mode = await getData("mode");
@@ -30,7 +30,7 @@ function onfocusChanged(windowId) {
 
 async function initBookmark() {
     bookmark = undefined;
-    await removeData("bookmark");
+    await chrome.storage.sync.remove("bookmark");
     bookmark = await onPlaceholder();
     await setDataLocal("bookmark", bookmark);
     onUnknown();
@@ -135,7 +135,7 @@ async function onBookmarkChange(id, e) {
     if (id !== bookmark || active_origin === undefined || !e.title || e.title.endsWith("*")) return
     
     if (e.title === unknown) {
-        await removeData("_" + await sha256(active_origin));
+        await chrome.storage.sync.remove("_" + await sha256(active_origin));
         updateMarker();
     } else {
         await setData("_" + await sha256(active_origin), e.title);
@@ -180,14 +180,6 @@ function getData(key) {
     return new Promise(resolve => {
         chrome.storage.sync.get(key, function(result) {
             resolve(result[key]);
-        });
-    });
-}
-
-function removeData(key) {
-    return new Promise(resolve => {
-        chrome.storage.sync.remove(key, function(result) {
-            resolve(result);
         });
     });
 }
@@ -247,14 +239,6 @@ function base2base(srcAlphabet, dstAlphabet) {
 	
 		return result
 	}
-}
-
-function checkBookmark(id) {
-    return new Promise(resolve => {
-        chrome.bookmarks.get(id, r => {
-            resolve(r !== undefined);
-        });
-    });
 }
 
 // Security: keep origin in sync
