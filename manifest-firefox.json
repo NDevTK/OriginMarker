@@ -11,5 +11,6 @@
       "id": "originmarker@ndevtk"
     }
   },
+  "icons": {"128": "icon.jpg"},
   "manifest_version": 3
 }
