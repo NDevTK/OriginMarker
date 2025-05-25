@@ -11,6 +11,7 @@ var active_origin;
 var bookmark;
 
 start();
+
 async function start() {
     bookmark = await getDataLocal("bookmark");
     if (bookmark === undefined || await chrome.bookmarks.get(bookmark) === undefined) {
