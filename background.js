@@ -111,8 +111,7 @@ async function updateMarker() {
   }
 
   chrome.bookmarks.update(bookmark, {
-    title: marker,
-    url: 'about:blank'
+    title: marker
   });
 }
 
