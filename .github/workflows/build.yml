@@ -27,7 +27,7 @@ jobs:
     - name: Chrome
       run: |
         mkdir -p chrome
-        cp -R -t chrome *.{js,json,png} LICENSE
+        cp -R -t chrome *.{js,json,png,jpg} LICENSE
         rm -f chrome/*-firefox.* chrome/Chrome.png chrome/Firefox.png
         mv chrome/manifest-chrome.json chrome/manifest.json
 
@@ -39,7 +39,7 @@ jobs:
     - name: Firefox
       run: |
         mkdir -p firefox
-        cp -R -t firefox *.{js,json,png} LICENSE
+        cp -R -t firefox *.{js,json,png,jpg} LICENSE
         rm -f firefox/*-chrome.* chrome/Chrome.png chrome/Firefox.png
         mv firefox/manifest-firefox.json firefox/manifest.json
 
