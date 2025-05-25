@@ -15,9 +15,7 @@ async function start() {
     }
     mode = await getData("mode");
     setMode(mode);
-    checkOrigin();
     chrome.tabs.onUpdated.addListener(onChange);
-    chrome.tabs.onActivated.addListener(checkOrigin);
     chrome.windows.onFocusChanged.addListener(onfocusChanged);
     chrome.bookmarks.onChanged.addListener(onBookmarkChange);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
@@ -25,7 +23,6 @@ async function start() {
 
 function onfocusChanged(windowId) {
     if (windowId !== chrome.windows.WINDOW_ID_NONE) focused = windowId;
-    checkOrigin();
 }
 
 async function initBookmark() {
@@ -60,7 +57,7 @@ async function setMode(data) {
             auto = true;
             salt = await getData("salt");
             if (salt === undefined) {
-                salt = generateRandom();
+                salt = crypto.randomUUID();
                 await setData("salt", salt);
             }
             break;
@@ -103,7 +100,7 @@ async function updateMarker() {
             marker = unknown;
         }
 	// Suffix auto generated bookmarks.
-	marker += '*';    
+	marker += '*';
     }
 
     chrome.bookmarks.update(bookmark, {
@@ -145,7 +142,6 @@ async function onBookmarkChange(id, e) {
 async function onBookmarkRemove(id) {
     if (id === bookmark) {
         await initBookmark();
-        checkOrigin();
     }
 }
 
@@ -250,24 +246,6 @@ function base2base(srcAlphabet, dstAlphabet) {
 	}
 }
 
-function generateRandom(length = 50) {
-    let charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    if (window.crypto && window.crypto.getRandomValues) {
-        let values = new Uint32Array(length);
-        window.crypto.getRandomValues(values);
-        for (let i = 0; i < length; i++) {
-            result += charset[values[i] % charset.length];
-        }
-        return result;
-    } else {
-        for (let i = 0; i < length; i++) {
-            result += charset[Math.floor(Math.random() * charset.length)];
-        }
-        return result;
-    }
-}
-
 function checkBookmark(id) {
     return new Promise(resolve => {
         chrome.bookmarks.get(id, r => {
@@ -276,5 +254,6 @@ function checkBookmark(id) {
     });
 }
 
-// Security keep origin in sync.
-setIntervel(checkOrigin, 100);
+// Security: keep origin in sync
+checkOrigin();
+setInterval(checkOrigin, 100);
