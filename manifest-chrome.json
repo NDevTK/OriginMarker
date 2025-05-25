@@ -6,6 +6,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "icons": {"128": "icon.jpg"},
+  "icons": {"128": "icon.jpg", "48": "icon48.jpg"},
   "manifest_version": 3
 }
