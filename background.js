@@ -7,6 +7,8 @@ var salt;
 var active_origin;
 var bookmark;
 
+importScripts('/static.js');
+
 start();
 async function start() {
     bookmark = await getDataLocal("bookmark");
