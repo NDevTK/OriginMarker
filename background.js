@@ -1,4 +1,7 @@
 'use strict';
+
+importScripts('/static.js');
+
 var encoding = base2base(source, emoji);
 var focused = false;
 var auto = true;
@@ -6,8 +9,6 @@ var mode;
 var salt;
 var active_origin;
 var bookmark;
-
-importScripts('/static.js');
 
 start();
 async function start() {
