@@ -1,4 +1,4 @@
-![icon](icon.jpg) 
+![icon](icon.jpg)
 
 Firefox: https://addons.mozilla.org/firefox/addon/originmarker/  
 A browser extension to allow users to easily identify phishing domains all done client side.  
