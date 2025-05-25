@@ -28,7 +28,7 @@ jobs:
       run: |
         mkdir -p chrome
         cp -R -t chrome *.{js,json,png,jpg} LICENSE
-        rm -f chrome/*-firefox.* chrome/Chrome.png chrome/Firefox.png
+        rm -f chrome/*-firefox.* chrome/Chrome.png chrome/Firefox.png chrome/icon.jpg
         mv chrome/manifest-chrome.json chrome/manifest.json
 
     - uses: actions/upload-artifact@v4
@@ -40,7 +40,7 @@ jobs:
       run: |
         mkdir -p firefox
         cp -R -t firefox *.{js,json,png,jpg} LICENSE
-        rm -f firefox/*-chrome.* chrome/Chrome.png chrome/Firefox.png
+        rm -f firefox/*-chrome.* firefox/Chrome.png firefox/Firefox.png firefox/icon.jpg
         mv firefox/manifest-firefox.json firefox/manifest.json
 
     - uses: actions/upload-artifact@v4
