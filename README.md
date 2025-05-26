@@ -1,7 +1,6 @@
 # OriginMarker
 
-![icon](icon.jpg)  
-![Example of automatic mode using chrome](Chrome.png)
+![Example of automatic mode using chrome](Chrome.png) ![icon](icon.jpg) 
 
 Allows you to easily identify phishing domains with a marker in the bookmarks bar that changes based off the active origin/domain your currently on.
 It can be renamed per origin manually or automatic using the hash of the origin encoded in emoji.
