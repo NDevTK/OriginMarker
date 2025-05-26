@@ -22,15 +22,10 @@ Do not enable bookmark sync between devices.
 Rename the folder/marker on the origin or just use Automatic mode.  
 When you rename a marker it will not change the mode.
 
-# Universal Automatic mode (ID: \*)
+# Automatic mode (ID: \*)
 
 If no Marker name is set emojis will be used to identify the origin.  
 This works by using a sha256 hash of the origin encoded into emoji.
-
-# Personal Automatic mode (ID: \*\*)
-
-Like Universal mode but with a personal salt.
-It will be different emojis per origin then other users.
 
 # Manual only (ID: \*\*\*)
 
