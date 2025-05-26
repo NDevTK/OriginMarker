@@ -10,8 +10,6 @@ var salt;
 var active_origin;
 var bookmark;
 
-start();
-
 async function start() {
   bookmark = await getDataLocal('bookmark');
   if (
@@ -262,6 +260,8 @@ function base2base(srcAlphabet, dstAlphabet) {
     return result;
   };
 }
+
+start();
 
 // Security: keep origin in sync
 setInterval(checkOrigin, 100);
