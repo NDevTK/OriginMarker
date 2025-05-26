@@ -22,11 +22,11 @@ Do not enable bookmark sync between devices.
 Rename the folder/marker on the origin or just use Automatic mode.  
 When you rename a marker it will not change the mode.
 
-# Automatic mode (ID: \*\*)
+# Automatic mode (ID: \*)
 
 It will be different emojis per origin then other users.
 
-# Manual only (ID: \*\*\*)
+# Manual only (ID: \*\*)
 
 Markers will not get a automatic value.
 
