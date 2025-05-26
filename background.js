@@ -264,5 +264,4 @@ function base2base(srcAlphabet, dstAlphabet) {
 }
 
 // Security: keep origin in sync
-checkOrigin();
 setInterval(checkOrigin, 100);
