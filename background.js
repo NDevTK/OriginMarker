@@ -58,17 +58,13 @@ async function setMode(data) {
   switch (data) {
     case '*':
       auto = true;
-      salt = '';
-      break;
-    case '**':
-      auto = true;
       salt = await getData('salt');
       if (salt === undefined) {
         salt = crypto.randomUUID();
         await setData('salt', salt);
       }
       break;
-    case '***':
+    case '**':
       auto = false;
       break;
     default:
