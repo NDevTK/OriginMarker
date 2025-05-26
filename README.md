@@ -24,7 +24,6 @@ When you rename a marker it will not change the mode.
 
 # Automatic mode (ID: \*\*)
 
-Like Universal mode but with a personal salt.
 It will be different emojis per origin then other users.
 
 # Manual only (ID: \*\*\*)
