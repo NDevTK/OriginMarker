@@ -30,6 +30,10 @@ function onfocusChanged(windowId) {
   if (windowId !== chrome.windows.WINDOW_ID_NONE) focused = windowId;
 }
 
+function onChange(tabId, changeInfo, tab) {
+  // Keep active
+}
+
 async function initBookmark() {
   bookmark = undefined;
   await chrome.storage.sync.remove('bookmark');
@@ -93,13 +97,13 @@ async function changeOrigin(url) {
 
 async function updateMarker() {
   var marker = await getData('_' + (await sha256(active_origin)));
-
   if (marker === undefined) {
-    if (auto === true) {
+    if (auto === true && active_origin !== undefined) {
       marker = await encodeOrigin();
     } else {
       marker = unknown;
     }
+    
     // Suffix auto generated bookmarks.
     marker += '*';
   }
@@ -107,19 +111,6 @@ async function updateMarker() {
   chrome.bookmarks.update(bookmark, {
     title: marker
   });
-}
-
-function onChange(tabId, changeInfo, tab) {
-  if (
-    focused !== tab.windowId ||
-    changeInfo.url === undefined ||
-    bookmark === undefined ||
-    tab.active === false
-  )
-    return;
-  if (tab.url === undefined || changeInfo.status !== 'complete')
-    return onUnknown();
-  changeOrigin(tab.url);
 }
 
 function checkOrigin() {
