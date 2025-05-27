@@ -113,11 +113,11 @@ function checkOrigin() {
       if (tab.length !== 1) return onUnknown();
       if (tab[0].active === false) return;
       focused = tab[0].windowId;
-        try {
-          var active = new URL(tab[0].url).origin;
-        } catch {
-          return onUnknown();
-        }
+      try {
+        var active = new URL(tab[0].url).origin;
+      } catch {
+        return onUnknown();
+      }
       if (active_origin === active) return;
       active_origin = active;
       updateMarker();
