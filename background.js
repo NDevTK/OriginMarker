@@ -89,7 +89,7 @@ async function updateMarker() {
   var marker = await getData(key);
   if (marker === undefined) {
     if (auto === true && origin !== undefined) {
-      const hash = await sha256(active_origin);
+      const hash = await sha256(origin);
       marker = encoding(hash);
     } else {
       marker = unknown;
