@@ -104,7 +104,7 @@ async function setMarker(origin) {
   lock = false;
 }
 
-function checkOrigin() {  
+function checkOrigin() {
   if (bookmark === undefined) return;
   chrome.tabs.query(
     {
