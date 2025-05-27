@@ -27,6 +27,13 @@ async function start() {
   chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
 
+// On install display the options page to guide the user
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    chrome.runtime.openOptionsPage();
+  }
+});
+
 function onUpdated(tabId, changeInfo, tab) {
   // Keep active
 }
