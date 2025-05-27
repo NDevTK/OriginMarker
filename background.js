@@ -85,7 +85,7 @@ function onUnknown() {
 async function updateMarker() {
   const origin = active_origin;
   const key = '_' + (await sha256(origin));
-  
+
   var marker = await getData(key);
   if (marker === undefined) {
     if (auto === true && origin !== undefined) {
