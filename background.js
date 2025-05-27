@@ -117,13 +117,12 @@ function checkOrigin() {
       if (tab[0].active === false) return;
       try {
         const url = new URL(tab[0].url);
-        // about:blank could be anyone.
-        if (!allowedProtocols.has(url.protocol)) return setMarker(null);
-        active = url.origin;
       } catch {
         return setMarker(null);
       }
-      setMarker(active);
+      // about:blank could be anyone.
+      if (!allowedProtocols.has(url.protocol)) return setMarker(null);
+      setMarker(url.origin);
     }
   );
 }
