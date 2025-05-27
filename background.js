@@ -139,7 +139,7 @@ async function onBookmarkChange(id, e) {
     return;
 
   const key = '_' + (await sha256(origin));
-  
+
   if (e.title === '') {
     await chrome.storage.sync.remove(key);
     updateMarker();
