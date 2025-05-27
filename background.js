@@ -84,17 +84,6 @@ function onUnknown() {
   updateMarker();
 }
 
-async function changeOrigin(url) {
-  try {
-    var active = new URL(url).origin;
-  } catch {
-    return onUnknown();
-  }
-  if (active_origin === active) return;
-  active_origin = active;
-  updateMarker();
-}
-
 async function updateMarker() {
   var marker = await getData('_' + (await sha256(active_origin)));
   if (marker === undefined) {
@@ -124,7 +113,14 @@ function checkOrigin() {
       if (tab.length !== 1) return onUnknown();
       if (tab[0].active === false) return;
       focused = tab[0].windowId;
-      changeOrigin(tab[0].url);
+        try {
+          var active = new URL(tab[0].url).origin;
+        } catch {
+          return onUnknown();
+        }
+      if (active_origin === active) return;
+      active_origin = active;
+      updateMarker();
     }
   );
 }
