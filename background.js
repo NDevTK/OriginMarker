@@ -116,7 +116,7 @@ function checkOrigin() {
       if (tab.length !== 1) return setMarker(null);
       if (tab[0].active === false) return;
       try {
-        const url = new URL(tab[0].url);
+        var url = new URL(tab[0].url);
       } catch {
         return setMarker(null);
       }
