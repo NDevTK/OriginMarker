@@ -1,0 +1,8 @@
+html,
+body {
+  color: white;
+  background-color: #1b262c;
+  min-height: 10rem;
+  max-width: 50rem;
+  overflow-y: hidden;
+}
