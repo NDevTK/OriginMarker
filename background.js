@@ -38,7 +38,6 @@ async function initBookmark() {
   await chrome.storage.sync.remove('bookmark');
   bookmark = await onPlaceholder();
   await setDataLocal('bookmark', bookmark);
-  onUnknown();
 }
 
 async function onPlaceholder() {
@@ -84,10 +83,14 @@ function onUnknown() {
 }
 
 async function updateMarker() {
-  var marker = await getData('_' + (await sha256(active_origin)));
+  const origin = active_origin;
+  const key = '_' + (await sha256(origin));
+  
+  var marker = await getData(key);
   if (marker === undefined) {
-    if (auto === true && active_origin !== undefined) {
-      marker = await encodeOrigin();
+    if (auto === true && origin !== undefined) {
+      const hash = await sha256(active_origin);
+      marker = encoding(hash);
     } else {
       marker = unknown;
     }
@@ -189,11 +192,6 @@ function getData(key) {
       resolve(result[key]);
     });
   });
-}
-
-async function encodeOrigin() {
-  let hash = await sha256(active_origin);
-  return encoding(hash);
 }
 
 async function sha256(data) {
