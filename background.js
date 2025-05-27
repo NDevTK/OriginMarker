@@ -126,19 +126,22 @@ function checkOrigin() {
 }
 
 async function onBookmarkChange(id, e) {
+  const origin = active_origin;
   if (
     id !== bookmark ||
-    active_origin === undefined ||
+    origin === undefined ||
     !e.title ||
     e.title.endsWith('*')
   )
     return;
 
+  const key =  '_' + await sha256(origin);
+  
   if (e.title === unknown) {
-    await chrome.storage.sync.remove('_' + (await sha256(active_origin)));
+    await chrome.storage.sync.remove(key);
     updateMarker();
   } else {
-    await setData('_' + (await sha256(active_origin)), e.title);
+    await setData(key, e.title);
   }
 }
 
