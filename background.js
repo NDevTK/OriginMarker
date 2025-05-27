@@ -133,14 +133,19 @@ async function onBookmarkChange(id, e) {
     id !== bookmark ||
     origin === undefined ||
     origin === null ||
-    !e.title ||
+    e.title === undefined ||
     e.title.endsWith('*')
   )
     return;
 
   const key = '_' + (await sha256(origin));
-
-  await setData(key, e.title);
+  
+  if (e.title === '') {
+    await chrome.storage.sync.remove(key);
+    updateMarker();
+  } else {
+    await setData(key, e.title);
+  }
 }
 
 async function onBookmarkRemove(id) {
