@@ -1,9 +1,11 @@
+'use strict';
+
 var reset = document.getElementById('reset');
 
 reset.onclick = async () => {
-  if (!confirm('Are you sure?')) return;
+  reset.innerText = 'Clearing...';
   await chrome.storage.sync.clear();
   await chrome.storage.local.clear();
   await chrome.storage.session.clear();
-  alert('Any extension data has been removed.');
+  reset.innerText = 'Done but feel free to click again :)';
 };
