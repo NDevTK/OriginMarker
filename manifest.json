@@ -12,5 +12,9 @@
     "32": "icon32.jpg",
     "16": "icon16.jpg"
   },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "manifest_version": 3
 }
