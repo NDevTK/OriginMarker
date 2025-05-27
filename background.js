@@ -3,7 +3,6 @@
 importScripts('/static.js');
 
 var encoding = base2base(source, emoji);
-var focused = false;
 var auto = true;
 var mode;
 var salt;
@@ -20,17 +19,17 @@ async function start() {
   }
   mode = await getData('mode');
   setMode(mode);
-  chrome.tabs.onUpdated.addListener(onChange);
-  chrome.windows.onFocusChanged.addListener(onfocusChanged);
+  chrome.tabs.onUpdated.addListener(onUpdated);
+  chrome.windows.onFocusChanged.addListener(onFocusChanged);
   chrome.bookmarks.onChanged.addListener(onBookmarkChange);
   chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
 
-function onfocusChanged(windowId) {
-  if (windowId !== chrome.windows.WINDOW_ID_NONE) focused = windowId;
+function onUpdated(tabId, changeInfo, tab) {
+  // Keep active
 }
 
-function onChange(tabId, changeInfo, tab) {
+function onFocusChanged(windowId) {
   // Keep active
 }
 
@@ -112,7 +111,6 @@ function checkOrigin() {
     (tab) => {
       if (tab.length !== 1) return onUnknown();
       if (tab[0].active === false) return;
-      focused = tab[0].windowId;
       try {
         var active = new URL(tab[0].url).origin;
       } catch {
