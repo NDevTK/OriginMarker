@@ -27,7 +27,7 @@ jobs:
     - name: Chrome
       run: |
         mkdir -p chrome
-        cp -R -t chrome *.{js,json,png,jpg,html} LICENSE
+        cp -R -t chrome *.{js,json,png,jpg,html,css} LICENSE
         rm -f chrome/Chrome.png
 
     - uses: actions/upload-artifact@v4
