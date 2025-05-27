@@ -8,6 +8,7 @@ var mode;
 var salt;
 var active_origin;
 var bookmark;
+var lock;
 
 async function start() {
   bookmark = await getDataLocal('bookmark');
@@ -38,7 +39,6 @@ async function initBookmark() {
   await chrome.storage.sync.remove('bookmark');
   bookmark = await onPlaceholder();
   await setDataLocal('bookmark', bookmark);
-  onUnknown();
 }
 
 async function onPlaceholder() {
@@ -78,19 +78,16 @@ async function setMode(data) {
   return true;
 }
 
-function onUnknown() {
-  active_origin = undefined;
-  updateMarker();
-}
+async function setMarker(origin) {
+  if (!lock || origin === active_origin) return;
+  lock = true;
 
-async function updateMarker() {
-  const origin = active_origin;
   const hash = await sha256(origin);
   const key = '_' + hash;
 
   var marker = await getData(key);
   if (marker === undefined) {
-    if (auto === true && origin !== undefined) {
+    if (auto === true && origin !== null) {
       marker = encoding(hash);
     } else {
       marker = unknown;
@@ -100,12 +97,14 @@ async function updateMarker() {
     marker += '*';
   }
 
-  chrome.bookmarks.update(bookmark, {
+  await chrome.bookmarks.update(bookmark, {
     title: marker
   });
+  active_origin = origin;
+  lock = false;
 }
 
-function checkOrigin() {
+function checkOrigin() {  
   if (bookmark === undefined) return;
   chrome.tabs.query(
     {
@@ -113,16 +112,14 @@ function checkOrigin() {
       currentWindow: true
     },
     (tab) => {
-      if (tab.length !== 1) return onUnknown();
+      if (tab.length !== 1) return setMarker(null);
       if (tab[0].active === false) return;
       try {
         var active = new URL(tab[0].url).origin;
       } catch {
-        return onUnknown();
+        return setMarker(null);
       }
-      if (active_origin === active) return;
-      active_origin = active;
-      updateMarker();
+      setMarker(active);
     }
   );
 }
@@ -132,6 +129,7 @@ async function onBookmarkChange(id, e) {
   if (
     id !== bookmark ||
     origin === undefined ||
+    origin === null ||
     !e.title ||
     e.title.endsWith('*')
   )
@@ -149,6 +147,7 @@ async function onBookmarkChange(id, e) {
 
 async function onBookmarkRemove(id) {
   if (id === bookmark) {
+    active_origin = undefined;
     await initBookmark();
   }
 }
