@@ -21,8 +21,8 @@ async function start() {
   }
   mode = await getDataLocal('mode');
   setMode(mode);
-  chrome.tabs.onUpdated.addListener(onUpdated);
-  chrome.windows.onFocusChanged.addListener(onFocusChanged);
+  chrome.tabs.onUpdated.addListener(checkOrigin);
+  chrome.windows.onFocusChanged.addListener(checkOrigin);
   chrome.bookmarks.onChanged.addListener(onBookmarkChange);
   chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
@@ -33,14 +33,6 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.runtime.openOptionsPage();
   }
 });
-
-function onUpdated(tabId, changeInfo, tab) {
-  // Keep active
-}
-
-function onFocusChanged(windowId) {
-  // Keep active
-}
 
 async function initBookmark() {
   bookmark = undefined;
@@ -258,6 +250,3 @@ function base2base(srcAlphabet, dstAlphabet) {
 }
 
 start();
-
-// Security: keep origin in sync
-setInterval(checkOrigin, 100);
