@@ -19,7 +19,7 @@ async function start() {
   ) {
     await initBookmark();
   }
-  mode = await getData('mode');
+  mode = await getDataLocal('mode');
   setMode(mode);
   chrome.tabs.onUpdated.addListener(onUpdated);
   chrome.windows.onFocusChanged.addListener(onFocusChanged);
@@ -80,7 +80,7 @@ async function setMode(data) {
       return false;
   }
   if (mode !== data) {
-    await setData('mode', data);
+    await setDataLocal('mode', data);
     mode = data;
   }
   return true;
