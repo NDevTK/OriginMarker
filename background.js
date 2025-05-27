@@ -103,7 +103,7 @@ async function updateMarker() {
     } else {
       marker = unknown;
     }
-    
+
     // Suffix auto generated bookmarks.
     marker += '*';
   }
