@@ -9,6 +9,7 @@ var salt;
 var active_origin;
 var bookmark;
 var lock;
+const allowedProtocols = new Set(['https:', 'http:']);
 
 async function start() {
   bookmark = await getDataLocal('bookmark');
@@ -115,7 +116,10 @@ function checkOrigin() {
       if (tab.length !== 1) return setMarker(null);
       if (tab[0].active === false) return;
       try {
-        var active = new URL(tab[0].url).origin;
+        const url = new URL(tab[0].url);
+        // about:blank could be anyone.
+        if (!allowedProtocols.has(url.protocol)) return setMarker(null);
+        active = url.origin;
       } catch {
         return setMarker(null);
       }
