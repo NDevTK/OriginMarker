@@ -1120,7 +1120,7 @@ const emoji = [
   '🔻', // Red Triangle Pointed Down
   '🔘', // Radio Button
   '🔳', // White Square Button
-  '🔲', // Black Square Button
+  '🔲' // Black Square Button
 ];
 
 const source = [
