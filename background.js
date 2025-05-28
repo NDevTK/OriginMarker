@@ -7,6 +7,7 @@ var auto = true;
 var mode;
 var salt;
 var active_origin;
+var pending_origin;
 var bookmark;
 const allowedProtocols = new Set(['https:', 'http:']);
 
@@ -101,7 +102,7 @@ async function setMarker(origin) {
     // Suffix auto generated bookmarks.
     marker += '*';
   }
-
+  if (origin !== pending_origin) return
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
@@ -125,6 +126,7 @@ function checkOrigin() {
       }
       // about:blank could be anyone.
       if (!allowedProtocols.has(url.protocol)) return setMarker(null);
+      pending_origin = url.origin;
       setMarker(url.origin);
     }
   );
