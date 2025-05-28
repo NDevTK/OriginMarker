@@ -22,6 +22,7 @@ async function start() {
   setMode(mode);
   chrome.tabs.onUpdated.addListener(checkOrigin);
   chrome.windows.onFocusChanged.addListener(checkOrigin);
+  chrome.windows.onActivated.addListener(checkOrigin);
   chrome.bookmarks.onChanged.addListener(onBookmarkChange);
   chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 }
@@ -78,7 +79,7 @@ async function setMode(data) {
 }
 
 async function setMarker(origin) {
-  active_origin = origin;
+  if (origin === active_origin) return;
 
   const hash = await sha256(origin);
   const key = '_' + hash;
@@ -98,6 +99,7 @@ async function setMarker(origin) {
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
+  active_origin = origin;
 }
 
 function checkOrigin() {
@@ -108,7 +110,8 @@ function checkOrigin() {
       currentWindow: true
     },
     (tab) => {
-      if (tab.length !== 1 || tab[0].active === false) return;
+      if (tab.length !== 1) return setMarker(null);
+      if (tab[0].active === false) return;
       try {
         var url = new URL(tab[0].url);
       } catch {
@@ -137,7 +140,6 @@ async function onBookmarkChange(id, e) {
   if (e.title === '') {
     await chrome.storage.sync.remove(key);
     active_origin = undefined;
-    checkOrigin();
   } else {
     await setData(key, e.title);
   }
