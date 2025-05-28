@@ -7,7 +7,7 @@ var auto = true;
 var mode;
 var salt;
 var active_origin;
-var pending_origin;
+var state;
 var bookmark;
 const allowedProtocols = new Set(['https:', 'http:']);
 
@@ -102,15 +102,30 @@ async function setMarker(origin) {
     // Suffix auto generated bookmarks.
     marker += '*';
   }
-  if (origin !== pending_origin) return;
+  
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
   active_origin = origin;
+
+  if (state === 'blocked') {
+    state = 'retry';
+    return checkOrigin();
+  } else {
+    state = 'ready';
+  }
 }
 
 function checkOrigin() {
   if (bookmark === undefined) return;
+  
+  if (state === 'checking' || state === 'blocked') {
+      state = 'blocked';
+      return
+  }
+
+  state = 'checking';
+  
   chrome.tabs.query(
     {
       active: true,
