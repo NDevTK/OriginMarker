@@ -84,7 +84,7 @@ async function setMarker(origin) {
   // Don't wait for unknown tabs
   if (origin === null) {
     await chrome.bookmarks.update(bookmark, {
-      title: marker + '*';
+      title: marker + '*'
     });
     return;
   }
