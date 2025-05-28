@@ -102,7 +102,7 @@ async function setMarker(origin) {
     // Suffix auto generated bookmarks.
     marker += '*';
   }
-  
+
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
@@ -118,14 +118,14 @@ async function setMarker(origin) {
 
 function checkOrigin() {
   if (bookmark === undefined) return;
-  
+
   if (state === 'checking' || state === 'blocked') {
-      state = 'blocked';
-      return
+    state = 'blocked';
+    return;
   }
 
   state = 'checking';
-  
+
   chrome.tabs.query(
     {
       active: true,
