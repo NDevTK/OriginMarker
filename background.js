@@ -78,9 +78,9 @@ async function setMode(data) {
 }
 
 async function setMarker(origin) {
-  if (origin === active_origin) return
+  if (origin === active_origin) return;
   active_origin = origin;
-  
+
   // Don't wait for unknown tabs
   if (origin === null) {
     await chrome.bookmarks.update(bookmark, {
@@ -88,7 +88,7 @@ async function setMarker(origin) {
     });
     return;
   }
-  
+
   const hash = await sha256(origin);
   const key = '_' + hash;
 
