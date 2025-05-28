@@ -139,6 +139,7 @@ async function onBookmarkChange(id, e) {
   if (e.title === '') {
     await chrome.storage.sync.remove(key);
     active_origin = undefined;
+    checkOrigin();
   } else {
     await setData(key, e.title);
   }
