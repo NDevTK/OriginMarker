@@ -7,7 +7,7 @@ var auto = true;
 var mode;
 var salt;
 var active_origin;
-var state;
+var state = 'setup';
 var bookmark;
 const allowedProtocols = new Set(['https:', 'http:']);
 
@@ -141,7 +141,6 @@ function checkOrigin() {
       }
       // about:blank could be anyone.
       if (!allowedProtocols.has(url.protocol)) return setMarker(null);
-      pending_origin = url.origin;
       setMarker(url.origin);
     }
   );
@@ -149,6 +148,7 @@ function checkOrigin() {
 
 async function onBookmarkChange(id, e) {
   const origin = active_origin;
+  if (state !== 'ready') return;
   if (
     id !== bookmark ||
     origin === undefined ||
