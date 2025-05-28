@@ -109,7 +109,7 @@ function checkOrigin() {
       currentWindow: true
     },
     (tab) => {
-      if (tab[0].active === false || tab.length !== 1) return;
+      if (tab.length !== 1 || tab[0].active === false) return;
       try {
         var url = new URL(tab[0].url);
       } catch {
