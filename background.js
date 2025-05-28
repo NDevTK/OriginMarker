@@ -102,7 +102,7 @@ async function setMarker(origin) {
     // Suffix auto generated bookmarks.
     marker += '*';
   }
-  if (origin !== pending_origin) return
+  if (origin !== pending_origin) return;
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
