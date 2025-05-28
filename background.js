@@ -48,15 +48,26 @@ async function initBookmark() {
 }
 
 async function onPlaceholder() {
+  let onBookmarkCreated, onBookmarkChanged;
+
   while (true) {
-    let result = await new Promise((resolve) => {
-      chrome.bookmarks.onCreated.addListener((id, e) => {
-        resolve([id, e.title]);
-      });
-      chrome.bookmarks.onChanged.addListener((id, e) => {
-        resolve([id, e.title]);
-      });
+    const result = await new Promise((resolve) => {
+      onBookmarkCreated = (id, bookmarkNode) => {
+        chrome.bookmarks.onCreated.removeListener(onBookmarkCreated);
+        chrome.bookmarks.onChanged.removeListener(onBookmarkChanged);
+        resolve([id, bookmarkNode.title]);
+      };
+
+      onBookmarkChanged = (id, changeInfo) => {
+        chrome.bookmarks.onCreated.removeListener(onBookmarkCreated);
+        chrome.bookmarks.onChanged.removeListener(onBookmarkChanged);
+        resolve([id, changeInfo.title]);
+      };
+
+      chrome.bookmarks.onCreated.addListener(onBookmarkCreated);
+      chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
     });
+
     if (await setMode(result[1])) return result[0];
   }
 }
