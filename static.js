@@ -35,7 +35,6 @@ const emoji = [
   '💯', // Hundred Points Symbol
   '💥', // Collision Symbol
   '💫', // Dizzy Symbol
-  '�', // Sweat Droplets
   '💨', // Dashing Away
   '💣', // Bomb
   '💬', // Speech Balloon
