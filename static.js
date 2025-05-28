@@ -273,8 +273,6 @@ const emoji = [
   '🔳', // White Square Button
   '🔲', // Black Square Button
   '😮', // Face with Open Mouth
-  '😯', // Hushed Face
-  '😲', // Astonished Face
   '😳', // Flushed Face
   '🥺', // Pleading Face
   '😢', // Crying Face
@@ -488,7 +486,6 @@ const emoji = [
   '🏣', // Japanese Post Office
   '🏤', // Post Office
   '🏨', // Hotel
-  '🏩', // Love Hotel
   '🏪', // Convenience Store
   '🏫', // School
   '🏬', // Department Store
@@ -534,7 +531,6 @@ const emoji = [
   '🚐', // Minibus
   '🚑', // Ambulance
   '🚒', // Fire Engine
-  '🚓', // Police Car
   '🚔', // Oncoming Police Car
   '🚕', // Taxi
   '🚖', // Oncoming Taxi
@@ -632,7 +628,6 @@ const emoji = [
   '🎟️', // Admission Tickets
   '🎫', // Ticket
   '🎖️', // Military Medal
-  '🏅', // Sports Medal
   '🥇', // 1st Place Medal
   '🥈', // 2nd Place Medal
   '🥉', // 3rd Place Medal
