@@ -12,10 +12,14 @@ const allowedProtocols = new Set(['https:', 'http:']);
 
 async function start() {
   bookmark = await getDataLocal('bookmark');
-  if (
-    bookmark === undefined ||
-    (await chrome.bookmarks.get(bookmark)) === undefined
-  ) {
+  if (bookmark !== undefined) {
+    try {
+      await chrome.bookmarks.get(bookmark);
+    } catch {
+      bookmark = undefined;
+    }
+  }
+  if (bookmark === undefined) {
     await initBookmark();
   }
   mode = await getDataLocal('mode');
