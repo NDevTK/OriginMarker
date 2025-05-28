@@ -8,7 +8,6 @@ var mode;
 var salt;
 var active_origin;
 var bookmark;
-var lock;
 const allowedProtocols = new Set(['https:', 'http:']);
 
 async function start() {
@@ -79,8 +78,7 @@ async function setMode(data) {
 }
 
 async function setMarker(origin) {
-  if (lock || origin === active_origin) return;
-  lock = true;
+  if (origin === active_origin) return;
 
   const hash = await sha256(origin);
   const key = '_' + hash;
@@ -101,7 +99,6 @@ async function setMarker(origin) {
     title: marker
   });
   active_origin = origin;
-  lock = false;
 }
 
 function checkOrigin() {
