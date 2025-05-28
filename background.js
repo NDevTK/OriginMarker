@@ -25,6 +25,7 @@ async function start() {
   chrome.windows.onFocusChanged.addListener(checkOrigin);
   chrome.bookmarks.onChanged.addListener(onBookmarkChange);
   chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
+  checkOrigin();
 }
 
 // On install display the options page to guide the user
@@ -39,6 +40,7 @@ async function initBookmark() {
   await chrome.storage.sync.remove('bookmark');
   bookmark = await onPlaceholder();
   await setDataLocal('bookmark', bookmark);
+  checkOrigin();
 }
 
 async function onPlaceholder() {
@@ -140,6 +142,7 @@ async function onBookmarkChange(id, e) {
   if (e.title === '') {
     await chrome.storage.sync.remove(key);
     active_origin = undefined;
+    checkOrigin();
   } else {
     await setData(key, e.title);
   }
