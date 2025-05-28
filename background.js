@@ -78,7 +78,6 @@ async function setMode(data) {
 }
 
 async function setMarker(origin) {
-  if (origin === active_origin) return;
   active_origin = origin;
 
   const hash = await sha256(origin);
