@@ -261,18 +261,6 @@ const emoji = [
   '©️', // Copyright
   '®️', // Registered
   '™️', // Trade Mark
-  '#️⃣', // Keycap: #
-  '0️⃣', // Keycap: 0
-  '1️⃣', // Keycap: 1
-  '2️⃣', // Keycap: 2
-  '3️⃣', // Keycap: 3
-  '4️⃣', // Keycap: 4
-  '5️⃣', // Keycap: 5
-  '6️⃣', // Keycap: 6
-  '7️⃣', // Keycap: 7
-  '8️⃣', // Keycap: 8
-  '9️⃣', // Keycap: 9
-  '🔟', // Keycap: 10
   '🔠', // Input Latin Uppercase
   '🔢', // Input Numbers
   '🔴', // Red Circle
@@ -614,8 +602,6 @@ const emoji = [
   '⛅', // Sun Behind Cloud
   '⛈️', // Cloud with Lightning and Rain
   '🌤️', // Sun Behind Small Cloud
-  '🌥️', // Cloud with Sun
-  '🌦️', // Cloud with Rain
   '🌧️', // Cloud with Rain
   '🌨️', // Cloud with Snow
   '🌩️', // Cloud with Lightning
@@ -830,7 +816,6 @@ const emoji = [
   '📥', // Inbox Tray
   '📦', // Package
   '📫', // Closed Mailbox with Raised Flag
-  '📪', // Closed Mailbox with Lowered Flag
   '📬', // Open Mailbox with Raised Flag
   '📭', // Open Mailbox with Lowered Flag
   '📮', // Postbox
@@ -844,12 +829,8 @@ const emoji = [
   '📝', // Memo
   '💼', // Briefcase
   '📁', // File Folder
-  '📂', // Open File Folder
-  '🗂️', // Card Index Dividers
   '📅', // Calendar
-  '📆', // Tear-Off Calendar
   '🗒️', // Spiral Notepad
-  '🗓️', // Spiral Calendar
   '📇', // Card Index
   '📈', // Chart Increasing
   '📉', // Chart Decreasing
@@ -1042,54 +1023,6 @@ const emoji = [
   '©️', // Copyright
   '®️', // Registered
   '™️', // Trade Mark
-  '#️⃣', // Keycap: #
-  '0️⃣', // Keycap: 0
-  '1️⃣', // Keycap: 1
-  '2️⃣', // Keycap: 2
-  '3️⃣', // Keycap: 3
-  '4️⃣', // Keycap: 4
-  '5️⃣', // Keycap: 5
-  '6️⃣', // Keycap: 6
-  '7️⃣', // Keycap: 7
-  '8️⃣', // Keycap: 8
-  '9️⃣', // Keycap: 9
-  '🔟', // Keycap: 10
-  '🔠', // Input Latin Uppercase
-  '🔢', // Input Numbers
-  '🔣', // Input Symbols
-  '🔤', // Input Latin Letters
-  '🅰️', // A Button (Blood Type)
-  '🆎', // Ab Button (Blood Type)
-  '🅱️', // B Button (Blood Type)
-  '🆑', // Cl Button
-  '🆒', // Cool Button
-  '🆓', // Free Button
-  'ℹ️', // Information
-  '🆔', // Id Button
-  '🆕', // New Button
-  '🆖', // Ng Button
-  '🅾️', // O Button (Blood Type)
-  '🆗', // Ok Button
-  '🆘', // Sos Button
-  '🆙', // Up! Button
-  '🆚', // Vs Button
-  '🈁', // Japanese “Here” Button
-  '🈂️', // Japanese “Service Charge” Button
-  '🈷️', // Japanese “Monthly Amount” Button
-  '🈶', // Japanese “Not Free of Charge” Button
-  '🈯', // Japanese “Reserved” Button
-  '🉐', // Japanese “Bargain” Button
-  '🈹', // Japanese “Discount” Button
-  '🈚', // Japanese “Free of Charge” Button
-  '🈲', // Japanese “Prohibited” Button
-  '🉑', // Japanese “Acceptable” Button
-  '🈸', // Japanese “Application” Button
-  '🈴', // Japanese “Passing Grade” Button
-  '🈳', // Japanese “Vacancy” Button
-  '㊗️', // Japanese “Congratulations” Button
-  '㊙️', // Japanese “Secret” Button
-  '🈺', // Japanese “Open for Business” Button
-  '🈵', // Japanese “Full” Button
   '🟠', // Orange Circle
   '🟡', // Yellow Circle
   '🟢', // Green Circle
@@ -1108,8 +1041,6 @@ const emoji = [
   '⬜', // White Large Square
   '◼️', // Black Medium Square
   '◻️', // White Medium Square
-  '◾', // Black Medium-Small Square
-  '◽', // White Medium-Small Square
   '▪️', // Black Small Square
   '▫️', // White Small Square
   '🔶', // Large Orange Diamond
