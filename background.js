@@ -78,14 +78,23 @@ async function setMode(data) {
 }
 
 async function setMarker(origin) {
-  if (origin === active_origin) return;
-
+  if (origin === active_origin) return
+  active_origin = origin;
+  
+  // Don't wait for unknown tabs
+  if (origin === null) {
+    await chrome.bookmarks.update(bookmark, {
+      title: marker + '*';
+    });
+    return;
+  }
+  
   const hash = await sha256(origin);
   const key = '_' + hash;
 
   var marker = await getData(key);
   if (marker === undefined) {
-    if (auto === true && origin !== null) {
+    if (auto === true) {
       marker = encoding(hash);
     } else {
       marker = unknown;
@@ -98,7 +107,6 @@ async function setMarker(origin) {
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
-  active_origin = origin;
 }
 
 function checkOrigin() {
