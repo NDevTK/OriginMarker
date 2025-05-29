@@ -1,4 +1,3 @@
-```markdown
 # Chrome Extension Security Audit: OriginMarker
 
 ## 1. Introduction & Architecture
