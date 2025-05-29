@@ -5,6 +5,7 @@ importScripts('/static.js');
 var encoding = base2base(source, emoji);
 var auto = true;
 var mode;
+var salt;
 var active_origin;
 var pending_origin;
 var bookmark;
@@ -23,7 +24,7 @@ async function start() {
     await initBookmark();
   }
   mode = await getDataLocal('mode');
-  setMode(mode);
+  await setMode(mode);
   chrome.tabs.onUpdated.addListener(checkOrigin);
   chrome.tabs.onActivated.addListener(checkOrigin);
   chrome.windows.onFocusChanged.addListener(checkOrigin);
@@ -76,6 +77,11 @@ async function setMode(data) {
   switch (data) {
     case '*':
       auto = true;
+      salt = await getData('salt');
+      if (salt === undefined) {
+        salt = crypto.randomUUID();
+        await setData('salt', salt);
+      }
       break;
     case '**':
       auto = false;
@@ -212,11 +218,6 @@ function getData(key) {
 }
 
 async function sha256(data) {
-  let salt = await getData('salt');
-  if (salt === undefined) {
-    salt = crypto.randomUUID();
-    await setData('salt', salt);
-  }
   const msgUint8 = new TextEncoder().encode(data + salt);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
