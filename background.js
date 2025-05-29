@@ -111,10 +111,10 @@ async function setMarker(origin) {
       marker = unknown;
     }
   }
-  
+
   // Suffix auto named bookmarks.
   marker += '*';
-  
+
   // Origin changed during the marker calculation
   if (pending_origin !== origin) return;
 
