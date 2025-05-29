@@ -7,6 +7,7 @@ var auto = true;
 var mode;
 var salt;
 var active_origin;
+var pending_origin;
 var bookmark;
 const allowedProtocols = new Set(['https:', 'http:']);
 
@@ -97,7 +98,8 @@ async function setMode(data) {
 
 async function setMarker(origin) {
   if (origin === active_origin) return;
-
+  pending_origin = origin;
+  
   const hash = await sha256(origin);
   const key = '_' + hash;
 
@@ -113,6 +115,9 @@ async function setMarker(origin) {
     marker += '*';
   }
 
+  // Origin changed during the marker calculation
+  if (pending_origin !== origin) return
+  
   await chrome.bookmarks.update(bookmark, {
     title: marker
   });
