@@ -19,10 +19,10 @@ const allowedProtocols = new Set(['https:', 'http:']);
 
 async function start() {
   bookmark = await getDataLocal('bookmark');
-  
+
   const storeValue = await getDataLocal('store');
-  store = (storeValue) ? storeValue : 'sync';
-  
+  store = storeValue ? storeValue : 'sync';
+
   if (bookmark !== undefined) {
     try {
       await chrome.bookmarks.get(bookmark);
