@@ -58,7 +58,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 async function initBookmark() {
   // bookmark = undefined; // Initialize/clear in-memory bookmark at the start of the process.
-                        // This will be set only if new ID is persisted.
+  // This will be set only if new ID is persisted.
 
   try {
     // Clear any old bookmark ID from storage first.
@@ -68,7 +68,10 @@ async function initBookmark() {
     // Explicitly set in-memory bookmark to undefined after successful clear.
     bookmark = undefined;
   } catch (error) {
-    console.error('Error clearing previous bookmark ID from storage (non-critical for new setup):', error);
+    console.error(
+      'Error clearing previous bookmark ID from storage (non-critical for new setup):',
+      error
+    );
     // If clearing fails, the old bookmark ID might still be in storage.
     // `onPlaceholder` will proceed to get a new one.
     // The main concern is persisting the *new* ID correctly later.
@@ -94,7 +97,12 @@ async function initBookmark() {
       console.log('OriginMarker: New bookmark ID persisted:', bookmark);
       checkOrigin(); // Update marker immediately after setup for the new bookmark
     } catch (error) {
-      console.error('CRITICAL: Failed to persist new bookmark ID:', newBookmarkId, 'Error:', error);
+      console.error(
+        'CRITICAL: Failed to persist new bookmark ID:',
+        newBookmarkId,
+        'Error:',
+        error
+      );
       // In-memory `bookmark` remains `undefined` (or its value before this attempt if clearing failed and an old value was loaded by `start`).
       // This is a critical failure; the extension will not function correctly.
       // `start()` might need to check `bookmark` status after `initBookmark` completes.
