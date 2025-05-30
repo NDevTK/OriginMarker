@@ -8,7 +8,8 @@ const initializationCompletePromise = new Promise((resolve) => {
 });
 
 var encoding = base2base(source, emoji);
-var auto = true;
+var auto;
+var store;
 var mode;
 var salt;
 var active_origin;
@@ -18,6 +19,10 @@ const allowedProtocols = new Set(['https:', 'http:']);
 
 async function start() {
   bookmark = await getDataLocal('bookmark');
+  
+  const storeValue = await getDataLocal('store');
+  store = (storeValue) ? storeValue : 'sync';
+  
   if (bookmark !== undefined) {
     try {
       await chrome.bookmarks.get(bookmark);
@@ -208,7 +213,7 @@ function getDataLocal(key) {
 
 function setData(key, value) {
   return new Promise((resolve) => {
-    chrome.storage.sync.set(
+    chrome.storage[store].set(
       {
         [key]: value
       },
@@ -221,7 +226,7 @@ function setData(key, value) {
 
 function getData(key) {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(key, function (result) {
+    chrome.storage[store].get(key, function (result) {
       resolve(result[key]);
     });
   });
