@@ -996,7 +996,7 @@ const emoji = [
   // '▫️', // White Small Square - Removed
   // '🔸', // Small Orange Diamond - Removed
   // '🔹', // Small Blue Diamond - Removed
-  '🔘', // Radio Button
+  '🔘' // Radio Button
 ];
 
 const source = [

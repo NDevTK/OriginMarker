@@ -62,14 +62,17 @@ async function initBookmark() {
 
   bookmark = await onPlaceholder(); // This now resolves with the ID directly
 
-  if (bookmark !== undefined) { // Check if a valid bookmark ID was obtained
+  if (bookmark !== undefined) {
+    // Check if a valid bookmark ID was obtained
     await setDataLocal('bookmark', bookmark);
     checkOrigin(); // Update marker immediately after setup
   } else {
     // This case might occur if onPlaceholder somehow exits its loop without a valid ID,
     // though the current onPlaceholder logic is an infinite loop until success.
     // Consider if specific error handling or retry logic is needed here if onPlaceholder could fail.
-    console.error("OriginMarker: initBookmark failed to obtain a valid bookmark ID from onPlaceholder.");
+    console.error(
+      'OriginMarker: initBookmark failed to obtain a valid bookmark ID from onPlaceholder.'
+    );
   }
 }
 
@@ -118,7 +121,8 @@ async function setMode(data) {
     default:
       return false; // Not a valid mode string
   }
-  if (mode !== data) { // Only save if mode actually changed
+  if (mode !== data) {
+    // Only save if mode actually changed
     await setDataLocal('mode', data);
     mode = data;
   }
