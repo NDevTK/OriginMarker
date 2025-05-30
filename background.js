@@ -58,12 +58,19 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 async function initBookmark() {
   bookmark = undefined;
-  await chrome.storage.sync.remove('bookmark').catch((error) => {
-    console.error('Error removing bookmark from storage:', error);
-  });
-  bookmark = await onPlaceholder();
-  await setDataLocal('bookmark', bookmark);
-  checkOrigin();
+  await setDataLocal('bookmark', undefined); // Clear any old bookmark ID
+
+  bookmark = await onPlaceholder(); // This now resolves with the ID directly
+
+  if (bookmark !== undefined) { // Check if a valid bookmark ID was obtained
+    await setDataLocal('bookmark', bookmark);
+    checkOrigin(); // Update marker immediately after setup
+  } else {
+    // This case might occur if onPlaceholder somehow exits its loop without a valid ID,
+    // though the current onPlaceholder logic is an infinite loop until success.
+    // Consider if specific error handling or retry logic is needed here if onPlaceholder could fail.
+    console.error("OriginMarker: initBookmark failed to obtain a valid bookmark ID from onPlaceholder.");
+  }
 }
 
 async function onPlaceholder() {
@@ -87,7 +94,11 @@ async function onPlaceholder() {
       chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
     });
 
-    if (await setMode(result[1])) return result[0];
+    if (await setMode(result[1])) {
+      // Listeners are removed inside the new Promise's resolve callbacks
+      return result[0]; // Resolve with the bookmark ID
+    }
+    // If setMode returns false, the loop continues
   }
 }
 
@@ -105,9 +116,9 @@ async function setMode(data) {
       auto = false;
       break;
     default:
-      return false;
+      return false; // Not a valid mode string
   }
-  if (mode !== data) {
+  if (mode !== data) { // Only save if mode actually changed
     await setDataLocal('mode', data);
     mode = data;
   }

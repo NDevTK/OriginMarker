@@ -170,7 +170,6 @@ const emoji = [
   '🚂', // Locomotive
   '🚌', // Bus
   '🚗', // Automobile
-  '🚜', // Tractor
   '🏍️', // Motorcycle
   '🚲', // Bicycle
   '⚓', // Anchor
@@ -205,17 +204,10 @@ const emoji = [
   '🎤', // Microphone
   '🎧', // Headphone
   '🔋', // Battery
-  '🔑', // Key
   '🔨', // Hammer
   '💉', // Syringe
   '🚽', // Toilet
   '🛒', // Shopping Cart
-  '⚠️', // Warning
-  '⛔', // No Entry
-  '✅', // White Heavy Check Mark
-  '❌', // Cross Mark
-  '❓', // Question Mark
-  '❗', // Red Exclamation Mark
   '♻️', // Recycling Symbol
   '🅿️', // P Button
   '💡', // Light Bulb
@@ -226,10 +218,7 @@ const emoji = [
   '💻', // Laptop
   '📸', // Camera
   '📺', // Television
-  '🔒', // Locked
-  '🔓', // Unlocked
   '⚖️', // Balance Scale
-  '🔗', // Link
   '💊', // Pill
   '🚬', // Cigarette
   '🗿', // Moai
@@ -254,8 +243,6 @@ const emoji = [
   '➖', // Minus
   '➗', // Divide
   '♾️', // Infinity
-  '‼️', // Double Exclamation Mark
-  '⁉️', // Exclamation Question Mark
   '💲', // Heavy Dollar Sign
   '©️', // Copyright
   '®️', // Registered
@@ -270,7 +257,7 @@ const emoji = [
   '🔻', // Red Triangle Pointed Down
   '💠', // Diamond with a Dot
   '🔳', // White Square Button
-  '🔲', // Black Square Button
+  // '🔲', // Black Square Button - Removed
   '😮', // Face with Open Mouth
   '😳', // Flushed Face
   '🥺', // Pleading Face
@@ -513,7 +500,6 @@ const emoji = [
   '🎢', // Roller Coaster
   '💈', // Barber Pole
   '🎪', // Circus Tent
-  '🚂', // Locomotive
   '🚃', // Railway Car
   '🚄', // High-Speed Train
   '🚅', // Bullet Train
@@ -550,11 +536,7 @@ const emoji = [
   '🛤️', // Railway Track
   '🛢️', // Oil Drum
   '⛽', // Fuel Pump
-  '🚨', // Police Car Light
   '🚥', // Horizontal Traffic Light
-  '🚦', // Vertical Traffic Light
-  '🛑', // Stop Sign
-  '🚧', // Construction
   '🛶', // Canoe
   '🚤', // Speedboat
   '🛳️', // Passenger Ship
@@ -771,7 +753,6 @@ const emoji = [
   '🎞️', // Film Frames
   '📽️', // Film Projector
   '🎬', // Clapper Board
-  '📺', // Television
   '📷', // Camera
   '🔎', // Magnifying Glass Tilted Right
   '🕯️', // Candle
@@ -852,7 +833,6 @@ const emoji = [
   '🔫', // Pistol
   '🪃', // Boomerang
   '🏹', // Bow and Arrow
-  '🛡️', // Shield
   '🪚', // Saw
   '🔧', // Wrench
   '🪛', // Screwdriver
@@ -970,13 +950,8 @@ const emoji = [
   '◀️', // Reverse Button
   '⏪', // Fast-Reverse Button
   '⏮️', // Last Track Button
-  '🔼', // Upwards Button
   '⏫', // Fast Up Button
-  '🔽', // Downwards Button
   '⏬', // Fast Down Button
-  '⏸️', // Pause Button
-  '⏹️', // Stop Button
-  '⏺️', // Record Button
   '⏏️', // Eject Button
   '🎦', // Cinema
   '🔅', // Dim Button
@@ -984,39 +959,21 @@ const emoji = [
   '📶', // Antenna Bars
   '📳', // Vibration Mode
   '📴', // Mobile Phone Off
-  '♀️', // Female Sign
-  '♂️', // Male Sign
   '⚧️', // Transgender Symbol
-  '✖️', // Multiply
-  '➕', // Plus
-  '➖', // Minus
-  '➗', // Divide
-  '♾️', // Infinity
-  '‼️', // Double Exclamation Mark
-  '⁉️', // Exclamation Question Mark
-  '❔', // White Question Mark
-  '❕', // White Exclamation Mark
   '〰️', // Squiggly Dash
   '💱', // Currency Exchange
-  '💲', // Heavy Dollar Sign
   '⚕️', // Medical Symbol
   '⚜️', // Fleur-De-Lis
   '🔱', // Trident Emblem
   '📛', // Name Badge
   '🔰', // Japanese Symbol for Beginner
   '⭕', // Heavy Large Circle
-  '☑️', // Check Box with Check
-  '✔️', // Heavy Check Mark
-  '❎', // Cross Mark Button
   '➰', // Curly Loop
   '➿', // Double Curly Loop
   '〽️', // Part Alternation Mark
   '✳️', // Eight-Spoked Asterisk
   '✴️', // Eight-Pointed Star
   '❇️', // Sparkle
-  '©️', // Copyright
-  '®️', // Registered
-  '™️', // Trade Mark
   '🟠', // Orange Circle
   '🟡', // Yellow Circle
   '🟢', // Green Circle
@@ -1033,19 +990,13 @@ const emoji = [
   '🟫', // Brown Square
   '⬛', // Black Large Square
   '⬜', // White Large Square
-  '◼️', // Black Medium Square
-  '◻️', // White Medium Square
-  '▪️', // Black Small Square
-  '▫️', // White Small Square
-  '🔶', // Large Orange Diamond
-  '🔷', // Large Blue Diamond
-  '🔸', // Small Orange Diamond
-  '🔹', // Small Blue Diamond
-  '🔺', // Red Triangle Pointed Up
-  '🔻', // Red Triangle Pointed Down
+  // '◼️', // Black Medium Square - Removed
+  // '◻️', // White Medium Square - Removed
+  // '▪️', // Black Small Square - Removed
+  // '▫️', // White Small Square - Removed
+  // '🔸', // Small Orange Diamond - Removed
+  // '🔹', // Small Blue Diamond - Removed
   '🔘', // Radio Button
-  '🔳', // White Square Button
-  '🔲' // Black Square Button
 ];
 
 const source = [

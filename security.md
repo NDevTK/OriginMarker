@@ -114,16 +114,17 @@ The `build.yml` workflow includes a step that automatically formats code using P
 
 ### Salt Management & Initialization
 
-- **High Priority: Warn Users:** Clearly inform users about the `chrome.storage.sync` risk for the `salt`.
+- **Status: ADDRESSED.** Warn Users: A warning has been added to `options.html` directly below the storage area selection. This warning explains the privacy implications of using "Sync" storage for the salt (potential exfiltration if the user's Google account is compromised) versus "Local" storage (device-specific markers, no syncing but better privacy in that specific scenario).
+
 - **Status: ADDRESSED.** Offer Local Salt Option: The extension allows users to select `local` (or `session`) storage for all data, including the `salt`, via the options page. This makes markers device-specific (or session-specific) and mitigates the risk of `salt` exfiltration through Chrome sync. The options page should ideally explain these trade-offs clearly.
 
 ### Initial Bookmark Setup & UI/UX
 
-- **High Priority: Explicit Setup Process:** To improve user experience and reduce potential confusion, revamp `options.html` for a more guided bookmark selection process (e.g., user creates/renames a bookmark with a specific temporary title during setup).
-- **Medium Priority: User Confirmation for Setup:** To prevent accidental association, after a potential bookmark is identified during setup, ask for user confirmation.
-- **High Priority: Improve Reset Clarity:** Update `options.html` text for the "Reset" button to be explicit about its full impact (clears salt, custom markers, placeholder settings; all auto-markers will change; requires re-setup).
-- **Medium Priority: Explain Emoji Meanings:** Add a disclaimer in `options.html` that emoji markers are for origin differentiation only and do not imply security endorsement. Consider curating the `emoji` list to remove overtly suggestive symbols.
-- **Medium Priority: Explain `*` Suffix:** Detail the meaning of the `*` suffix on auto-generated markers in `options.html`, including why titles ending in `*` cannot be set as custom markers.
+- **Status: ADDRESSED.** Explicit Setup Process: The setup instructions in `options.html` have been significantly expanded and clarified to provide a more guided, step-by-step process for users to designate a bookmark for OriginMarker to use.
+- **Note on User Confirmation for Setup:** A feature involving an explicit confirmation step via the options page (after a user names a bookmark `*` or `**` and before the extension fully adopts it) was previously considered. To maintain the current streamlined setup process, the project owner has decided against implementing this additional confirmation step at this time. This item is therefore considered closed without action. Any related experimental code has been removed from the codebase.
+- **Status: ADDRESSED.** Improve Reset Clarity: The reset button text in `options.html` has been changed to "Clear All Extension Data (Resets Markers & Salt)". Additionally, `options.js` now implements a **custom modal dialog** (using HTML, CSS, and JavaScript within the options page) that appears when the reset button is clicked. This dialog details the irreversible nature of the action, specifying that it clears all settings, custom markers, and the unique salt, which will alter all automatic markers and may necessitate reconfiguration of any placeholder bookmark. The completion message has also been made more specific.
+- **Status: ADDRESSED.** Explain Emoji Meanings and Curate Emoji List: A disclaimer has been added to `options.html` stating that emoji markers are for origin differentiation only and do not imply security endorsement or website status. Furthermore, the emoji list in `static.js` has been curated to remove symbols that could be easily misinterpreted as security indicators or warnings, and to remove duplicate entries.
+- **Status: ADDRESSED.** Explain `*` Suffix: An explanation has been added to `options.html` detailing that the `*` suffix on markers indicates they are system-managed and that user-set markers should not end with `*` to be saved as custom.
 
 ### Error Handling & State Consistency
 
