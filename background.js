@@ -23,7 +23,7 @@ async function start() {
     await initBookmark();
   }
   mode = await getDataLocal('mode');
-  setMode(mode);
+  await setMode(mode);
   chrome.tabs.onUpdated.addListener(checkOrigin);
   chrome.tabs.onActivated.addListener(checkOrigin);
   chrome.windows.onFocusChanged.addListener(checkOrigin);
