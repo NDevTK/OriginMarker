@@ -31,13 +31,14 @@ async function start() {
   mode = await getDataLocal('mode');
   await setMode(mode);
   resolveInitialization();
-  chrome.tabs.onUpdated.addListener(checkOrigin);
-  chrome.tabs.onActivated.addListener(checkOrigin);
-  chrome.windows.onFocusChanged.addListener(checkOrigin);
-  chrome.bookmarks.onChanged.addListener(onBookmarkChange);
-  chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
   checkOrigin();
 }
+
+chrome.tabs.onUpdated.addListener(checkOrigin);
+chrome.tabs.onActivated.addListener(checkOrigin);
+chrome.windows.onFocusChanged.addListener(checkOrigin);
+chrome.bookmarks.onChanged.addListener(onBookmarkChange);
+chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 
 // On install display the options page to guide the user
 chrome.runtime.onInstalled.addListener((details) => {
