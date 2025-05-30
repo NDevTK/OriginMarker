@@ -11,7 +11,7 @@ reset.onclick = async () => {
 
 store.onchange = async () => {
   await setDataLocal('store', store.value);
-}
+};
 
 async function main() {
   const storeValue = await getDataLocal('store');
