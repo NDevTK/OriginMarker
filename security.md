@@ -39,17 +39,17 @@
 
 ### General Error Handling
 
-- **Weakness:** Many asynchronous Chrome API calls (e.g., `chrome.bookmarks.update`, `chrome.storage.sync.set`) in `background.js` lack explicit `.catch()` handlers for promise rejections.
-- **Risk:** Unhandled promise rejections can lead to silent failures of operations, inconsistent internal state within the extension, or unexpected behavior from the user's perspective. This is primarily a robustness and reliability issue.
+- **Weakness:** Previously, many asynchronous Chrome API calls (e.g., `chrome.bookmarks.update`, `chrome.storage.sync.set`) in `background.js` and `options.js` lacked explicit error handling. This has been largely addressed by adding `.catch()` blocks to Promise-based calls in `background.js` and by incorporating `chrome.runtime.lastError` checks within Promise wrappers in `options.js`. Errors from these operations are now logged to `console.error`. However, this error logging does not currently extend to user-facing UI alerts or automatic state reconciliation logic upon failure.
+- **Risk:** Previously, unhandled promise rejections could lead to silent failures of operations. While errors are now logged to the console for better visibility, failures could still potentially lead to inconsistent internal state within the extension or unexpected behavior from the user's perspective if operations do not complete as expected. This remains primarily a robustness and reliability concern.
 
 ### Detailed `background.js` Logic Issues
 
 - **State Inconsistency on Storage Failure:**
-  - **Vulnerability:** Silent failures of `setData` or `setDataLocal` (due to lack of error handling) can cause in-memory state (`salt`, `mode`) to diverge from persisted storage.
+  - **Vulnerability:** Failures of `setData` or `setDataLocal` are no longer silent and are logged to `console.error` (see General Error Handling). However, if a storage operation fails, the in-memory state (`salt`, `mode`) can still diverge from the (attempted) persisted storage, as the extension does not currently implement automatic state reconciliation or retry mechanisms for these operations beyond the initial attempt.
   - **Risk:** Use of stale/incorrect `salt` or `mode` on subsequent startups, undermining reliability and consistency of marker generation and user customizations.
 - **Stale `active_origin` in `onBookmarkChange`:**
-  - **Vulnerability:** `active_origin` is read at the start of `onBookmarkChange`. If it changes due to a concurrent `setMarker` operation while `onBookmarkChange` is awaiting its own async operations, `onBookmarkChange` uses the initial stale value.
-  - **Risk:** Custom markers might be saved for the wrong origin, or clearing markers could trigger updates based on incorrect state.
+  - **Vulnerability:** This was a concern where `active_origin` read at the start of `onBookmarkChange` could become stale during subsequent asynchronous operations within the handler. The implementation now mitigates this by capturing the relevant origin at the start of event processing (before any `await` operations or debouncing delay within the core logic) and uses this captured value for saving custom markers. This ensures the marker is associated with the origin that was active when the bookmark change action was initiated by the user.
+  - **Risk:** The risk of custom markers being saved for the wrong origin due to this specific staleness issue has been substantially mitigated by the current implementation.
 - **Clarification on `onBookmarkChange` and Asterisk Suffix:**
   - The `onBookmarkChange` function includes a check `if (e.title.endsWith('*')) return;`. This is an intentional design choice with two main effects:
     1.  **Ignoring Auto-Generated Markers:** It prevents markers that were automatically generated and set by the `setMarker` function (which always appends an `*`) from being incorrectly processed as new user-defined custom markers if a bookmark change event is fired for them (e.g., upon their creation/update by `setMarker`).
@@ -94,6 +94,16 @@
 - **Bookmark Manipulation:** Other extensions modifying bookmark titles can cause functional conflicts or user confusion. A malicious extension might try to spoof OriginMarker's visual style.
 - **Web Page Interaction:** Direct attacks from web pages are well-mitigated by the lack of `externally_connectable` and strong CSP. Detection by pages is possible but hard to exploit due to the `salt`.
 
+### Denial of Service / Annoyance via Rapid Bookmark Updates
+
+- **Scenario:** Another extension with `bookmarks` permission, or a user manually editing with extreme rapidity, changes the title of OriginMarker's designated bookmark very frequently.
+- **Vector:** Each eligible title change (not ending in `*`) on the designated bookmark triggers the `onBookmarkChange` handler in `background.js`. This handler performs cryptographic operations (SHA-256) and storage operations (`chrome.storage.sync` or `chrome.storage.local`) to save the custom marker.
+- **Impact:**
+    - If `chrome.storage.sync` is used, rapid operations can exceed Chrome's rate limits (e.g., `MAX_WRITE_OPERATIONS_PER_MINUTE`), causing subsequent storage attempts to fail. This would temporarily prevent new custom markers from being saved or cleared.
+    - Increased CPU usage due to repeated hashing, though likely minor.
+    - General operational unreliability for the custom marker feature during such an event.
+- **Severity:** Low. This does not directly compromise data integrity or confidentiality but can degrade the user experience and reliability of the custom marker functionality.
+
 ## 5. Recommendations & Mitigations
 
 ### Salt Management & Initialization
@@ -111,9 +121,10 @@
 
 ### Error Handling & State Consistency
 
-- **High Priority: Comprehensive Error Handling:** Add robust `.catch()` handlers for all `chrome.storage` operations and other critical async calls. Log errors to `console.error`.
-- **Medium Priority: State Management on Error:** In error handlers, attempt to reconcile state or alert users to critical save failures.
-- **Medium Priority: Review `onBookmarkChange` Logic:** Re-evaluate `onBookmarkChange` to prevent issues with stale `active_origin` post-async operations, ensuring custom markers are saved for the correct, intended origin. The clarification on `endsWith('*')` confirms current behavior is intentional for differentiating auto vs. custom markers.
+- **Status: ADDRESSED.** **High Priority: Comprehensive Error Handling:** Robust error logging to `console.error` (via `.catch()` handlers for Promises or `chrome.runtime.lastError` checks for direct callbacks) has been implemented for all identified `chrome.storage` operations and other critical async calls (e.g., bookmark updates, initial bookmark fetching in `start()`).
+- **Status: PARTIALLY ADDRESSED.** **Medium Priority: State Management on Error:** Errors from critical operations like storage saves are now logged to the console, which aids in debugging (see above). However, the extension does not currently implement more advanced state management such as automatic state reconciliation (e.g., retrying failed saves, reverting in-memory state to match last known good storage state) or user-facing UI alerts for critical save failures. Implementing these more comprehensive measures would be a further enhancement to robustness. (Original Priority: Medium for full implementation; current logging addresses immediate visibility).
+- **Status: ADDRESSED.** **Medium Priority: Review `onBookmarkChange` Logic:** The logic in `onBookmarkChange` now captures the relevant `active_origin` at the beginning of its processing sequence (specifically, before any debouncing delay or further asynchronous operations that could lead to context switches) and uses this specific origin value when saving the custom marker. This mitigates the previously identified risk of associating the marker with a stale origin.
+- **Status: ADDRESSED.** **Low Priority: Mitigate Rapid Bookmark Change Events:** The `onBookmarkChange` handler has been updated to use debouncing for processing custom marker changes. This prevents very rapid, successive bookmark title modifications (e.g., by another extension or rapid manual edits) from overwhelming storage APIs (especially `chrome.storage.sync` rate limits) or causing excessive computation. This enhances the robustness of the custom marker feature under such conditions.
 
 ### General
 
