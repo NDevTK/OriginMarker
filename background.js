@@ -57,7 +57,9 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 async function initBookmark() {
   bookmark = undefined;
-  await chrome.storage.sync.remove('bookmark').catch(error => { console.error('Error removing bookmark from storage:', error); });
+  await chrome.storage.sync.remove('bookmark').catch((error) => {
+    console.error('Error removing bookmark from storage:', error);
+  });
   bookmark = await onPlaceholder();
   await setDataLocal('bookmark', bookmark);
   checkOrigin();
@@ -133,9 +135,13 @@ async function setMarker(origin) {
   // Origin changed during the marker calculation
   if (pending_origin !== origin) return;
 
-  await chrome.bookmarks.update(bookmark, {
-    title: marker
-  }).catch(error => { console.error('Error updating bookmark:', error); });
+  await chrome.bookmarks
+    .update(bookmark, {
+      title: marker
+    })
+    .catch((error) => {
+      console.error('Error updating bookmark:', error);
+    });
   active_origin = origin;
 }
 
@@ -167,7 +173,7 @@ async function onBookmarkChange(id, e) {
   // active_origin is captured globally, not passed as arg
   if (
     id !== bookmark ||
-    active_origin === undefined || 
+    active_origin === undefined ||
     active_origin === null ||
     e.title === undefined ||
     e.title.endsWith('*')
@@ -175,7 +181,7 @@ async function onBookmarkChange(id, e) {
     return;
 
   const eventOrigin = active_origin; // Capture current active_origin
-  const eventTitle = e.title;       // Capture current event title
+  const eventTitle = e.title; // Capture current event title
 
   if (bookmarkChangeDebounceTimer) {
     clearTimeout(bookmarkChangeDebounceTimer);
@@ -185,18 +191,20 @@ async function onBookmarkChange(id, e) {
     const key = '_' + (await sha256(eventOrigin));
 
     if (eventTitle === '') {
-      await chrome.storage.sync.remove(key).catch(error => { console.error('Error removing storage key:', error); });
+      await chrome.storage.sync.remove(key).catch((error) => {
+        console.error('Error removing storage key:', error);
+      });
       // Only reset active_origin if the cleared marker corresponds to the current active_origin
-      // This check might be redundant if checkOrigin() correctly re-evaluates, 
+      // This check might be redundant if checkOrigin() correctly re-evaluates,
       // but it's safer to be explicit.
       if (active_origin === eventOrigin) {
-        active_origin = undefined; 
+        active_origin = undefined;
       }
       checkOrigin();
     } else {
       await setData(key, eventTitle);
     }
-    bookmarkChangeDebounceTimer = null; 
+    bookmarkChangeDebounceTimer = null;
   }, BOOKMARK_CHANGE_DEBOUNCE_DELAY);
 }
 
@@ -210,43 +218,59 @@ async function onBookmarkRemove(id) {
 
 function setDataLocal(key, value) {
   return new Promise((resolve) => {
-    chrome.storage.local.set(
-      {
-        [key]: value
-      },
-      function (result) {
-        resolve(result);
-      }
-    ).catch(error => { console.error('Error in setDataLocal:', error); });
+    chrome.storage.local
+      .set(
+        {
+          [key]: value
+        },
+        function (result) {
+          resolve(result);
+        }
+      )
+      .catch((error) => {
+        console.error('Error in setDataLocal:', error);
+      });
   });
 }
 
 function getDataLocal(key) {
   return new Promise((resolve) => {
-    chrome.storage.local.get(key, function (result) {
-      resolve(result[key]);
-    }).catch(error => { console.error('Error in getDataLocal:', error); });
+    chrome.storage.local
+      .get(key, function (result) {
+        resolve(result[key]);
+      })
+      .catch((error) => {
+        console.error('Error in getDataLocal:', error);
+      });
   });
 }
 
 function setData(key, value) {
   return new Promise((resolve) => {
-    chrome.storage[store].set(
-      {
-        [key]: value
-      },
-      function (result) {
-        resolve(result);
-      }
-    ).catch(error => { console.error('Error in setData:', error); });
+    chrome.storage[store]
+      .set(
+        {
+          [key]: value
+        },
+        function (result) {
+          resolve(result);
+        }
+      )
+      .catch((error) => {
+        console.error('Error in setData:', error);
+      });
   });
 }
 
 function getData(key) {
   return new Promise((resolve) => {
-    chrome.storage[store].get(key, function (result) {
-      resolve(result[key]);
-    }).catch(error => { console.error('Error in getData:', error); });
+    chrome.storage[store]
+      .get(key, function (result) {
+        resolve(result[key]);
+      })
+      .catch((error) => {
+        console.error('Error in getData:', error);
+      });
   });
 }
 
