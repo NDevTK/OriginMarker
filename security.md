@@ -5,6 +5,7 @@
 ## GitHub Actions CI/CD Security
 
 ### Build Workflow (`build.yml`)
+
 The `build.yml` workflow includes a step that automatically formats code using Prettier and then commits and pushes these changes directly to the `main` branch. This behavior was temporarily changed to a `--check` mode but has been reverted to the auto-commit behavior as per user request. While this provides convenience by ensuring consistent formatting, it's important to note that it bypasses the standard pull request and review process for these automated changes to the `main` branch. This could also potentially lead to CI loops or unintended pushes if triggered by pull requests from forks under certain conditions. Users of this repository should be aware of this workflow automation.
 
 **Purpose:** The "OriginMarker" Chrome extension provides an origin-dependent marker by changing the title of a designated bookmark to reflect the origin of the currently active tab.
