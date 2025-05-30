@@ -130,7 +130,7 @@ async function setMarker(origin) {
   active_origin = origin;
 }
 
-function checkOrigin() {
+async function checkOrigin() {
   await initializationCompletePromise;
   if (bookmark === undefined) return;
   chrome.tabs.query(
