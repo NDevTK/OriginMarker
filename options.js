@@ -11,6 +11,7 @@ reset.onclick = async () => {
 
 store.onchange = async () => {
   await setDataLocal('store', store.value);
+  chrome.runtime.reload();
 };
 
 async function main() {
