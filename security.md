@@ -49,9 +49,6 @@
 
 ### Detailed `background.js` Logic Issues
 
-- **Salt Initialization Hazard during Startup:**
-  - **Vulnerability:** In `background.js`'s `start()` function, the `setMode(mode)` call (responsible for loading/initializing the `salt`) is not `await`-ed. If `checkOrigin()` is called before `salt` is properly loaded, `sha256()` might use an `undefined` or stale `salt`.
-  - **Risk:** Generation of predictable or incorrect emoji markers during a brief startup window.
 - **State Inconsistency on Storage Failure:**
   - **Vulnerability:** Silent failures of `setData` or `setDataLocal` (due to lack of error handling) can cause in-memory state (`salt`, `mode`) to diverge from persisted storage.
   - **Risk:** Use of stale/incorrect `salt` or `mode` on subsequent startups, undermining reliability and consistency of marker generation and user customizations.
@@ -114,7 +111,6 @@
 
 - **High Priority: Warn Users:** Clearly inform users about the `chrome.storage.sync` risk for the `salt`.
 - **Medium Priority: Offer Local Salt Option:** Allow users to store `salt` in `chrome.storage.local`, explaining trade-offs (device-specific markers).
-- **High Priority: Ensure Salt Availability:** In `background.js`'s `start()` function, `await` the `setMode(mode)` call before any operations dependent on the `salt` (like `checkOrigin`).
 
 ### Initial Bookmark Setup & UI/UX
 
