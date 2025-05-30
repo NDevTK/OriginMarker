@@ -54,7 +54,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 async function initBookmark() {
   bookmark = undefined;
-  await chrome.storage.sync.remove('bookmark');
+  await chrome.storage.sync.remove('bookmark').catch(error => { console.error('Error removing bookmark from storage:', error); });
   bookmark = await onPlaceholder();
   await setDataLocal('bookmark', bookmark);
   checkOrigin();
@@ -132,7 +132,7 @@ async function setMarker(origin) {
 
   await chrome.bookmarks.update(bookmark, {
     title: marker
-  });
+  }).catch(error => { console.error('Error updating bookmark:', error); });
   active_origin = origin;
 }
 
@@ -174,7 +174,7 @@ async function onBookmarkChange(id, e) {
   const key = '_' + (await sha256(origin));
 
   if (e.title === '') {
-    await chrome.storage.sync.remove(key);
+    await chrome.storage.sync.remove(key).catch(error => { console.error('Error removing storage key:', error); });
     active_origin = undefined;
     checkOrigin();
   } else {
@@ -199,7 +199,7 @@ function setDataLocal(key, value) {
       function (result) {
         resolve(result);
       }
-    );
+    ).catch(error => { console.error('Error in setDataLocal:', error); });
   });
 }
 
@@ -207,7 +207,7 @@ function getDataLocal(key) {
   return new Promise((resolve) => {
     chrome.storage.local.get(key, function (result) {
       resolve(result[key]);
-    });
+    }).catch(error => { console.error('Error in getDataLocal:', error); });
   });
 }
 
@@ -220,7 +220,7 @@ function setData(key, value) {
       function (result) {
         resolve(result);
       }
-    );
+    ).catch(error => { console.error('Error in setData:', error); });
   });
 }
 
@@ -228,7 +228,7 @@ function getData(key) {
   return new Promise((resolve) => {
     chrome.storage[store].get(key, function (result) {
       resolve(result[key]);
-    });
+    }).catch(error => { console.error('Error in getData:', error); });
   });
 }
 
