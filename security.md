@@ -99,9 +99,9 @@
 - **Scenario:** Another extension with `bookmarks` permission, or a user manually editing with extreme rapidity, changes the title of OriginMarker's designated bookmark very frequently.
 - **Vector:** Each eligible title change (not ending in `*`) on the designated bookmark triggers the `onBookmarkChange` handler in `background.js`. This handler performs cryptographic operations (SHA-256) and storage operations (`chrome.storage.sync` or `chrome.storage.local`) to save the custom marker.
 - **Impact:**
-    - If `chrome.storage.sync` is used, rapid operations can exceed Chrome's rate limits (e.g., `MAX_WRITE_OPERATIONS_PER_MINUTE`), causing subsequent storage attempts to fail. This would temporarily prevent new custom markers from being saved or cleared.
-    - Increased CPU usage due to repeated hashing, though likely minor.
-    - General operational unreliability for the custom marker feature during such an event.
+  - If `chrome.storage.sync` is used, rapid operations can exceed Chrome's rate limits (e.g., `MAX_WRITE_OPERATIONS_PER_MINUTE`), causing subsequent storage attempts to fail. This would temporarily prevent new custom markers from being saved or cleared.
+  - Increased CPU usage due to repeated hashing, though likely minor.
+  - General operational unreliability for the custom marker feature during such an event.
 - **Severity:** Low. This does not directly compromise data integrity or confidentiality but can degrade the user experience and reliability of the custom marker functionality.
 
 ## 5. Recommendations & Mitigations
