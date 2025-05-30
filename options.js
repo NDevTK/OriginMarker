@@ -26,6 +26,9 @@ function setDataLocal(key, value) {
         [key]: value
       },
       function (result) {
+        if (chrome.runtime.lastError) {
+          console.error('Error in options.js setDataLocal:', chrome.runtime.lastError);
+        }
         resolve(result);
       }
     );
@@ -35,6 +38,9 @@ function setDataLocal(key, value) {
 function getDataLocal(key) {
   return new Promise((resolve) => {
     chrome.storage.local.get(key, function (result) {
+      if (chrome.runtime.lastError) {
+        console.error('Error in options.js getDataLocal:', chrome.runtime.lastError);
+      }
       resolve(result[key]);
     });
   });
