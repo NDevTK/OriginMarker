@@ -5,7 +5,7 @@ var store = document.getElementById('store');
 
 reset.onclick = async () => {
   reset.innerText = 'Clearing...';
-  await chrome.storage.sync.clear();
+  await chrome.storage[store.value].clear();
   reset.innerText = 'Done but feel free to click again :)';
 };
 
