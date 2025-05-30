@@ -3,7 +3,7 @@
 importScripts('/static.js');
 
 let resolveInitialization;
-const initializationCompletePromise = new Promise(resolve => {
+const initializationCompletePromise = new Promise((resolve) => {
   resolveInitialization = resolve;
 });
 
