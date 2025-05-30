@@ -6,3 +6,62 @@ body {
   max-width: 50rem;
   overflow-y: hidden;
 }
+
+/* Custom Confirmation Modal Styles */
+.modal {
+  /* Hidden by default */
+  display: none;
+  /* Sit on top */
+  position: fixed;
+  z-index: 1000; /* Ensure it's above other content */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity for overlay */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more specific, like 400px */
+  max-width: 500px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  border-radius: 5px;
+  text-align: center; /* Center text and buttons */
+}
+
+.modal-content p {
+  margin-bottom: 20px; /* Space between text and buttons */
+  line-height: 1.6;
+}
+
+.modal-buttons button {
+  padding: 10px 15px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+#confirmModalButton {
+  background-color: #4CAF50; /* Green */
+  color: white;
+}
+
+#confirmModalButton:hover {
+  background-color: #45a049;
+}
+
+#cancelModalButton {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+#cancelModalButton:hover {
+  background-color: #da190b;
+}
