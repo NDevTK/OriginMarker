@@ -2,9 +2,15 @@
 
 importScripts('/static.js');
 
+let resolveInitialization;
+const initializationCompletePromise = new Promise(resolve => {
+  resolveInitialization = resolve;
+});
+
 var encoding = base2base(source, emoji);
 var auto = true;
 var mode;
+var salt;
 var active_origin;
 var pending_origin;
 var bookmark;
@@ -24,6 +30,7 @@ async function start() {
   }
   mode = await getDataLocal('mode');
   await setMode(mode);
+  resolveInitialization();
   chrome.tabs.onUpdated.addListener(checkOrigin);
   chrome.tabs.onActivated.addListener(checkOrigin);
   chrome.windows.onFocusChanged.addListener(checkOrigin);
@@ -76,6 +83,11 @@ async function setMode(data) {
   switch (data) {
     case '*':
       auto = true;
+      salt = await getData('salt');
+      if (salt === undefined) {
+        salt = crypto.randomUUID();
+        await setData('salt', salt);
+      }
       break;
     case '**':
       auto = false;
@@ -119,6 +131,7 @@ async function setMarker(origin) {
 }
 
 function checkOrigin() {
+  await initializationCompletePromise;
   if (bookmark === undefined) return;
   chrome.tabs.query(
     {
@@ -141,6 +154,7 @@ function checkOrigin() {
 }
 
 async function onBookmarkChange(id, e) {
+  await initializationCompletePromise;
   const origin = active_origin;
   if (
     id !== bookmark ||
@@ -163,6 +177,7 @@ async function onBookmarkChange(id, e) {
 }
 
 async function onBookmarkRemove(id) {
+  await initializationCompletePromise;
   if (id === bookmark) {
     active_origin = undefined;
     await initBookmark();
@@ -212,11 +227,6 @@ function getData(key) {
 }
 
 async function sha256(data) {
-  let salt = await getData('salt');
-  if (salt === undefined) {
-    salt = crypto.randomUUID();
-    await setData('salt', salt);
-  }
   const msgUint8 = new TextEncoder().encode(data + salt);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
