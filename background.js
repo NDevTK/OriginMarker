@@ -76,7 +76,7 @@ chrome.bookmarks.onChanged.addListener(onBookmarkChange);
 chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 
 chrome.runtime.onMessage.addListener((message, sender) => {
-  if (sender.origin !== location.origin) return
+  if (sender.origin !== location.origin) return;
   if (message === 'refresh') {
     start();
   }
