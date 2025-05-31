@@ -25,5 +25,6 @@
     "page": "options.html",
     "open_in_tab": false
   },
+  "action": {},
   "manifest_version": 3
 }
