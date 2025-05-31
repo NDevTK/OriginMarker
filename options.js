@@ -197,10 +197,8 @@ async function main() {
         showCustomConfirmModal(
           "Storage area preference saved to '" +
             store.value +
-            "'. This will be used for future operations. A full extension reload might be needed for all parts to reflect this change immediately."
+            "'. This will be used for future operations. A full extension reload is done for all parts to reflect this change immediately."
         );
-        // Consider if chrome.runtime.reload() is desired here.
-        // For now, an alert is used as it's less disruptive.
         chrome.runtime.reload();
       } catch (error) {
         showCustomConfirmModal(
