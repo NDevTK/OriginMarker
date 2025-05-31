@@ -41,18 +41,41 @@ function hideCustomConfirmModal() {
 
 // --- Core Logic for Reset Operation ---
 async function proceedWithReset() {
-  if (!reset || !store || !store.value) {
+  // Explicitly check for the store element first
+  if (!store) {
     console.error(
-      'Reset button, store select, or store value is missing. Cannot proceed with reset.'
+      'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.'
     );
     if (reset) {
-      reset.innerText = 'Error: Required elements missing.';
+      reset.innerText = 'Error: Store select missing.';
       setTimeout(() => {
         if (reset)
           reset.innerText = 'Clear All Extension Data (Resets Markers & Salt)';
       }, 3000);
     } else {
-      alert('Error: Essential page elements for reset are missing.');
+      alert(
+        'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.'
+      );
+    }
+    return;
+  }
+
+  // Check for reset button or store value (store existence is confirmed)
+  if (!reset || !store.value) {
+    console.error(
+      'OriginMarker Options: Reset button or store value is missing. Cannot proceed with reset.'
+    );
+    if (reset) {
+      reset.innerText = 'Error: Reset/Store value missing.';
+      setTimeout(() => {
+        if (reset)
+          reset.innerText = 'Clear All Extension Data (Resets Markers & Salt)';
+      }, 3000);
+    } else {
+      // This case implies reset is null
+      alert(
+        'OriginMarker Options: Reset button is missing. Cannot proceed with reset.'
+      );
     }
     return;
   }
@@ -64,8 +87,15 @@ async function proceedWithReset() {
     reset.innerText =
       'All data for the ' + store.value + ' storage area has been cleared.';
   } catch (error) {
-    console.error('Error clearing storage (area: ' + store.value + '):', error);
-    reset.innerText = 'Error clearing data. See console for details.';
+    console.error(
+      'OriginMarker Options: Error clearing storage (area: ' +
+        store.value +
+        '):',
+      error
+    );
+    if (reset) {
+      reset.innerText = 'Error clearing data. See console.';
+    }
   } finally {
     setTimeout(() => {
       if (reset) {
