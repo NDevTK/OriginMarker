@@ -27,12 +27,17 @@ async function start() {
 
   let storeValue = await getDataLocal('store');
   if (!['sync', 'local', 'session'].includes(storeValue)) {
-    console.warn(`OriginMarker: Invalid store value '${storeValue}' loaded from storage. Defaulting to 'sync'.`);
+    console.warn(
+      `OriginMarker: Invalid store value '${storeValue}' loaded from storage. Defaulting to 'sync'.`
+    );
     storeValue = 'sync';
     try {
       await setDataLocal('store', storeValue);
     } catch (error) {
-      console.error("OriginMarker: Failed to save default store setting:", error);
+      console.error(
+        'OriginMarker: Failed to save default store setting:',
+        error
+      );
     }
   }
   store = storeValue;
@@ -118,7 +123,7 @@ async function initBookmark() {
       await setDataLocal('bookmark', newBookmarkId);
       // Only update in-memory `bookmark` if persistence is successful.
       bookmark = newBookmarkId;
-      chrome.action.setBadgeText({ text: '' });
+      chrome.action.setBadgeText({text: ''});
       console.log('OriginMarker: New bookmark ID persisted:', bookmark);
       checkOrigin(); // Update marker immediately after setup for the new bookmark
     }
@@ -128,7 +133,10 @@ async function initBookmark() {
   } catch (error) {
     if (error.name === 'AbortError') {
       aborted = true;
-      console.log('OriginMarker: onPlaceholder operation was aborted.', error.message);
+      console.log(
+        'OriginMarker: onPlaceholder operation was aborted.',
+        error.message
+      );
       // newBookmarkId remains undefined, no 'ERR' badge for abort.
     } else {
       console.error(
@@ -139,8 +147,8 @@ async function initBookmark() {
       );
       // Set error badge only if not aborted and there was a critical error
       // (e.g. setDataLocal failed, or onPlaceholder threw other than AbortError)
-      chrome.action.setBadgeText({ text: 'ERR' });
-      chrome.action.setBadgeBackgroundColor({ color: '#FF0000' }); // Red
+      chrome.action.setBadgeText({text: 'ERR'});
+      chrome.action.setBadgeBackgroundColor({color: '#FF0000'}); // Red
     }
   } finally {
     if (currentPlaceholderAbortController === localAbortController) {
@@ -158,8 +166,8 @@ async function initBookmark() {
     // Setting ERR badge here because the process finished without success and wasn't aborted.
     // If onPlaceholder itself was supposed to set an error state or retry, that's internal to it.
     // From initBookmark's perspective, it just didn't get an ID.
-    chrome.action.setBadgeText({ text: 'ERR' });
-    chrome.action.setBadgeBackgroundColor({ color: '#FF0000' }); // Red
+    chrome.action.setBadgeText({text: 'ERR'});
+    chrome.action.setBadgeBackgroundColor({color: '#FF0000'}); // Red
   }
 }
 
@@ -187,7 +195,7 @@ async function onPlaceholder(signal) {
     }
   };
 
-  signal.addEventListener('abort', abortListener, { once: true });
+  signal.addEventListener('abort', abortListener, {once: true});
 
   try {
     while (true) {
@@ -195,12 +203,14 @@ async function onPlaceholder(signal) {
 
       const result = await new Promise((resolve, reject) => {
         promiseReject = reject; // Assign reject for the abort listener
-        if (signal.aborted) { // Check again, as abort could happen before listeners are set
+        if (signal.aborted) {
+          // Check again, as abort could happen before listeners are set
           return reject(new DOMException('Aborted', 'AbortError'));
         }
 
         onBookmarkCreatedListener = (id, bookmarkNode) => {
-          if (signal.aborted) { // Check before resolving
+          if (signal.aborted) {
+            // Check before resolving
             resolve(undefined); // Or reject, but resolving undefined signals abort to caller loop
             return;
           }
@@ -210,7 +220,8 @@ async function onPlaceholder(signal) {
         };
 
         onBookmarkChangedListener = (id, changeInfo) => {
-          if (signal.aborted) { // Check before resolving
+          if (signal.aborted) {
+            // Check before resolving
             resolve(undefined);
             return;
           }
@@ -225,7 +236,8 @@ async function onPlaceholder(signal) {
 
       promiseReject = null; // Clear promiseReject after promise settles
 
-      if (signal.aborted || result === undefined) { // result undefined if promise resolved due to abort check
+      if (signal.aborted || result === undefined) {
+        // result undefined if promise resolved due to abort check
         throw new DOMException('Aborted', 'AbortError');
       }
 
@@ -253,7 +265,9 @@ async function setMode(data) {
         saltSuccessfullyHandled = true;
       } else {
         if (fetchedSalt !== undefined) {
-             console.warn(`OriginMarker: Invalid salt found in storage (type: ${typeof fetchedSalt}, value: '${fetchedSalt}'). Generating new salt.`);
+          console.warn(
+            `OriginMarker: Invalid salt found in storage (type: ${typeof fetchedSalt}, value: '${fetchedSalt}'). Generating new salt.`
+          );
         }
         const newSalt = crypto.randomUUID();
         try {
@@ -340,7 +354,10 @@ async function checkOrigin() {
     },
     (tab) => {
       if (chrome.runtime.lastError) {
-        console.error("OriginMarker: Error querying tabs in checkOrigin:", chrome.runtime.lastError.message);
+        console.error(
+          'OriginMarker: Error querying tabs in checkOrigin:',
+          chrome.runtime.lastError.message
+        );
         return setMarker(null); // Exit early if tabs query failed
       }
       if (tab.length !== 1) return setMarker(null);
@@ -385,7 +402,12 @@ async function onBookmarkChange(id, e) {
       } catch (error) {
         // The removeData function's promise rejection already logs chrome.runtime.lastError.
         // This catch is for any other unexpected errors or if removeData itself throws synchronously (e.g. invalid store).
-        console.error('OriginMarker: Failed to remove custom marker for key', key, 'using removeData. Error:', error.message);
+        console.error(
+          'OriginMarker: Failed to remove custom marker for key',
+          key,
+          'using removeData. Error:',
+          error.message
+        );
       }
       // Only reset active_origin if the cleared marker corresponds to the current active_origin
       // This check might be redundant if checkOrigin() correctly re-evaluates,
@@ -428,7 +450,9 @@ function setDataLocal(key, value) {
 function removeData(key) {
   return new Promise((resolve, reject) => {
     if (!store || !chrome.storage[store]) {
-      let errorMsg = "OriginMarker: Invalid or uninitialized 'store' type for removeData. Store type: " + store;
+      let errorMsg =
+        "OriginMarker: Invalid or uninitialized 'store' type for removeData. Store type: " +
+        store;
       console.error(errorMsg);
       return reject(new Error(errorMsg));
     }
