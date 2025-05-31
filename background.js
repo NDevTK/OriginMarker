@@ -135,6 +135,7 @@ async function initBookmark() {
       bookmark = newBookmarkId;
       chrome.action.setBadgeText({text: ''});
       console.log('OriginMarker: New bookmark ID persisted:', bookmark);
+      active_origin = undefined; // Reset active_origin before check
       checkOrigin(); // Update marker immediately after setup for the new bookmark
     }
     // No specific action if newBookmarkId is undefined and not aborted,
