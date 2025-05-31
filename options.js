@@ -218,7 +218,7 @@ async function main() {
             await setDataLocal('store', store.value); // Save the preference
             try {
               chrome.runtime.reload(); // Reload the extension
-            }
+            } catch {}
             location.reload(true); // Reload the page
           }
         );
