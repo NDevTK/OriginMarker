@@ -2,7 +2,7 @@
 
 ## 1. Introduction & Architecture
 
-This document reflects the security state of OriginMarker after an initial audit and subsequent hardening cycles. Recent updates from these review and hardening cycles have further addressed error handling, state consistency, and input validation, and fixed specific bugs related to storage interaction; additional recent hardening has further enhanced robustness through stricter type validation for all critical data retrieved from storage and by applying defensive coding practices for internal data handling (such as for marker encoding alphabets). **A subsequent review in October 2023 re-verified that the hardening measures and mitigations detailed in this document are implemented in the codebase.**
+This document reflects the security state of OriginMarker after an initial audit and subsequent hardening cycles. Recent updates from these review and hardening cycles have further addressed error handling, state consistency, and input validation, and fixed specific bugs related to storage interaction; additional recent hardening has further enhanced robustness through stricter type validation for all critical data retrieved from storage and by applying defensive coding practices for internal data handling (such as for marker encoding alphabets). **A subsequent review re-verified that the hardening measures and mitigations detailed in this document are implemented in the codebase.**
 
 ### GitHub Actions CI/CD Security
 
