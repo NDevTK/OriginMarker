@@ -213,7 +213,7 @@ async function main() {
             store.value +
             "'. The extension will reload first. After you dismiss a notification, the page will then reload to apply this change. Click Confirm to proceed.",
           true, // Show Confirm and Cancel buttons
-          () => {
+          async () => {
             // Action for the first dialog's "Confirm"
             await setDataLocal('store', store.value); // Save the preference
             chrome.runtime.reload(); // Reload the extension
