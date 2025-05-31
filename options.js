@@ -211,21 +211,15 @@ async function main() {
         showCustomConfirmModal(
           "Your storage preference will be saved to '" +
             store.value +
-            "'. The extension will reload first. After you dismiss a notification, the page will then reload to apply this change. Click Confirm to proceed.",
+            "'. Click Confirm to proceed.",
           true, // Show Confirm and Cancel buttons
           async () => {
-            // Action for the first dialog's "Confirm"
+            // Action for the dialog's "Confirm"
             await setDataLocal('store', store.value); // Save the preference
-            chrome.runtime.reload(); // Reload the extension
-            // Second dialog: Notifies about page reload
-            showCustomConfirmModal(
-              'The extension has reloaded. Click Confirm to reload the page.',
-              false, // Show only "Confirm"
-              () => {
-                // Action for the second dialog's "OK"
-                location.reload(true); // Reload the page
-              }
-            );
+            try {
+              chrome.runtime.reload(); // Reload the extension
+            }
+            location.reload(true); // Reload the page
           }
         );
       } catch (error) {
