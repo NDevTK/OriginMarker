@@ -219,7 +219,7 @@ async function main() {
             chrome.runtime.reload(); // Reload the extension
             // Second dialog: Notifies about page reload
             showCustomConfirmModal(
-              "The extension has reloaded. Click OK to reload the page.",
+              'The extension has reloaded. Click OK to reload the page.',
               false, // Show only "Confirm" (which will act as an "OK" button)
               () => {
                 // Action for the second dialog's "OK"
