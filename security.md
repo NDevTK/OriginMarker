@@ -95,6 +95,7 @@ The `build.yml` workflow includes a step that automatically formats code using P
   - As a minor defense-in-depth measure, the initialization of the `base2base` encoding function in `background.js` now uses **defensive copies** of the `source` and `emoji` alphabet arrays (i.e., `base2base([...source], [...emoji])`). This ensures that the function operates on a snapshot of these arrays, protecting against highly unlikely scenarios where the global alphabet arrays might be accidentally modified before `base2base` is initialized.
 
 ### Chrome Web Store Package Integrity
+
 OriginMarker benefits from the Chrome Web Store's (CWS) enhanced security measures for extension uploads. If opted-in via the Developer Dashboard, CWS can require that all future extension package uploads are verified using a developer-provided public key. This means that even if a developer's account or publishing workflow were compromised, new versions cannot be uploaded unless they are signed by the developer's trusted private key.
 
 This verification step is an additional layer of security. If an uploaded package passes this developer key verification, CWS then automatically repackages the extension with the standard CWS-managed private key before publication. This ensures the extension maintains its ID and is ultimately distributed with a signature trusted by Chrome, while providing stronger guarantees that only authorized versions are submitted by the developer. For enhanced supply chain security, it is assumed that OriginMarker is opted into this feature in the Chrome Web Store.
