@@ -223,10 +223,7 @@ async function main() {
             const newStoreValue = store.value; // Capture before potential async ops
             await setDataLocal('store', newStoreValue); // Save the preference
             lastConfirmedStorageValue = newStoreValue; // Update on successful save
-            try {
-              chrome.runtime.reload(); // Reload the extension
-            } catch {}
-            location.reload(true); // Reload the page
+            chrome.runtime.sendMessage('refresh');
           }
         );
       } catch (error) {
