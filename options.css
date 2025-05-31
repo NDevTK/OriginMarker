@@ -2,9 +2,9 @@ html,
 body {
   color: white;
   background-color: #1b262c;
-  min-height: 10rem;
+  /* min-height: 10rem; */ /* Removed */
   max-width: 50rem;
-  overflow-y: hidden;
+  overflow-y: auto; /* Changed from hidden */
 }
 
 /* Custom Confirmation Modal Styles */
@@ -24,7 +24,7 @@ body {
 
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
+  margin: 5% auto; /* Changed from 15% auto */
   padding: 20px;
   border: 1px solid #888;
   width: 80%; /* Could be more specific, like 400px */
@@ -67,4 +67,8 @@ body {
 
 #cancelModalButton:hover {
   background-color: #da190b;
+}
+
+.warning-text {
+  color: #8b0000;
 }
