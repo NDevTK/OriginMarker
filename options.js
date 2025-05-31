@@ -211,7 +211,7 @@ async function main() {
         showCustomConfirmModal(
           "Storage area preference saved to '" +
             store.value +
-            "'. This will be used for future operations. A full extension reload is done for all parts to reflect this change immediately.",
+            "'. This will be used for future operations. A full extension reload will be done for all parts to reflect this change immediately.",
           false,
           null
         );
