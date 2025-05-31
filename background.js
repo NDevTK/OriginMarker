@@ -313,9 +313,10 @@ async function setMode(data) {
     return false;
   }
 
-  // If salt handling failed for auto mode, we cannot proceed reliably.
+  // If salt handling failed for auto mode (data === '*'), we cannot proceed reliably.
+  // 'auto' would already be false from 'auto = saltSuccessfullyHandled;' earlier in the function.
+  // Simply return false to indicate failure.
   if (data === '*' && !saltSuccessfullyHandled) {
-    auto = false; // Ensure auto is false
     // Do not change persisted mode if we intended to go to auto but couldn't.
     // Caller might need to know this failed.
     return false;
