@@ -113,7 +113,6 @@
       <a href="#how-to-use-custom-markers">custom markers</a> for any specific
       sites you want to identify differently.
     </p>
-    <button id="reset">Clear All Extension Data (Resets Markers & Salt)</button>
     <label for="store">Storage area:</label>
     <select name="store" id="store">
       <option value="sync">Sync</option>
@@ -129,12 +128,10 @@
       <li>
         <strong>Sync:</strong> Convenient for accessing this data across devices
         where you're signed into Chrome.
-        <strong style="color: #8b0000"
-          >Warning: If your Google account is compromised, your 'salt' could
+        <strong class="warning-text">Warning: If your Google account is compromised, your 'salt' could
           also be accessed. This might allow someone to identify which websites
           correspond to your emoji markers if they also have access to your
-          bookmarks.</strong
-        >
+          bookmarks.</strong>
       </li>
       <li>
         <strong>Local:</strong> Keeps this data only on this device. This
@@ -147,6 +144,7 @@
         Useful for temporary privacy.
       </li>
     </ul>
+    <button id="reset">Clear All Extension Data (Resets Markers & Salt)</button>
     <p>
       <em
         >(Core settings like your designated OriginMarker bookmark ID and the
@@ -156,7 +154,7 @@
     </p>
 
     <!-- Custom Confirmation Modal -->
-    <div id="customConfirmModal" class="modal" style="display: none">
+    <div id="customConfirmModal" class="modal">
       <div class="modal-content">
         <p id="confirmModalText"></p>
         <div class="modal-buttons">
