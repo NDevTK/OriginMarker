@@ -207,7 +207,6 @@ async function main() {
   if (store) {
     store.onchange = async () => {
       try {
-        await setDataLocal('store', store.value); // Save the preference
         // First dialog: Confirms saving and initial extension reload
         showCustomConfirmModal(
           "Your storage preference will be saved to '" +
@@ -216,11 +215,12 @@ async function main() {
           true, // Show Confirm and Cancel buttons
           () => {
             // Action for the first dialog's "Confirm"
+            await setDataLocal('store', store.value); // Save the preference
             chrome.runtime.reload(); // Reload the extension
             // Second dialog: Notifies about page reload
             showCustomConfirmModal(
-              'The extension has reloaded. Click OK to reload the page.',
-              false, // Show only "Confirm" (which will act as an "OK" button)
+              'The extension has reloaded. Click Confirm to reload the page.',
+              false, // Show only "Confirm"
               () => {
                 // Action for the second dialog's "OK"
                 location.reload(true); // Reload the page
