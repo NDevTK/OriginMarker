@@ -7,7 +7,7 @@ const initializationCompletePromise = new Promise((resolve) => {
   resolveInitialization = resolve;
 });
 
-var encoding = base2base(source, emoji);
+var encoding = base2base([...source], [...emoji]);
 var auto;
 var store;
 var mode;
@@ -24,6 +24,10 @@ let currentPlaceholderAbortController = null;
 
 async function start() {
   bookmark = await getDataLocal('bookmark');
+  if (bookmark !== undefined && typeof bookmark !== 'string') {
+    console.warn('OriginMarker: Bookmark ID from storage is not a string. Resetting.');
+    bookmark = undefined;
+  }
 
   let storeValue = await getDataLocal('store');
   if (!['sync', 'local', 'session'].includes(storeValue)) {
@@ -54,6 +58,10 @@ async function start() {
     await initBookmark();
   }
   mode = await getDataLocal('mode');
+  if (mode !== undefined && typeof mode !== 'string') {
+    console.warn('OriginMarker: Mode from storage is not a string. Resetting.');
+    mode = undefined;
+  }
   await setMode(mode);
   resolveInitialization();
   checkOrigin();
@@ -264,11 +272,20 @@ async function setMode(data) {
         salt = fetchedSalt;
         saltSuccessfullyHandled = true;
       } else {
-        if (fetchedSalt !== undefined) {
+        // Salt is not a valid non-empty string. Determine why.
+        if (fetchedSalt === undefined) {
+          // Salt not found, no specific warning before generation.
+        } else if (typeof fetchedSalt !== 'string') {
+          // Salt is defined but not a string
+          console.warn(`OriginMarker: Salt from storage is not a string (type: ${typeof fetchedSalt}). Will attempt to generate new salt.`);
+        } else {
+          // Salt is an empty string
           console.warn(
             `OriginMarker: Invalid salt found in storage (type: ${typeof fetchedSalt}, value: '${fetchedSalt}'). Generating new salt.`
           );
         }
+
+        // Common path for generating new salt
         const newSalt = crypto.randomUUID();
         try {
           await setData('salt', newSalt);
@@ -320,6 +337,10 @@ async function setMarker(origin) {
   const key = '_' + hash;
 
   var marker = await getData(key);
+  if (marker !== undefined && typeof marker !== 'string') {
+    console.warn(`OriginMarker: Custom marker for key ${key} is not a string. Ignoring.`);
+    marker = undefined;
+  }
   if (marker === undefined) {
     if (auto === true && origin !== null) {
       marker = encoding(hash);
