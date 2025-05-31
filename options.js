@@ -209,14 +209,15 @@ async function main() {
       try {
         await setDataLocal('store', store.value);
         showCustomConfirmModal(
-          "Storage area preference saved to '" +
+          "Your storage preference will be saved to '" +
             store.value +
-            "'. This will be used for future operations. A full extension reload will be done for all parts to reflect this change immediately.",
-          false,
-          null
+            "'. The extension will reload to apply this change. Click Confirm to proceed.",
+          true, // Changed to true to show Cancel button
+          () => { // New function for onConfirmAction
+            chrome.runtime.reload();
+            location.reload(true);
+          }
         );
-        chrome.runtime.reload();
-        location.reload(true);
       } catch (error) {
         showCustomConfirmModal(
           'Failed to save storage preference. Please try again.',

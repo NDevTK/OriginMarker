@@ -22,3 +22,7 @@ It will be different emojis per origin then other users.
 # Manual only (ID: \*\*)
 
 Markers will not get a automatic value.
+
+# Security Policy
+
+For information on how security is handled in this project, please review our [Security Policy](security.md).
