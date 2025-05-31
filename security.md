@@ -2,7 +2,7 @@
 
 ## 1. Introduction & Architecture
 
-This document reflects the security state of OriginMarker after an initial audit and subsequent hardening cycles. Recent updates from these review and hardening cycles have further addressed error handling, state consistency, and input validation, and fixed specific bugs related to storage interaction.
+This document reflects the security state of OriginMarker after an initial audit and subsequent hardening cycles. Recent updates from these review and hardening cycles have further addressed error handling, state consistency, and input validation, and fixed specific bugs related to storage interaction; additional recent hardening has further enhanced robustness through stricter type validation for all critical data retrieved from storage and by applying defensive coding practices for internal data handling (such as for marker encoding alphabets).
 
 ## GitHub Actions CI/CD Security
 
@@ -49,6 +49,7 @@ The `build.yml` workflow includes a step that automatically formats code using P
 
 - **Salt Value Validation:** The logic in `background.js` (`setMode`) for handling the `salt` fetched from storage has been improved. It now regenerates the salt not only if it's `undefined`, but also if it's `null`, an empty string, or not a string type. This ensures a valid, non-empty salt is always used for auto-marker generation, logging a warning if an invalid stored salt was encountered and corrected.
 - **Storage Type Validation:** The chosen storage type (`store` variable: 'sync', 'local', or 'session'), which dictates where the salt and other extension data are stored, is now validated upon loading from `chrome.storage.local` in both `background.js` and `options.js`. If an invalid value is found, it defaults to 'sync', and this correction is persisted. This enhances robustness against corrupted configuration.
+  - **Broader Stored Data Type Validation:** Beyond salt and storage type, additional type validation has been implemented in `background.js` for other critical data loaded from storage. This includes ensuring the `bookmark` ID, user `mode`, and custom marker strings are of the expected string type. If malformed data (e.g., an incorrect type) is retrieved, a warning is logged, and the data is typically disregarded or reset to a default/undefined state, relying on subsequent logic to re-initialize or handle the absence of valid data. This further enhances robustness against potential data corruption in `chrome.storage`.
 
 ### General Error Handling
 
@@ -83,6 +84,7 @@ The `build.yml` workflow includes a step that automatically formats code using P
   **Further Review (Post-Initial Audit):**
   - The `base2base` algorithm was re-verified and found to be a standard, logically sound implementation for its purpose.
   - The processing of the `emoji` array in `static.js` by `base2base` results in an alphabet composed of individual Unicode code points. This means that complex emojis (grapheme clusters made of multiple code points) are effectively broken down into these constituent points for the purpose of the destination alphabet. While this impacts the visual composition of the generated marker (it's an alphabet of individual code points, not necessarily whole visual emojis), the process is deterministic and not a security concern. The `source` (hex) alphabet is correctly defined and used.
+  - As a minor defense-in-depth measure, the initialization of the `base2base` encoding function in `background.js` now uses defensive copies of the `source` and `emoji` alphabet arrays (i.e., `base2base([...source], [...emoji])`). This ensures that the function operates on a snapshot of these arrays, protecting against highly unlikely scenarios where the global alphabet arrays might be accidentally modified before `base2base` is initialized.
 
 ## 3. UI/UX and User Comprehension Issues
 
@@ -148,6 +150,8 @@ The `build.yml` workflow includes a step that automatically formats code using P
 - **Status: ADDRESSED.** Improve Reset Clarity: The reset button text in `options.html` has been changed to "Clear All Extension Data (Resets Markers & Salt)". Additionally, `options.js` now implements a **custom modal dialog** (using HTML, CSS, and JavaScript within the options page) that appears when the reset button is clicked. This dialog details the irreversible nature of the action, specifying that it clears all settings, custom markers, and the unique salt, which will alter all automatic markers and may necessitate reconfiguration of any placeholder bookmark. The completion message has also been made more specific.
 - **Status: ADDRESSED.** Explain Emoji Meanings and Curate Emoji List: A disclaimer has been added to `options.html` stating that emoji markers are for origin differentiation only and do not imply security endorsement or website status. Furthermore, the emoji list in `static.js` has been curated to remove symbols that could be easily misinterpreted as security indicators or warnings, and to remove duplicate entries.
 - **Status: ADDRESSED.** Explain `*` Suffix: An explanation has been added to `options.html` detailing that the `*` suffix on markers indicates they are system-managed and that user-set markers should not end with `*` to be saved as custom.
+
+**Overall UI Clarity Enhancement:** Beyond the specific points above, the entire `options.html` page has undergone a comprehensive review and iterative refinement of its textual content. This process has significantly improved the clarity, accuracy, and user-friendliness of all instructions and explanations, particularly concerning the setup process, custom marker management, the meaning and implications of the 'salt', the nuances of different storage area choices, and the behavior of automatic versus manual modes. These enhancements aim to empower users to make informed decisions and operate the extension securely and effectively.
 
 ### Error Handling & State Consistency
 
