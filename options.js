@@ -203,7 +203,9 @@ async function main() {
         // For now, an alert is used as it's less disruptive.
         chrome.runtime.reload();
       } catch (error) {
-        showCustomConfirmModal('Failed to save storage preference. Please try again.');
+        showCustomConfirmModal(
+          'Failed to save storage preference. Please try again.'
+        );
       }
     };
   } else {
