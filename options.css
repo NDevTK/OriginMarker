@@ -40,6 +40,7 @@ body {
 .modal-content p {
   margin-bottom: 20px; /* Space between text and buttons */
   line-height: 1.6;
+  color: #333; /* Dark grey for better contrast on light modal background */
 }
 
 .modal-buttons button {
@@ -71,4 +72,19 @@ body {
 
 .warning-text {
   color: #8b0000;
+}
+
+/* Link Styles for better visibility on dark background */
+a {
+  color: #66b2ff; /* A light blue color */
+  text-decoration: underline;
+}
+
+a:visited {
+  color: #99ccff; /* A slightly lighter or different shade for visited links */
+}
+
+a:hover {
+  color: #cce5ff; /* A very light blue or white for hover, for clear feedback */
+  text-decoration: none;
 }

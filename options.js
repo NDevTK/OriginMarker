@@ -15,22 +15,9 @@ function showCustomConfirmModal(message) {
   if (confirmModalTextElement && customConfirmModal) {
     confirmModalTextElement.textContent = message;
     customConfirmModal.style.display = 'block';
-  } else {
-    console.error(
-      'Custom modal interactive elements (text display or main container) not found. Check IDs in options.html and options.js.'
-    );
-    // Fallback to window.confirm if modal elements are not found, as a last resort.
-    if (
-      window.confirm(
-        message +
-          '\n\n(Critical: Custom modal UI failed to display. Falling back to browser confirmation.)'
-      )
-    ) {
-      proceedWithReset().catch((err) =>
-        console.error('Error during fallback reset:', err)
-      );
-    }
   }
+  // Removed fallback to window.confirm
+  // If modal elements are not found, an error will be logged in the console.
 }
 
 function hideCustomConfirmModal() {
@@ -53,7 +40,7 @@ async function proceedWithReset() {
           reset.innerText = 'Clear All Extension Data (Resets Markers & Salt)';
       }, 3000);
     } else {
-      alert(
+      showCustomConfirmModal(
         'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.'
       );
     }
@@ -73,7 +60,7 @@ async function proceedWithReset() {
       }, 3000);
     } else {
       // This case implies reset is null
-      alert(
+      showCustomConfirmModal(
         'OriginMarker Options: Reset button is missing. Cannot proceed with reset.'
       );
     }
@@ -187,7 +174,7 @@ async function main() {
   if (reset) {
     reset.onclick = () => {
       if (!store || !store.value) {
-        alert(
+        showCustomConfirmModal(
           'Storage area setting is missing. Please refresh or select a storage area.'
         );
         return;
@@ -207,16 +194,16 @@ async function main() {
     store.onchange = async () => {
       try {
         await setDataLocal('store', store.value);
-        alert(
+        showCustomConfirmModal(
           "Storage area preference saved to '" +
             store.value +
             "'. This will be used for future operations. A full extension reload might be needed for all parts to reflect this change immediately."
         );
         // Consider if chrome.runtime.reload() is desired here.
         // For now, an alert is used as it's less disruptive.
-        // chrome.runtime.reload();
+        chrome.runtime.reload();
       } catch (error) {
-        alert('Failed to save storage preference. Please try again.');
+        showCustomConfirmModal('Failed to save storage preference. Please try again.');
       }
     };
   } else {
@@ -245,7 +232,7 @@ async function main() {
 // Run the main initialization logic
 main().catch((error) => {
   console.error('Critical error during options page initialization:', error);
-  alert(
+  showCustomConfirmModal(
     'The options page encountered a critical error during startup. Some features may not work correctly. Please try refreshing the page or contacting support if the issue persists.'
   );
 });
