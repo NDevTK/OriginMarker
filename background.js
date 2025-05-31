@@ -362,14 +362,15 @@ async function setMarker(origin) {
   // Origin changed during the marker calculation
   if (pending_origin !== origin) return;
 
-  await chrome.bookmarks
-    .update(bookmark, {
+  try {
+    await chrome.bookmarks.update(bookmark, {
       title: marker
-    })
-    .catch((error) => {
-      console.error('Error updating bookmark:', error);
     });
-  active_origin = origin;
+    active_origin = origin; // Only set on success
+  } catch (error) {
+    console.error('Error updating bookmark:', error);
+    // active_origin remains unchanged, so a retry is possible if the origin is checked again
+  }
 }
 
 async function checkOrigin() {
