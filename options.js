@@ -207,23 +207,32 @@ async function main() {
   if (store) {
     store.onchange = async () => {
       try {
-        await setDataLocal('store', store.value);
+        await setDataLocal('store', store.value); // Save the preference
+        // First dialog: Confirms saving and initial extension reload
         showCustomConfirmModal(
           "Your storage preference will be saved to '" +
             store.value +
-            "'. The extension will reload to apply this change. Click Confirm to proceed.",
-          true, // Changed to true to show Cancel button
+            "'. The extension will reload first. After you dismiss a notification, the page will then reload to apply this change. Click Confirm to proceed.",
+          true, // Show Confirm and Cancel buttons
           () => {
-            // New function for onConfirmAction
-            chrome.runtime.reload();
-            location.reload(true);
+            // Action for the first dialog's "Confirm"
+            chrome.runtime.reload(); // Reload the extension
+            // Second dialog: Notifies about page reload
+            showCustomConfirmModal(
+              "The extension has reloaded. Click OK to reload the page.",
+              false, // Show only "Confirm" (which will act as an "OK" button)
+              () => {
+                // Action for the second dialog's "OK"
+                location.reload(true); // Reload the page
+              }
+            );
           }
         );
       } catch (error) {
         showCustomConfirmModal(
           'Failed to save storage preference. Please try again.',
-          false,
-          null
+          false, // Show only "Confirm" (acting as "OK") for error messages
+          null // No action on confirm for the error message itself
         );
       }
     };
