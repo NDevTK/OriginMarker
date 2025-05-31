@@ -11,6 +11,7 @@ var confirmModalConfirmButton;
 var cancelModalCancelButton;
 
 let currentOnConfirmAction = null;
+let lastConfirmedStorageValue; // To store the last saved storage preference
 
 // --- Modal Helper Functions ---
 function showCustomConfirmModal(message, isConfirmation, onConfirmAction) {
@@ -169,6 +170,7 @@ async function main() {
         store.value = 'sync';
         await setDataLocal('store', 'sync');
       }
+      lastConfirmedStorageValue = store.value; // Initialize with the loaded or default value
     } else {
       console.error(
         "Store select element (id='store') not found during main init."
@@ -179,7 +181,10 @@ async function main() {
       'Failed to initialize storage preference from local storage:',
       error
     );
-    if (store) store.value = 'sync'; // Fallback default
+    if (store) {
+      store.value = 'sync'; // Fallback default
+      lastConfirmedStorageValue = store.value; // Initialize with the fallback default value
+    }
   }
 
   // Event listener for the main "Reset" button
@@ -215,7 +220,9 @@ async function main() {
           true, // Show Confirm and Cancel buttons
           async () => {
             // Action for the dialog's "Confirm"
-            await setDataLocal('store', store.value); // Save the preference
+            const newStoreValue = store.value; // Capture before potential async ops
+            await setDataLocal('store', newStoreValue); // Save the preference
+            lastConfirmedStorageValue = newStoreValue; // Update on successful save
             try {
               chrome.runtime.reload(); // Reload the extension
             } catch {}
@@ -249,6 +256,19 @@ async function main() {
 
   if (cancelModalCancelButton) {
     cancelModalCancelButton.onclick = () => {
+      // Check if the modal was for the store change confirmation
+      // This can be inferred if currentOnConfirmAction is not the reset action
+      // A more robust way would be to have specific flags or check the message content if needed.
+      // For now, we assume any cancel during options page might need to revert store.value if it changed.
+      if (store && store.value !== lastConfirmedStorageValue) {
+        // Check if the current store.value is different from the last confirmed one
+        // This implies the user changed the dropdown but hasn't confirmed yet.
+        const previousValue = store.value; // Value before reverting
+        store.value = lastConfirmedStorageValue; // Revert to the last saved value
+        console.log(
+          `Store selection reverted from ${previousValue} to ${lastConfirmedStorageValue} due to cancel.`
+        );
+      }
       hideCustomConfirmModal();
     };
   } else {
