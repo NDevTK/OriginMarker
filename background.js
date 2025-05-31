@@ -25,7 +25,9 @@ let currentPlaceholderAbortController = null;
 async function start() {
   bookmark = await getDataLocal('bookmark');
   if (bookmark !== undefined && typeof bookmark !== 'string') {
-    console.warn('OriginMarker: Bookmark ID from storage is not a string. Resetting.');
+    console.warn(
+      'OriginMarker: Bookmark ID from storage is not a string. Resetting.'
+    );
     bookmark = undefined;
   }
 
@@ -277,7 +279,9 @@ async function setMode(data) {
           // Salt not found, no specific warning before generation.
         } else if (typeof fetchedSalt !== 'string') {
           // Salt is defined but not a string
-          console.warn(`OriginMarker: Salt from storage is not a string (type: ${typeof fetchedSalt}). Will attempt to generate new salt.`);
+          console.warn(
+            `OriginMarker: Salt from storage is not a string (type: ${typeof fetchedSalt}). Will attempt to generate new salt.`
+          );
         } else {
           // Salt is an empty string
           console.warn(
@@ -338,7 +342,9 @@ async function setMarker(origin) {
 
   var marker = await getData(key);
   if (marker !== undefined && typeof marker !== 'string') {
-    console.warn(`OriginMarker: Custom marker for key ${key} is not a string. Ignoring.`);
+    console.warn(
+      `OriginMarker: Custom marker for key ${key} is not a string. Ignoring.`
+    );
     marker = undefined;
   }
   if (marker === undefined) {

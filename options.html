@@ -10,8 +10,9 @@
     <h1>How to Setup OriginMarker</h1>
     <p>
       To get started, OriginMarker needs you to designate a specific bookmark.
-      The extension will then change this bookmark's <strong>title</strong> to display unique visual
-      markers based on the website you are currently viewing.
+      The extension will then change this bookmark's <strong>title</strong> to
+      display unique visual markers based on the website you are currently
+      viewing.
     </p>
 
     <h2>Steps:</h2>
@@ -26,14 +27,13 @@
         <ul>
           <li>
             To enable <strong>Automatic Mode</strong> (OriginMarker generates a
-            unique emoji marker for each website origin): Change the bookmark's name
-            to exactly <code>*</code> (a single asterisk) and save it.
+            unique emoji marker for each website origin): Change the bookmark's
+            name to exactly <code>*</code> (a single asterisk) and save it.
           </li>
           <li>
             To enable <strong>Manual-Only Mode</strong> (OriginMarker displays a
-            generic marker, customizable per site):
-            Change the bookmark's name to exactly <code>**</code> (two
-            asterisks) and save it.
+            generic marker, customizable per site): Change the bookmark's name
+            to exactly <code>**</code> (two asterisks) and save it.
           </li>
         </ul>
       </li>
@@ -51,28 +51,46 @@
     </p>
     <h1 id="how-to-use-custom-markers">How to Use Custom Markers</h1>
     <p>
-      Once OriginMarker is set up with your designated bookmark, you can customize its displayed marker for specific websites:
+      Once OriginMarker is set up with your designated bookmark, you can
+      customize its displayed marker for specific websites:
     </p>
     <ul>
       <li>
-        <strong>Setting a Custom Marker:</strong> While you are on a website for which you want a custom marker, simply find your designated OriginMarker bookmark and edit its title to your desired text (e.g., "My Work Email", "Favorite News"). The extension will save this title as the custom marker for that specific website's origin.
+        <strong>Setting a Custom Marker:</strong> While you are on a website for
+        which you want a custom marker, simply find your designated OriginMarker
+        bookmark and edit its title to your desired text (e.g., "My Work Email",
+        "Favorite News"). The extension will save this title as the custom
+        marker for that specific website's origin.
       </li>
       <li>
-        <strong>Removing a Custom Marker:</strong> To remove a custom marker for the current website and revert to the automatic (emoji) or generic marker, edit the OriginMarker bookmark's title and make it completely empty. Save the empty title.
+        <strong>Removing a Custom Marker:</strong> To remove a custom marker for
+        the current website and revert to the automatic (emoji) or generic
+        marker, edit the OriginMarker bookmark's title and make it completely
+        empty. Save the empty title.
       </li>
       <li>
-        <strong>Mode Persistence:</strong> Setting or removing a custom marker does not change your overall mode (Automatic or Manual-Only). If you are in Automatic mode, removing a custom marker will revert to the unique emoji for that site.
+        <strong>Mode Persistence:</strong> Setting or removing a custom marker
+        does not change your overall mode (Automatic or Manual-Only). If you are
+        in Automatic mode, removing a custom marker will revert to the unique
+        emoji for that site.
       </li>
       <li>
-        <strong>Scope:</strong> Custom markers are specific to the website origin (e.g., "https://www.example.com") where you set them.
+        <strong>Scope:</strong> Custom markers are specific to the website
+        origin (e.g., "https://www.example.com") where you set them.
       </li>
     </ul>
     <h1>Automatic mode (ID: *)</h1>
     <p>
-      This mode displays unique, randomly chosen emoji markers for each website origin, ensuring your markers differ from those of other OriginMarker users.
+      This mode displays unique, randomly chosen emoji markers for each website
+      origin, ensuring your markers differ from those of other OriginMarker
+      users.
     </p>
     <p>
-      To achieve this uniqueness, Automatic mode uses a randomly generated secret key (called a "salt") that is unique to your OriginMarker setup. This salt is combined with the website's origin to create the distinct emoji marker. The security of this salt is important, as explained in the "Storage Area Warning" below.
+      To achieve this uniqueness, Automatic mode uses a randomly generated
+      secret key (called a "salt") that is unique to your OriginMarker setup.
+      This salt is combined with the website's origin to create the distinct
+      emoji marker. The security of this salt is important, as explained in the
+      "Storage Area Warning" below.
     </p>
     <p>
       <strong>Emoji Markers:</strong> Please note that the emoji markers
@@ -89,7 +107,11 @@
     </p>
     <h1>Manual only (ID: **)</h1>
     <p>
-      In Manual-Only mode, OriginMarker will display a generic marker text (e.g., "Marker*") for all websites by default. It will not automatically generate unique emoji markers. You will need to set <a href="#how-to-use-custom-markers">custom markers</a> for any specific sites you want to identify differently.
+      In Manual-Only mode, OriginMarker will display a generic marker text
+      (e.g., "Marker*") for all websites by default. It will not automatically
+      generate unique emoji markers. You will need to set
+      <a href="#how-to-use-custom-markers">custom markers</a> for any specific
+      sites you want to identify differently.
     </p>
     <button id="reset">Clear All Extension Data (Resets Markers & Salt)</button>
     <label for="store">Storage area:</label>
@@ -99,22 +121,38 @@
       <option value="session">Session</option>
     </select>
     <p>
-      <strong>Storage Area for Markers & Salt:</strong> Choose where OriginMarker stores your <strong>custom marker names</strong> and the <strong>unique 'salt'</strong> (the secret key for Automatic mode emojis):
+      <strong>Storage Area for Markers & Salt:</strong> Choose where
+      OriginMarker stores your <strong>custom marker names</strong> and the
+      <strong>unique 'salt'</strong> (the secret key for Automatic mode emojis):
     </p>
     <ul>
       <li>
-        <strong>Sync:</strong> Convenient for accessing this data across devices where you're signed into Chrome.
-        <strong style="color: #8b0000;">Warning: If your Google account is compromised, your 'salt' could also be accessed. This might allow someone to identify which websites correspond to your emoji markers if they also have access to your bookmarks.</strong>
+        <strong>Sync:</strong> Convenient for accessing this data across devices
+        where you're signed into Chrome.
+        <strong style="color: #8b0000"
+          >Warning: If your Google account is compromised, your 'salt' could
+          also be accessed. This might allow someone to identify which websites
+          correspond to your emoji markers if they also have access to your
+          bookmarks.</strong
+        >
       </li>
       <li>
-        <strong>Local:</strong> Keeps this data only on this device. This enhances privacy regarding the 'salt' if your Google account is compromised, but your custom markers and salt will not be synced.
+        <strong>Local:</strong> Keeps this data only on this device. This
+        enhances privacy regarding the 'salt' if your Google account is
+        compromised, but your custom markers and salt will not be synced.
       </li>
       <li>
-        <strong>Session:</strong> Similar to Local, but this data is cleared when the browser session ends (e.g., when you close all Chrome windows). Useful for temporary privacy.
+        <strong>Session:</strong> Similar to Local, but this data is cleared
+        when the browser session ends (e.g., when you close all Chrome windows).
+        Useful for temporary privacy.
       </li>
     </ul>
     <p>
-      <em>(Core settings like your designated OriginMarker bookmark ID and the chosen operating mode are always stored locally on this device and are not affected by the choice above.)</em>
+      <em
+        >(Core settings like your designated OriginMarker bookmark ID and the
+        chosen operating mode are always stored locally on this device and are
+        not affected by the choice above.)</em
+      >
     </p>
 
     <!-- Custom Confirmation Modal -->
