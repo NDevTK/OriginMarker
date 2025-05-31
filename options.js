@@ -10,11 +10,19 @@ var confirmModalTextElement; // Renamed to avoid conflict
 var confirmModalConfirmButton;
 var cancelModalCancelButton;
 
+let currentOnConfirmAction = null;
+
 // --- Modal Helper Functions ---
-function showCustomConfirmModal(message) {
+function showCustomConfirmModal(message, isConfirmation, onConfirmAction) {
+  currentOnConfirmAction = onConfirmAction || null; // Store the callback
   if (confirmModalTextElement && customConfirmModal) {
     confirmModalTextElement.textContent = message;
     customConfirmModal.style.display = 'block';
+    if (cancelModalCancelButton) {
+      cancelModalCancelButton.style.display = isConfirmation
+        ? 'inline-block'
+        : 'none';
+    }
   }
   // Removed fallback to window.confirm
   // If modal elements are not found, an error will be logged in the console.
@@ -41,7 +49,9 @@ async function proceedWithReset() {
       }, 3000);
     } else {
       showCustomConfirmModal(
-        'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.'
+    'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.',
+    false,
+    null
       );
     }
     return;
@@ -61,7 +71,9 @@ async function proceedWithReset() {
     } else {
       // This case implies reset is null
       showCustomConfirmModal(
-        'OriginMarker Options: Reset button is missing. Cannot proceed with reset.'
+        'OriginMarker Options: Reset button is missing. Cannot proceed with reset.',
+        false,
+        null
       );
     }
     return;
@@ -175,7 +187,9 @@ async function main() {
     reset.onclick = () => {
       if (!store || !store.value) {
         showCustomConfirmModal(
-          'Storage area setting is missing. Please refresh or select a storage area.'
+          'Storage area setting is missing. Please refresh or select a storage area.',
+          false,
+          null
         );
         return;
       }
@@ -183,7 +197,7 @@ async function main() {
         'Are you sure you want to clear all extension data for the selected storage area (' +
         store.value +
         ")?\n\nThis is irreversible and will clear all settings, custom markers, and the unique salt.\nThis means all automatic markers will change, and if you were using a specific bookmark as a placeholder, you might need to reconfigure it by creating/renaming a bookmark with '*' or '**' as its title.\n\nDo you want to proceed?";
-      showCustomConfirmModal(confirmationMessage);
+      showCustomConfirmModal(confirmationMessage, true, proceedWithReset);
     };
   } else {
     console.error("Reset button (id='reset') not found.");
@@ -197,12 +211,17 @@ async function main() {
         showCustomConfirmModal(
           "Storage area preference saved to '" +
             store.value +
-            "'. This will be used for future operations. A full extension reload is done for all parts to reflect this change immediately."
+            "'. This will be used for future operations. A full extension reload is done for all parts to reflect this change immediately.",
+          false,
+          null
         );
         chrome.runtime.reload();
+        location.reload(true);
       } catch (error) {
         showCustomConfirmModal(
-          'Failed to save storage preference. Please try again.'
+          'Failed to save storage preference. Please try again.',
+          false,
+          null
         );
       }
     };
@@ -214,7 +233,10 @@ async function main() {
   if (confirmModalConfirmButton) {
     confirmModalConfirmButton.onclick = async () => {
       hideCustomConfirmModal();
-      await proceedWithReset();
+      if (typeof currentOnConfirmAction === 'function') {
+        await currentOnConfirmAction(); // Await if it's an async function like proceedWithReset
+        currentOnConfirmAction = null; // Clear after execution
+      }
     };
   } else {
     console.error("Modal Confirm button (id='confirmModalButton') not found.");
@@ -233,6 +255,8 @@ async function main() {
 main().catch((error) => {
   console.error('Critical error during options page initialization:', error);
   showCustomConfirmModal(
-    'The options page encountered a critical error during startup. Some features may not work correctly. Please try refreshing the page or contacting support if the issue persists.'
+    'The options page encountered a critical error during startup. Some features may not work correctly. Please try refreshing the page or contacting support if the issue persists.',
+    false,
+    null
   );
 });
