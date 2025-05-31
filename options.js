@@ -213,7 +213,8 @@ async function main() {
             store.value +
             "'. The extension will reload to apply this change. Click Confirm to proceed.",
           true, // Changed to true to show Cancel button
-          () => { // New function for onConfirmAction
+          () => {
+            // New function for onConfirmAction
             chrome.runtime.reload();
             location.reload(true);
           }
