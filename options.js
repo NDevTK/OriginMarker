@@ -83,9 +83,16 @@ async function proceedWithReset() {
   reset.disabled = true;
   reset.innerText = 'Clearing...';
   try {
-    await chrome.storage[store.value].clear();
-    reset.innerText =
-      'All data for the ' + store.value + ' storage area has been cleared.';
+    await new Promise((resolve, reject) => {
+      chrome.storage[store.value].clear(function() {
+        if (chrome.runtime.lastError) {
+          console.error('OriginMarker Options: Error clearing storage (area: ' + store.value + '):', chrome.runtime.lastError.message);
+          return reject(chrome.runtime.lastError);
+        }
+        resolve();
+      });
+    });
+    reset.innerText = 'All data for the ' + store.value + ' storage area has been cleared.';
   } catch (error) {
     console.error(
       'OriginMarker Options: Error clearing storage (area: ' +
