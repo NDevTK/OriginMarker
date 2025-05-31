@@ -75,6 +75,13 @@ chrome.windows.onFocusChanged.addListener(checkOrigin);
 chrome.bookmarks.onChanged.addListener(onBookmarkChange);
 chrome.bookmarks.onRemoved.addListener(onBookmarkRemove);
 
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (sender.origin !== location.origin) return
+  if (message === 'refresh') {
+    start();
+  }
+});
+
 // On install display the options page to guide the user
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
