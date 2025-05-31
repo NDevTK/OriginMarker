@@ -49,9 +49,9 @@ async function proceedWithReset() {
       }, 3000);
     } else {
       showCustomConfirmModal(
-    'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.',
-    false,
-    null
+        'OriginMarker Options: Store select element (store) is missing. Cannot proceed with reset.',
+        false,
+        null
       );
     }
     return;
