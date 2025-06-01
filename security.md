@@ -6,7 +6,11 @@
 
 This document reflects the security state of OriginMarker after an initial audit and subsequent hardening cycles. Recent updates from these review and hardening cycles have further addressed error handling, state consistency, and input validation, and fixed specific bugs related to storage interaction; additional recent hardening has further enhanced robustness through stricter type validation for all critical data retrieved from storage and by applying defensive coding practices for internal data handling (such as for marker encoding alphabets). **A subsequent review re-verified that the hardening measures and mitigations detailed in this document are implemented in the codebase.**
 
-Further research into advanced Chrome extension security threats [cite: 1, 2] has identified additional potential attack vectors and corresponding mitigation strategies, which are detailed in Sections 4 and 5. Modern threats increasingly leverage subtle browser behaviors, exploit asynchronous operations, and manipulate user trust through deceptive UIs[cite: 3].
+The digital landscape is witnessing a **significant escalation in the sophistication and stealth of attacks targeting browser extensions**[cite: 1]. Further research into advanced Chrome extension security threats [cite: 1, 2] has identified additional potential attack vectors and corresponding mitigation strategies, which are detailed in Sections 4 and 5. Modern threats increasingly leverage subtle browser behaviors, exploit asynchronous operations, and manipulate user trust through deceptive UIs[cite: 3]. Threat actors are now **leveraging advanced techniques that exploit intricate aspects of browser functionality, developer ecosystems, and even human psychology**[cite: 2]. The analysis identifies **several key categories of advanced threats that extend beyond the scope of conventional security audits**[cite: 4]. These include **highly targeted supply chain compromises** that weaponize trusted development processes, **subtle side-channel and covert channel attacks** that leak sensitive data through unintended information flows, **increasingly deceptive user interface (UI) and social engineering tactics** that bypass human and automated defenses, **resource exhaustion attacks** designed to impact availability, and **vulnerabilities stemming from cryptographic weaknesses and complex inter-extension interactions**[cite: 5]. These attack types often **bypass standard security measures** and necessitate a deeper understanding of their underlying mechanisms for effective mitigation[cite: 6].
+
+Browser extensions, by their very nature, operate with elevated privileges and direct access to user Browse data, making them an attractive target for cybercriminals[cite: 7]. The extensive permissions often granted to extensions mean that a compromised add-on can lead to widespread data theft, session hijacking, ad injection, and even serve as a persistent foothold for further network infiltration[cite: 7, 4]. The inherent trust users place in these tools, often installed for productivity or convenience, represents a critical vulnerability that attackers actively exploit[cite: 8, 4].
+
+Conventional security audits typically focus on known vulnerabilities and common misconfigurations[cite: 9]. However, the rapid evolution of attack techniques, particularly in the supply chain and side-channel domains, means that an audit alone is insufficient[cite: 10]. Modern threats often leverage zero-day vulnerabilities—flaws unknown to the vendor—or employ sophisticated social engineering and multi-stage attacks designed to evade traditional security tools[cite: 11, 4]. Proactive threat intelligence is therefore essential[cite: 11].
 
 ### GitHub Actions CI/CD Security
 
@@ -57,7 +61,7 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 
 ### Manifest Configuration
 
-- **Permissions (`tabs`, `bookmarks`, `storage`):** Deemed appropriate and necessary for the extension's core functionality. No overly broad permissions requested.
+- **Permissions (`tabs`, `bookmarks`, `storage`):** Deemed appropriate and necessary for the extension's core functionality. No overly broad permissions requested. Adherence to the Principle of Least Privilege is crucial, as extensions requesting more privileges than necessary can lead to significant privacy risks if compromised[cite: 29, 141].
 - **Content Security Policy (CSP):**
   - ```json
     "extension_pages": "default-src 'none'; script-src 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests; block-all-mixed-content"
@@ -77,8 +81,8 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
   - **Synchronized Storage (`chrome.storage.sync`):** If a user's Google account is compromised, or their local Chrome profile data (which caches synced storage) is accessed by malware, the `salt` and custom markers can be exfiltrated . This would allow an attacker with additional access to the user's bookmarks to deanonymize auto-generated markers and expose custom marker content . `chrome.storage.sync` is not recommended for confidential user data as it is not encrypted by default .
   - **Local Storage (`chrome.storage.local`):** While using `local` or `session` storage mitigates cross-device exfiltration via sync, `chrome.storage.local` is **not encrypted by default** . Sophisticated malware gaining access to the user's local file system can directly read the salt and custom markers stored locally from the browser's profile directory . This can lead to complete deanonymization of auto-generated markers and exposure of custom markers , undermining privacy and utility . For truly sensitive data, local storage without additional client-side encryption carries significant risk if the user's system is compromised .
   - **Denial-of-Service (DoS) / Data Corruption via Storage Quota Exhaustion:** OriginMarker's storage can be targeted by a malicious co-installed extension with the `storage` permission. By repeatedly writing data or exceeding API rate limits, an attacker could cause OriginMarker's storage operations to fail . This could disrupt saving of custom markers, salt updates, or persistence of the bookmark ID, impairing functionality .
-    - `chrome.storage.sync`: Has a total quota of approximately 100 KB, an 8 KB per-item limit, a maximum of 512 items, and is rate-limited to 120 write operations per minute and 1800 per hour[cite: 177].
-    - `chrome.storage.local`: Has an approximate limit of 10 MB by default[cite: 177].
+    - `chrome.storage.sync`: Has a total quota of approximately 100 KB, an 8 KB per-item limit, a maximum of 512 items, and is rate-limited to 120 write operations per minute and 1800 per hour[cite: 177, 8].
+    - `chrome.storage.local`: Has an approximate limit of 10 MB by default[cite: 177, 8].
     - Exceeding quotas results in `runtime.lastError` being set .
 
 **Further Hardening (Post-Initial Audit):**
@@ -101,7 +105,7 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 - **Vulnerability:** Previously, if a storage operation (e.g., saving `salt`, `mode`, or `bookmark` ID) failed, the in-memory variables might have been updated regardless, leading to a **divergence between the extension's active state and its persisted state.** This could cause inconsistent behavior or reliance on settings that weren't actually saved.
 - **Mitigation:** The refactoring of `setMode` and `initBookmark` in `background.js` now ensures that in-memory state variables (`salt`, `mode`, `bookmark`) are **only updated _after_ the corresponding `chrome.storage.local.set` or `chrome.storage[store].set` operation successfully completes.** If a storage write operation fails, an error is logged, and the in-memory variable retains its previous value (either the last successfully persisted state or `undefined` if being initialized). This **prevents the in-memory state from reflecting unconfirmed changes, significantly improving state consistency.**
 - **Risk:** The primary risk of using incorrect `salt`, `mode`, or `bookmark` ID due to failed writes is now **substantially mitigated.** The extension will operate on the last known good configuration or fail to initialize critical components if initial setup cannot be persisted.
-- **`initBookmark` Re-entrancy Prevention:** The `initBookmark` and `onPlaceholder` functions have been refactored using `AbortController`. If `initBookmark` is called (e.g., due to rapid bookmark removals or other events) while a previous `onPlaceholder` operation is still awaiting user action (naming a bookmark `*` or `**`), the earlier `onPlaceholder` call is now aborted. This **prevents a potential race condition** where an older, user-abandoned placeholder bookmark ID could be erroneously persisted after a newer initialization sequence has already begun, further enhancing state consistency during setup.
+- **`initBookmark` Re-entrancy Prevention:** The `initBookmark` and `onPlaceholder` functions have been refactored using `AbortController`. If `initBookmark` is called (e.g., due to rapid bookmark removals or other events) while a previous `onPlaceholder` operation is still awaiting user action (naming a bookmark `*` or `**`), the earlier `onPlaceholder` call is now aborted. This **prevents a potential race condition** where an older, user-abandoned placeholder bookmark ID could be erroneously persisted after a newer initialization sequence has already begun, further enhancing state consistency during setup. This is important as race conditions can undermine cryptographic operations or lead to inconsistent state if not carefully managed[cite: 126, 127, 82].
 
 #### Stale `active_origin` in `onBookmarkChange`
 
@@ -118,7 +122,7 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 
 ### Marker Encoding (`base2base`)
 
-- **Note:** The `source` (hexadecimal characters) and `emoji` alphabets used by the `base2base` conversion function are fixed and publicly visible in `static.js`. The SHA-256 hash provides the cryptographic strength; the `base2base` conversion to emoji is **purely for obfuscation and visual distinction, not for security.**
+- **Note:** The `source` (hexadecimal characters) and `emoji` alphabets used by the `base2base` conversion function are fixed and publicly visible in `static.js`. The SHA-256 hash provides the cryptographic strength; the `base2base` conversion to emoji is **purely for obfuscation and visual distinction, not for security.** (See Section 4.10.3 for potential risks related to information loss in base conversion).
 - **Further Review (Post-Initial Audit):**
   - The `base2base` algorithm was **re-verified and found to be a standard, logically sound implementation** for its purpose.
   - The processing of the `emoji` array in `static.js` by `base2base` results in an alphabet composed of individual Unicode code points. This means that complex emojis (grapheme clusters made of multiple code points) are effectively broken down into these constituent points for the purpose of the destination alphabet. While this impacts the visual composition of the generated marker (it's an alphabet of individual code points, not necessarily whole visual emojis), the process is **deterministic and not a security concern.** The `source` (hex) alphabet is correctly defined and used.
@@ -138,13 +142,13 @@ This verification step is an additional layer of security. If an uploaded packag
 
 - **Clarity of Reset Function (`options.html`):**
   - **Issue:** The "Reset" button text ("Clear custom marker names", then "Done but feel free to click again :)") doesn't adequately explain that it also clears the `salt` (changing all auto-markers) and requires full re-setup.
-  - **Risk:** **Users might click it without understanding the full data loss and re-initialization implications.**
+  - **Risk:** **Users might click it without understanding the full data loss and re-initialization implications.** This is critical because users are often the weakest link and can be tricked by deceptive UI or social engineering tactics[cite: 5, 77].
 - **Setup Guidance (`options.html`):**
   - **Issue:** Minimal and potentially confusing setup instructions (e.g., "folder" vs. bookmark, reliance on implicit `onPlaceholder` mechanism).
   - **Risk:** **High likelihood of user error and misconfiguration during setup.**
 - **Misinterpretation of Emoji Meanings:**
   - **Issue:** The `emoji` array contains symbols (e.g., 🔒, ✅, ❓, ❗) users might associate with website security status, which the extension doesn't provide.
-  - **Risk:** **False sense of security or confusion about a site's trustworthiness based on the marker.**
+  - **Risk:** **False sense of security or confusion about a site's trustworthiness based on the marker.** Polymorphic attacks exploit such user trust in visual cues[cite: 77, 78].
 - **Meaning of `*` Suffix on Markers:**
   - **Issue:** The UI doesn't explain that the `*` suffix on auto-generated markers indicates they are automatic and affects how they are handled (as detailed in the `onBookmarkChange` clarification above).
   - **Risk:** **User confusion about marker appearance and behavior.**
@@ -157,9 +161,9 @@ This section details potential attack vectors, including those identified in the
 
 ### 4.1. Salt Exfiltration and Marker Deanonymization
 
-- **Scenario:** An attacker gains unauthorized access to the user's `chrome.storage.sync` data (e.g., through malware, compromised Google account ) or local Chrome profile files. The attacker also needs separate access to the user's bookmark data.
+- **Scenario:** An attacker gains unauthorized access to the user's `chrome.storage.sync` data (e.g., through malware, compromised Google account ) or local Chrome profile files. The attacker also needs separate access to the user's bookmark data. Browser extensions are high-value targets due to their elevated privileges and access to sensitive user data[cite: 7].
 - **Vector:** Retrieve `salt` (and custom markers). For auto-generated markers, use known `source`/`emoji` alphabets and `base2base` logic to map emoji markers back to origin hashes.
-- **Impact:** Deanonymization of auto-generated markers and exposure of custom markers, undermining privacy and utility .
+- **Impact:** Deanonymization of auto-generated markers and exposure of custom markers, undermining privacy and utility . Compromised extensions can lead to widespread data theft and session hijacking[cite: 7, 4].
 
 ### 4.2. Storage Exploitation by Co-installed Extensions or Local Malware
 
@@ -170,24 +174,36 @@ This section details potential attack vectors, including those identified in the
 - **Relevant OriginMarker Component(s) Affected:** `chrome.storage.sync`, `chrome.storage.local`, salt, custom markers .
 - **Severity:** High .
 
-#### 4.2.2. Denial-of-Service (DoS) or Data Corruption
+#### 4.2.2. Resource Exhaustion Attacks
+
+Resource exhaustion attacks aim to crash, hang, or otherwise interfere with a targeted program or system by depleting its available resources[cite: 59, 102].
 
 ##### Storage Quota Exhaustion
 
-- **Mechanism:** A malicious co-installed extension with `storage` permission repeatedly writes large amounts of data or exceeds `chrome.storage.sync` write operation limits (120 ops/min, 1800 ops/hour, ~100KB total, 8KB/item [cite: 177]) or fills `chrome.storage.local` (~10MB default [cite: 177]) .
-- **Potential Impact:** Functional disruption for OriginMarker, such as failure to save new custom markers, update the salt, or persist critical configuration, leading to degraded user experience or need for manual re-setup .
+- **Mechanism:** A malicious co-installed extension with `storage` permission repeatedly writes large amounts of data or exceeds `chrome.storage.sync` write operation limits (120 ops/min, 1800 ops/hour, ~100KB total, 8KB/item [cite: 177, 8]) or fills `chrome.storage.local` (~10MB default [cite: 177, 8]) . The IndexedDB API, for example, can be exploited to rapidly consume disk space if restrictions are insufficient (e.g., "disk flooding" attack)[cite: 63, 65, 105, 106]. localStorage can also be targeted[cite: 66, 106].
+- **Potential Impact:** Functional disruption for OriginMarker, such as failure to save new custom markers, update the salt, or persist critical configuration, leading to degraded user experience or need for manual re-setup . This can cause massive performance degradation and even system crashes[cite: 65, 106].
 - **Relevant OriginMarker Component(s) Affected:** `chrome.storage.sync`, `chrome.storage.local` .
 - **Severity:** Medium .
 
-##### JavaScript Infinite Loops and Browser Freezing
+##### Memory and File System Exhaustion (Broader Context)
+- **Mechanism:** Memory exhaustion can occur due to memory leaks in an extension, degrading browser performance or causing crashes[cite: 60, 103]. Attackers could craft inputs to trigger such leaks[cite: 103]. Heap buffer overflows in V8 or GPU frameworks can lead to memory corruption and arbitrary code execution[cite: 62, 104].
+- **Potential Impact:** Browser slowdown, unresponsiveness, or crashes[cite: 60, 103]. Arbitrary code execution if exploitable memory corruption occurs[cite: 62, 104].
+- **Relevant OriginMarker Component(s) Affected:** Background script, options page, any component handling complex data or numerous operations.
+- **Severity:** Medium to High (depending on exploitability).
 
-- **Mechanism:** Malicious JavaScript, potentially injected via compromised websites or other means, can create infinite loops (e.g., `while(1)`, continuous `location.reload()`) that freeze or crash the browser, consuming excessive CPU and memory[cite: 24, 182]. If such code is stored persistently (e.g., via `localStorage`), the attack can re-trigger[cite: 24].
-- **Potential Impact:** While primarily a browser-level DoS, if OriginMarker's content or background scripts interact with a compromised DOM or are not robustly isolated, their functionality could be impaired[cite: 61, 62]. An "event storm," such as rapid `tabs.onUpdated` events from a malicious page rapidly changing its URL[cite: 27, 64], could force OriginMarker's background script (if listening and performing non-trivial processing) into continuous activity, leading to resource exhaustion and a local DoS for the extension or browser[cite: 30, 65].
+##### JavaScript Infinite Loops and Browser Freezing / Event Storms
+- **Mechanism:** Malicious JavaScript, potentially injected via compromised websites or other means, can create infinite loops (e.g., `while(1)`, continuous `location.reload()`) that freeze or crash the browser, consuming excessive CPU and memory[cite: 24, 182]. If such code is stored persistently (e.g., via `localStorage`), the attack can re-trigger[cite: 24]. An "event storm," such as rapid `tabs.onUpdated` events from a malicious page rapidly changing its URL[cite: 27, 64], could force OriginMarker's background script (if listening and performing non-trivial processing) into continuous activity, leading to resource exhaustion and a local DoS for the extension or browser[cite: 30, 65].
+- **Potential Impact:** While primarily a browser-level DoS, if OriginMarker's content or background scripts interact with a compromised DOM or are not robustly isolated, their functionality could be impaired[cite: 61, 62]. Local DoS for the extension or user[cite: 75].
 - **Relevant OriginMarker Component(s) Affected:** Background script event listeners (e.g., for `tabs.onUpdated`), content scripts if interacting with compromised pages.
 - **Severity:** Medium (local DoS for extension/user).
 
-##### DNS Cache Poisoning via Resource Exhaustion
+##### Network Connection Saturation and API Rate Limit Bypasses
+- **Mechanism:** Malicious extensions can generate excessive network requests, saturating connections or bypassing API rate limits[cite: 110, 111]. This can disrupt user Browse, deny access to services, or contribute to DDoS campaigns[cite: 68, 112]. Chrome has HTTP throttling, but attackers may try to bypass it[cite: 70, 112]. Client-side controls for API abuse are unreliable[cite: 69, 116].
+- **Potential Impact:** Disruption of OriginMarker's functionality if it relies on backend APIs, service degradation, or costs for the service provider[cite: 69, 116].
+- **Relevant OriginMarker Component(s) Affected:** Any network communication, especially with backend APIs.
+- **Severity:** Medium to High (if APIs are critical).
 
+##### DNS Cache Poisoning via Resource Exhaustion
 - **Mechanism:** A malicious website could exhaust the ephemeral UDP port pool of the OS using WebRTC, disabling UDP port randomization and making the OS vulnerable to DNS cache poisoning[cite: 35, 67]. This redirects browser requests for legitimate domains to attacker-controlled IPs[cite: 38, 68].
 - **Potential Impact:** If OriginMarker relies on URL origin (e.g., `chrome.tabs.Tab.url` [cite: 27, 70]) for its marking functionality, a poisoned DNS cache could cause it to interact with a malicious site as if it were legitimate, bypassing protections or leading to incorrect marker application[cite: 69, 71, 72, 73].
 - **Relevant OriginMarker Component(s) Affected:** Origin determination logic, any security decisions based on URL/origin.
@@ -197,39 +213,58 @@ A summary of these resource exhaustion attack vectors:
 
 | Attack Vector            | Mechanism                                                                 | Immediate Impact                                              | Impact on OriginMarker                                                        |
 | ------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Storage Quota Exhaustion | Malicious extension fills `chrome.storage.sync` or `chrome.storage.local` | Storage operations fail                                       | Functional disruption, data loss, degraded UX                                 |
+| Storage Quota Exhaustion | Malicious extension fills `chrome.storage.sync` or `chrome.storage.local` [cite: 105, 106] | Storage operations fail                                       | Functional disruption, data loss, degraded UX                                 |
+| Memory Exhaustion        | Memory leaks, heap buffer overflows [cite: 60, 62, 103, 104]               | Browser slowdown, crash, potential RCE                        | Functional disruption, local DoS, potential compromise                        |
 | JavaScript Infinite Loop | `while(1)` or continuous `location.reload()` [cite: 24, 182]              | Browser freeze/crash, CPU/memory overload                     | Functional disruption, local DoS for user, performance degradation [cite: 75] |
 | Event Storm              | Rapid `tabs.onUpdated` events or similar [cite: 27, 64]                   | Extension unresponsiveness, system slowdown                   | Performance degradation, functional disruption, potential crash [cite: 75]    |
+| Network Saturation       | Excessive network requests, API rate limit bypass [cite: 110, 111, 116]     | Network disruption, service denial                            | Functional disruption if reliant on network/APIs                              |
 | DNS Cache Poisoning      | WebRTC UDP port exhaustion, DNS rebinding [cite: 35, 67]                  | DNS resolution redirection, browser accessing malicious sites | Bypassed origin checks, data exfiltration, user compromise [cite: 75]         |
 
-### 4.3. Covert Channels, Data Leakage, and Bookmark Manipulation
+### 4.3. Inter-Extension Communication, Covert Channels, and Data Leakage
 
-#### 4.3.1. Covert Data Exfiltration via Bookmark Title/URL Changes by Co-installed Extensions
+Chrome extensions can interact, creating vectors for data leakage and manipulation[cite: 2, 3, 141].
+
+#### 4.3.1. Cross-Extension Data Leakage and Manipulation
+- **Mechanism:**
+    - **Permissions Overreach:** Extensions requesting more privileges than needed grant excessive access[cite: 29, 141]. If compromised, they become significant risks.
+    - **Data Leakage:** Extensions might unintentionally send personal data or Browse activity to external servers without adequate security (e.g., sending URLs on tab updates without encryption/consent)[cite: 29, 142].
+    - **Insecure Communication:** Using HTTP instead of HTTPS for extension or server communication makes data vulnerable to interception[cite: 2, 143].
+    - **Code Injection:** Dynamically loading scripts from untrusted sources can lead to arbitrary code execution, data theft, or session hijacking[cite: 29, 144].
+    - **DOM Manipulation:** Malicious extensions can read/modify DOM, tamper with data displayed by other extensions/pages, or inject content[cite: 3, 145].
+- **Potential Impact:** If a co-installed extension is malicious:
+    1.  It could read OriginMarker's data if stored insecurely or exposed via UI[cite: 29, 147].
+    2.  It could manipulate OriginMarker's UI/data via script injection or DOM manipulation[cite: 3, 147].
+    3.  It could exploit inter-extension messaging if OriginMarker uses `chrome.runtime.onMessageExternal` without strict sender validation and data sanitization[cite: 2, 148].
+- **Relevant OriginMarker Component(s) Affected:** Storage, UI, inter-extension messaging.
+- **Severity:** High.
+
+#### 4.3.2. Covert Data Exfiltration via Bookmark Title/URL Changes by Co-installed Extensions
 
 - **Mechanism:** A malicious co-installed extension with `bookmarks` permission encodes sensitive data into the title or URL of OriginMarker's designated bookmark. If browser sync is enabled for bookmarks, this maliciously altered bookmark data is synchronized via the user's Google account . The `chrome.bookmarks.onChanged` event makes this data available .
 - **Potential Impact:** Unauthorized data exfiltration, bypassing traditional network monitoring, with OriginMarker acting as an unwitting data mule .
 - **Relevant OriginMarker Component(s) Affected:** Designated bookmark, `chrome.bookmarks.onChanged`, browser sync feature .
 - **Severity:** High .
 
-#### 4.3.2. Bookmark Spoofing and Visual Misdirection by Co-installed Extensions
+#### 4.3.3. Bookmark Spoofing and Visual Misdirection by Co-installed Extensions
 
-- **Mechanism:** A malicious co-installed extension with `bookmarks` permission creates or renames other bookmarks to visually mimic OriginMarker's auto-generated emoji markers or custom marker styles (e.g., using similar emoji sequences or titles) .
+- **Mechanism:** A malicious co-installed extension with `bookmarks` permission creates or renames other bookmarks to visually mimic OriginMarker's auto-generated emoji markers or custom marker styles (e.g., using similar emoji sequences or titles) . Attackers might also use disguised URLs or IDN spoofing to make malicious sites appear legitimate in bookmarks[cite: 58, 97].
 - **Potential Impact:** User confusion, desensitization to actual markers, or a false sense of security, aiding phishing attacks by undermining trust in OriginMarker's visual cues .
 - **Relevant OriginMarker Component(s) Affected:** User perception, general bookmark tree .
 - **Severity:** Medium .
 
-#### 4.3.3. Denial of Service / Annoyance via Rapid Bookmark Updates (by other extensions or user)
+#### 4.3.4. Denial of Service / Annoyance via Rapid Bookmark Updates (by other extensions or user)
 
 - **Scenario:** Another extension with `bookmarks` permission, or a user manually editing with extreme rapidity, changes the title of OriginMarker's designated bookmark very frequently.
 - **Vector:** Each eligible title change (not ending in `*`) on the designated bookmark triggers the `onBookmarkChange` handler in `background.js`. This handler performs cryptographic operations (SHA-256) and storage operations (`chrome.storage.sync` or `chrome.storage.local`) to save the custom marker.
 - **Impact:** If `chrome.storage.sync` is used, rapid operations can **exceed Chrome's rate limits**, causing subsequent storage attempts to fail. This would temporarily prevent new custom markers from being saved or cleared. Increased CPU usage due to repeated hashing. General operational unreliability for the custom marker feature.
 - **Severity: Low.** This does not directly compromise data integrity or confidentiality but can degrade user experience. (Note: Debouncing has been added to `onBookmarkChange` to mitigate this, as noted in Section 5).
 
-#### 4.3.4. Implicit Observation of Browser APIs for Covert Channels
+#### 4.3.5. Implicit Observation of Browser APIs for Covert Channels & Fingerprinting
 
 - **Mechanism:** Extensions with broad permissions like "tabs"[cite: 28], "bookmarks"[cite: 28], or "webRequest" [cite: 28] can implicitly observe global browser events[cite: 77, 78]. For instance, `chrome.tabs.onUpdated` fires on URL/title/status changes[cite: 27, 79], and `chrome.bookmarks.onChanged` fires for bookmark modifications[cite: 42, 79]. A co-installed malicious extension could passively observe events triggered by OriginMarker's actions (e.g., URL changes due to marking, bookmark interactions) to infer its internal state or user interactions without direct communication[cite: 80, 81]. This forms a behavioral fingerprinting covert channel[cite: 82, 83, 84].
-- **Potential Impact:** Inference of OriginMarker's state or user activity by a malicious extension.
-- **Relevant OriginMarker Component(s) Affected:** Actions triggering `tabs.onUpdated`, `bookmarks.onChanged`, `webRequest` events, `storage.onChanged`.
+- **Fingerprinting via Message Passing:** Attackers can discover installed extensions by sending messages and observing responses, especially if `externally_connectable` is not well-defined or if extensions listen to external messages[cite: 98, 152, 153]. This degrades user privacy[cite: 98].
+- **Potential Impact:** Inference of OriginMarker's state or user activity by a malicious extension. Identification of OriginMarker's presence.
+- **Relevant OriginMarker Component(s) Affected:** Actions triggering `tabs.onUpdated`, `bookmarks.onChanged`, `webRequest` events, `storage.onChanged`, `externally_connectable` manifest property.
 - **Severity:** Medium.
 
 Implicit data leakage channels via browser events:
@@ -241,14 +276,26 @@ Implicit data leakage channels via browser events:
 | `chrome.webRequest`          | Network request patterns (timing, size, destination) [cite: 54, 99]      | Specific internal processing, data fetched/sent by OriginMarker [cite: 99]               |
 | `chrome.storage.onChanged`   | Changes to stored items (key, old/new value) [cite: 8, 99]               | OriginMarker's internal configuration updates, user preference changes [cite: 99]        |
 
-#### 4.3.5. Inter-Process Communication (IPC) Vulnerabilities
+#### 4.3.6. Covert Channels (Deliberate Communication)
+- **Mechanism:** Covert channels deliberately exchange information bypassing security policies, often exploiting shared resources or timing variations[cite: 48, 69]. Unlike side-channels (unintended leakage), these are actively constructed for communication[cite: 48, 69]. Examples include exploiting SSD timing differences for high-capacity data transfer, even from within VMs[cite: 70, 71, 49].
+- **Potential Impact:** If OriginMarker were compromised, or a malicious co-installed extension sought to exfiltrate data, it could encode information into subtle timing variations of shared resources (disk I/O, CPU cache access) that OriginMarker or the browser uses[cite: 72, 73]. This bypasses traditional network monitoring[cite: 74, 75].
+- **Relevant OriginMarker Component(s) Affected:** Any interaction with shared system resources.
+- **Severity:** High.
+
+#### 4.3.7. History Poisoning
+- **Mechanism:** Malicious extensions or web pages inject harmful code/data into browser history titles. Vulnerable extensions displaying history (e.g., ` <script>alert(1)</script> ` in a title) can execute these payloads if not properly sanitized, leading to XSS or HTML injection[cite: 98, 150, 151].
+- **Potential Impact:** If OriginMarker were to display or process browser history titles without sanitization, it could be vulnerable.
+- **Relevant OriginMarker Component(s) Affected:** Any future functionality interacting with browser history.
+- **Severity:** Medium (if applicable).
+
+#### 4.3.8. Inter-Process Communication (IPC) Vulnerabilities
 
 - **Mechanism:** IPC enables communication between browser processes, extension processes, and content scripts[cite: 45, 88]. Vulnerabilities can arise from lack of authentication, unencrypted channels, or buffer overflows[cite: 45, 89]. Chrome extensions use message passing between content scripts (in isolated worlds [cite: 47]) and background service workers[cite: 47, 189]. If OriginMarker's internal message passing is not robust, a sophisticated attacker (e.g., with system access or exploiting a browser bug) could intercept/manipulate messages[cite: 90]. Even if messages are encrypted, data-dependent timing or resource usage patterns in IPC (e.g., message size/frequency linked to specific marker detection) could be observed by a co-located malicious process, forming a side-channel attack on IPC[cite: 92, 93, 94].
 - **Potential Impact:** Interception or manipulation of internal extension messages, or inference of sensitive information through IPC side-channels.
 - **Relevant OriginMarker Component(s) Affected:** Message passing between content scripts and background script.
 - **Severity:** Medium to High (depending on exploitability).
 
-#### 4.3.6. Risk of Sensitive Data Exfiltration by Other Co-Installed Extensions
+#### 4.3.9. Risk of Sensitive Data Exfiltration by Other Co-Installed Extensions
 
 - **Mechanism:** Malicious extensions are often designed to exfiltrate sensitive user data like Browse history, cookies, and credentials, frequently by requesting excessive permissions[cite: 1, 43, 96].
 - **Potential Impact:** Even if OriginMarker is secure, a co-installed malicious extension could exfiltrate data OriginMarker aims to protect. For instance, if OriginMarker marks sensitive URLs, another extension with history access could identify these marked URLs, bypassing OriginMarker's intent[cite: 97, 98].
@@ -256,6 +303,8 @@ Implicit data leakage channels via browser events:
 - **Severity:** Medium (as an indirect risk).
 
 ### 4.4. Visual Deception and UI/UX Impersonation Attacks
+
+Sophisticated deceptive UI and social engineering tactics exploit human reliance on visual cues and contextual credibility[cite: 165].
 
 #### 4.4.1. Homoglyph Spoofing of Origins and Markers
 
@@ -274,7 +323,7 @@ Implicit data leakage channels via browser events:
 
 #### 4.4.2. Invisible Character Injection (e.g., "Emoji Smuggling") in Custom Markers
 
-- **Mechanism:** An attacker tricks a user into setting a custom marker for an origin that contains invisible Unicode characters (e.g., zero-width spaces U+200B, zero-width joiners/non-joiners U+200D/U+200C) . These characters are not visible but are part of the string data.
+- **Mechanism:** An attacker tricks a user into setting a custom marker for an origin that contains invisible Unicode characters (e.g., zero-width spaces U+200B, zero-width joiners/non-joiners U+200D/U+200C) . These characters are not visible but are part of the string data. Unicode allows invisible characters to be embedded within emojis, potentially hiding instructions or distorting tokenization[cite: 94, 136].
 - **Potential Impact:** Covert data encoding within bookmark titles, evasion of detection by security tools that only scan for visible characters, or unexpected rendering/behavior in other applications that process bookmark data .
 - **Relevant OriginMarker Component(s) Affected:** Custom marker strings, user input handling .
 - **Severity:** Medium .
@@ -286,21 +335,33 @@ Implicit data leakage channels via browser events:
 - **Relevant OriginMarker Component(s) Affected:** `base2base` output, user perception, emoji alphabet in `static.js` .
 - **Severity:** Medium .
 
-#### 4.4.4. Polymorphic Extensions: Icon Spoofing and UI Replication
+#### 4.4.4. Polymorphic Extension Attacks: Icon Spoofing and UI Replication
 
-- **Mechanism:** "Polymorphic" malicious extensions can change their appearance (icon, name) to mimic other installed extensions, like password managers or OriginMarker itself[cite: 11, 31]. They may then display fake login popups or UI elements that are pixel-perfect replicas[cite: 11]. To ensure interaction with the fake UI, the malicious extension might temporarily disable the real extension[cite: 11]. Target extensions can be identified via `chrome.management` API or "web resource hitting"[cite: 32]. This attack exploits user trust in visual cues and established interaction patterns[cite: 12, 34, 35, 36].
-- **Potential Impact:** If OriginMarker is mimicked, users might interact with a malicious version, leading to credential theft, misleading actions, or bypassed security warnings[cite: 33, 37, 38].
+- **Mechanism:** "Polymorphic" malicious extensions create pixel-perfect replicas of legitimate extensions' icons, HTML popups, and workflows[cite: 7, 77]. The malicious extension temporarily disables the legitimate one, visually transforms itself to match the target, and presents a fake UI to trick users into providing sensitive credentials (e.g., master passwords, crypto keys)[cite: 7, 78]. Attackers identify targets using `chrome.management` API or by checking for unique web resources (e.g., logo PNGs)[cite: 7, 78]. This attack achieves a "cognitive bypass" of user trust by exploiting human cognitive biases and established interaction patterns[cite: 79, 80, 81].
+- **Potential Impact:** If OriginMarker is mimicked, users might interact with a malicious version, leading to credential theft, misleading actions, or bypassed security warnings[cite: 33, 37, 38, 82]. User education alone is often insufficient against such psychological manipulation[cite: 84, 166].
 - **Relevant OriginMarker Component(s) Affected:** Extension icon, popup UI, user trust in visual identity.
 - **Severity:** Critical.
 
-#### 4.4.5. Badge Text and Overlay Manipulation
+#### 4.4.5. Phishing Leveraging Trusted Domains and Live Validation
+- **Mechanism:** Modern phishing bypasses traditional detection by abusing legitimate, reputable domains to host malicious pages or redirect users[cite: 8, 86]. These attempts often incorporate server-side validation to dynamically customize fake login pages with corporate logos, victim-specific details, and real CAPTCHAs to appear highly convincing[cite: 8, 87]. Blob URIs can be used to create local fake login pages within the browser, bypassing email security that can't see local content[cite: 51, 88]. This exploits "contextual credibility"[cite: 89, 90].
+- **Potential Impact:** OriginMarker users could be targeted. Credential theft on other sites could compromise accounts related to OriginMarker's functionality or data[cite: 91].
+- **Relevant OriginMarker Component(s) Affected:** User security outside OriginMarker, but with potential indirect impacts.
+- **Severity:** High (for user compromise).
 
-- **Mechanism:** Extension badge text (via `chrome.action.setBadgeText()` [cite: 14, 16, 40]) can be manipulated by polymorphic extensions, similar to icon spoofing[cite: 41]. While not explicitly for overlaying badge text, the principle of overlay attacks (like Android Toast Overlays [cite: 19, 42]) involves placing deceptive UI elements over legitimate ones to trick users[cite: 42, 43].
+#### 4.4.6. Exploiting Browser UI Elements: Bookmark and Custom Marker Spoofing
+- **Mechanism:** Attackers convince users to bookmark impersonated sites with misleading titles, leveraging the browser's default behavior of copying page titles into bookmark names[cite: 52, 94, 95]. If OriginMarker uses custom UI markers (icons, badges, custom bookmark entries), these could be mimicked or manipulated by a malicious co-installed extension[cite: 1, 96]. This exploits "visual consistency" vulnerability, where users trust the consistent appearance of UI elements[cite: 97, 98].
+- **Potential Impact:** Misleading users, redirecting to phishing sites, impersonation of OriginMarker's visual cues[cite: 99].
+- **Relevant OriginMarker Component(s) Affected:** Custom UI markers, user trust in browser UI.
+- **Severity:** Medium.
+
+#### 4.4.7. Badge Text and Overlay Manipulation
+
+- **Mechanism:** Extension badge text (via `chrome.action.setBadgeText()` [cite: 14, 16, 40]) can be manipulated by polymorphic extensions, similar to icon spoofing[cite: 41]. While not explicitly for overlaying badge text, the principle of overlay attacks (like Android Toast Overlays [cite: 19, 42]) involves placing deceptive UI elements over legitimate ones to trick users[cite: 42, 43]. CVE-2025-0446 allows an extension's popup to render over native browser prompts[cite: 43, 63, 47].
 - **Potential Impact:** If OriginMarker uses badge text for critical notifications (e.g., "Marker Active"), a malicious extension could spoof this text to mislead the user (e.g., display "warning" to prompt action towards a phishing site) or create a false sense of security[cite: 44, 45, 46].
 - **Relevant OriginMarker Component(s) Affected:** Badge text notifications.
 - **Severity:** Medium.
 
-#### 4.4.6. Evolving Clickjacking and Tabnabbing Techniques
+#### 4.4.8. Evolving Clickjacking and Tabnabbing Techniques
 
 - **Mechanism:**
   - **Clickjacking:** Users are tricked into interacting with hidden UI elements overlaid on legitimate sites/UI[cite: 20, 49]. Defenses include X-Frame-Options and CSP's `frame-ancestors`[cite: 21].
@@ -313,51 +374,77 @@ A summary of these UI/UX impersonation techniques:
 
 | Attack Type           | Mechanism                                                                      | Impact on OriginMarker                                                                            |
 | --------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| Polymorphic Extension | Icon/UI cloning, temporary legitimate extension disablement [cite: 11, 31, 59] | Credential theft, misleading user actions, bypassed security prompts, erosion of trust [cite: 59] |
+| Polymorphic Extension | Icon/UI cloning, temporary legitimate extension disablement [cite: 11, 31, 59, 7, 77] | Credential theft, misleading user actions, bypassed security prompts, erosion of trust [cite: 59, 82] |
+| Phishing (Adv.)       | Trusted domains, live validation, Blob URIs [cite: 8, 86, 87, 51, 88]          | User credential theft, potentially impacting OriginMarker data if accounts are linked [cite: 91]   |
+| Bookmark Spoofing     | Deceptive titles, IDN spoofing reflected in bookmarks [cite: 52, 95, 97]        | User misdirection, phishing, undermining marker trust [cite: 99]                                  |
 | Classic Clickjacking  | Hidden transparent iframes overlaying legitimate UI [cite: 20, 59]             | Unintended user actions, data manipulation [cite: 59]                                             |
 | Tabnabbing            | Inactive legitimate tab redirection to malicious replica [cite: 22, 50, 59]    | Credential theft, unauthorized access to sensitive information [cite: 59]                         |
 | Reverse Tabnabbing    | Linked page rewriting opener window [cite: 23, 59]                             | Phishing, credential theft (mitigated by `noopener` in modern browsers) [cite: 59]                |
+| UI Rendering Timing   | Exploiting UI element rendering time to infer state [cite: 43, 63, 65, 66]     | Leakage of sensitive internal states of OriginMarker [cite: 67]                                   |
+
 
 ### 4.5. Supply Chain Risks
 
+Threat actors increasingly target the developer ecosystem and software supply chain[cite: 5, 32].
+
 #### 4.5.1. CI/CD Pipeline Compromise (e.g., via GitHub Actions with write permissions)
 
-- **Mechanism:** An attacker compromises the GitHub repository (e.g., via stolen developer credentials from targeted phishing [cite: 51, 122]) and injects malicious code into the main branch. The `format-on-merge.yml` workflow, which has `contents: write` permission to the main branch for auto-formatting, could be a vector for such injection . Malicious code could be disguised as formatting changes.
-- **Potential Impact:** Malicious code injected into the distributed extension, leading to data exfiltration (salt, custom markers, Browse data), redirection to phishing sites, or other arbitrary malicious actions affecting all users who update .
+- **Mechanism:** An attacker compromises the GitHub repository (e.g., via stolen developer credentials from targeted phishing [cite: 51, 122, 12, 15]) and injects malicious code into the main branch. The `format-on-merge.yml` workflow, which has `contents: write` permission to the main branch for auto-formatting, could be a vector for such injection . Malicious code could be disguised as formatting changes. Malicious npm or VS Code packages used in development can also compromise the pipeline by stealing data or injecting code during build processes[cite: 30, 33].
+- **Potential Impact:** Malicious code injected into the distributed extension, leading to data exfiltration (salt, custom markers, Browse data), redirection to phishing sites, or other arbitrary malicious actions affecting all users who update . This weaponizes legitimate software before it reaches the store[cite: 33].
 - **Relevant OriginMarker Component(s) Affected:** GitHub repository, CI/CD workflows (`format-on-merge.yml`), distributed extension code .
 - **Severity:** Critical .
 
-#### 4.5.2. Post-Publication Malicious Update via Compromised Developer Signing Key or Account
+#### 4.5.2. Post-Publication Malicious Update via Compromised Developer Accounts or Keys
 
-- **Mechanism:** An attacker steals the developer's private signing key used for Chrome Web Store (CWS) submissions (e.g., via malware on the developer's machine or phishing [cite: 51, 122]). Alternatively, attackers use sophisticated phishing emails mimicking CWS communications to trick developers into granting OAuth permissions to malicious apps, gaining unauthorized access to developer accounts[cite: 51, 122, 123]. With this access, attackers can upload maliciously modified versions of legitimate extensions[cite: 51, 123].
-- **Potential Impact:** Complete compromise of the extension's integrity and user trust. Users would unknowingly install a malicious update that appears legitimate, leading to widespread data theft or system compromise[cite: 124, 127]. This exploits the "trusted channel paradox" where official stores become malware vectors[cite: 125, 126].
+- **Mechanism:**
+    - **Targeted Phishing & OAuth Abuse:** Attackers use sophisticated phishing campaigns mimicking official communications (e.g., from Chrome Web Store) to trick developers into clicking malicious links[cite: 12, 15, 17]. These links redirect to fake authorization pages that grant malicious OAuth applications permissions to "see, edit, update, or publish" the developer's extensions[cite: 14, 15, 18]. This bypasses MFA because it's an authorization flow, not authentication[cite: 15, 16, 17, 18]. Once authorized, attackers can upload malicious versions that auto-propagate[cite: 15, 20]. This "legitimate flow" deception is hard to detect[cite: 19, 20].
+    - **Stolen Signing Keys:** An attacker steals the developer's private signing key used for Chrome Web Store (CWS) submissions (e.g., via malware on the developer's machine or phishing [cite: 51, 122]).
+- **Potential Impact:** Complete compromise of the extension's integrity and user trust. Users would unknowingly install a malicious update that appears legitimate, leading to widespread data theft or system compromise[cite: 124, 127]. This exploits the "trusted channel paradox" where official stores become malware vectors[cite: 125, 126]. The malicious code often appears as minor additions, making automated review detection difficult[cite: 15, 22].
 - **Relevant OriginMarker Component(s) Affected:** Developer's private signing key, CWS developer accounts, Chrome Web Store update process .
 - **Severity:** Critical .
 
-#### 4.5.3. Abuse of Excessive Permissions and Covert Functionality in Compromised Extensions
-
-- **Mechanism:** Once an extension is compromised (e.g., via supply chain attack), attackers often abuse its existing permissions (or add new excessive ones like "tabs", "http:///_", "https:///_", "storage", "scripting", "webRequest", "management" [cite: 43, 130]) to steal data, inject ads, or execute arbitrary code[cite: 1, 130]. Malicious code might be obfuscated [cite: 44, 130] or triggered covertly by a Command and Control (C2) server[cite: 50, 130, 135]. These "benign-to-malicious" transformations leverage the extension's existing user base[cite: 2, 133].
-- **Potential Impact:** If OriginMarker is compromised, its permissions could be abused for widespread data theft or other malicious activities. Attackers may establish persistent access for ongoing data theft and impersonation[cite: 50, 134].
-- **Relevant OriginMarker Component(s) Affected:** All components if the extension is compromised; its legitimate permissions become liabilities.
+#### 4.5.3. Exploitation of Malicious Updates and Third-Party Dependencies
+- **Mechanism:**
+    - **Malicious Updates after Account Compromise:** Attackers push updates injecting covert code for C2 communication, credential theft (cookies, tokens, API keys), and arbitrary code execution[cite: 5, 22].
+    - **Abandoned/Sold Extensions:** Attackers acquire abandoned extensions, inject malicious code, and exploit the existing user base and trust[cite: 6, 22, 24].
+    - **Insecure Third-Party Libraries:** Widespread use of outdated or insecure third-party libraries (e.g., npm packages) can introduce known exploits or allow remote injection of malicious scripts[cite: 16, 23]. CDNs distributing malicious packages amplify this threat[cite: 17, 23]. This leverages "legitimacy-by-association"[cite: 24, 25].
+- **Potential Impact:** If OriginMarker is compromised or uses a compromised dependency, its permissions could be abused for widespread data theft or other malicious activities. Attackers may establish persistent access for ongoing data theft and impersonation[cite: 50, 134]. Even a minor, unmaintained dependency can become a backdoor[cite: 28].
+- **Relevant OriginMarker Component(s) Affected:** All components if the extension is compromised; its legitimate permissions become liabilities. Third-party dependencies.
 - **Severity:** Critical.
+
+#### 4.5.4. Risks from Malicious npm and VS Code Packages in Development Workflows
+- **Mechanism:** Over 70 malicious npm and VS Code packages have been found stealing data via install-time scripts, harvesting system info (hostnames, IPs, DNS, user dirs) and exfiltrating it to C2 endpoints[cite: 30]. Some masquerade as helpers for popular JS frameworks, deploying destructive payloads (file deletion, corrupting JS methods/storage)[cite: 30, 31]. Phishing combined with malicious npm packages can deliver second-stage scripts[cite: 30]. Malicious VS Code extensions can steal crypto wallets and install malicious Chromium extensions[cite: 31, 32].
+- **Potential Impact:** Compromise of the developer's environment, leading to weaponized legitimate software before it reaches the Chrome Web Store[cite: 32, 33].
+- **Relevant OriginMarker Component(s) Affected:** Developer workstations, build process, any npm/VS Code dependencies.
+- **Severity:** Critical.
+
+#### Table 1: Notable Supply Chain Incidents Affecting Chrome Extensions (Beyond Audit Scope) [cite: 36, 37, 38]
+
+| Incident/Campaign             | Primary Attack Method            | Initial Access Point           | Malicious Payload/Functionality                                                                                                   | Impacted Users/Extensions (if known)          |
+| ----------------------------- | -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Cyberhaven Compromise         | Targeted Phishing & OAuth Abuse  | Developer Account              | Session/Cookie Exfiltration, Credential Theft, C2 Communication, Arbitrary Code Execution                                         | ~400,000 users, 35+ extensions [cite: 6, 15] |
+| Malicious npm/VS Code Packages | Malicious Package Injection      | npm install / VS Code Marketplace | Data Harvesting (hostnames, IPs, DNS), Destructive Payloads (file deletion), Cryptocurrency Wallet Credential Theft, Installation of Malicious Browser Extensions | Over 70 malicious packages, 3,000+ downloads [cite: 30] |
+| Abandoned/Sold Extensions     | Purchase & Malicious Update      | Original Developer             | Malicious Code Injection, Data Exfiltration                                                                                       | Various, as attackers exploit existing user bases [cite: 6, 22] |
 
 Common characteristics of malicious extensions and supply chain attacks:
 
 | Characteristic                       | Description/Example                                                                                          |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| Targeted Phishing against Developers | Mimicking official Chrome Web Store communications to steal credentials or OAuth tokens [cite: 51, 122, 141] |
-| OAuth Abuse                          | Tricking developers into granting malicious OAuth app access to their accounts [cite: 51, 122, 141]          |
-| Excessive Permissions                | Requesting broad permissions (e.g., "all_urls", "scripting") beyond core functionality [cite: 43, 130, 141]  |
+| Targeted Phishing against Developers | Mimicking official Chrome Web Store communications to steal credentials or OAuth tokens [cite: 51, 122, 141, 12, 15, 17] |
+| OAuth Abuse                          | Tricking developers into granting malicious OAuth app access to their accounts [cite: 51, 122, 141, 13, 15, 18]          |
+| Excessive Permissions                | Requesting broad permissions (e.g., "all_urls", "scripting") beyond core functionality [cite: 43, 130, 141, 29]  |
 | Code Obfuscation                     | Hiding malicious logic within complex or encoded JavaScript [cite: 44, 130, 141]                             |
-| Command and Control (C2) Comm.       | Establishing covert channels to receive commands and exfiltrate data [cite: 50, 130, 141]                    |
-| Data Exfiltration                    | Stealing cookies, login credentials, Browse history, API keys, session tokens [cite: 1, 130, 141]            |
-| Impersonation                        | Polymorphic extensions changing icons and UI to mimic legitimate tools [cite: 11, 31, 141]                   |
-| Benign-to-Malicious Transformation   | Legitimate extensions being compromised and updated with malicious code [cite: 2, 51, 133, 141]              |
+| Command and Control (C2) Comm.       | Establishing covert channels to receive commands and exfiltrate data [cite: 50, 130, 141, 5, 22]                    |
+| Data Exfiltration                    | Stealing cookies, login credentials, Browse history, API keys, session tokens [cite: 1, 130, 141, 5, 22]            |
+| Impersonation                        | Polymorphic extensions changing icons and UI to mimic legitimate tools [cite: 11, 31, 141, 7, 77]                   |
+| Benign-to-Malicious Transformation   | Legitimate extensions being compromised and updated with malicious code [cite: 2, 51, 133, 141, 6, 22]              |
 
-### 4.6. Exploitation of Underlying Browser Vulnerabilities
+### 4.6. Exploitation of Underlying Browser Vulnerabilities (e.g., Zero-Days, CPU Flaws)
 
-- **Mechanism:** Attackers exploit vulnerabilities in the Chrome browser itself (e.g., sandbox escapes, remote code execution flaws, information disclosure bugs like CVE-2025-4664 ) to bypass extension sandboxing or access privileged data .
-- **Potential Impact:** Complete compromise of OriginMarker's privacy and functionality, regardless of its own secure coding. This could include direct reading of `chrome.storage` data (salt, custom markers), injection of malicious code into OriginMarker's context, or manipulation of its interaction with browser APIs .
+- **Mechanism:** Attackers exploit vulnerabilities in the Chrome browser itself (e.g., sandbox escapes, remote code execution flaws, information disclosure bugs like CVE-2025-4664 , zero-day vulnerabilities in V8 or sandbox[cite: 9, 11]) to bypass extension sandboxing or access privileged data .
+- **Meltdown and Spectre:** These microarchitectural CPU vulnerabilities exploit "speculative execution"[cite: 32, 47]. Meltdown allowed reading entire physical memory; Spectre broke isolation between applications[cite: 35, 48]. Spectre attacks can be mounted via JavaScript to extract data like login cookies from browser memory[cite: 35, 49].
+    - **Mitigations:** Chrome's Site Isolation renders content from different websites in separate processes[cite: 36, 50]. V8 engine also has mitigations[cite: 36, 51]. SharedArrayBuffer was temporarily disabled but re-enabled where Site Isolation is default[cite: 36, 51]. However, a "residual risk" persists as Site Isolation is not a complete panacea[cite: 52, 53, 39].
+- **Potential Impact:** Complete compromise of OriginMarker's privacy and functionality, regardless of its own secure coding. This could include direct reading of `chrome.storage` data (salt, custom markers), injection of malicious code into OriginMarker's context, or manipulation of its interaction with browser APIs . Even if OriginMarker's code is secure, it's susceptible to underlying CPU vulnerabilities allowing inference of data from its process memory[cite: 54, 55].
 - **Severity:** Critical .
 
 ### 4.7. Indirect Risks from Other Extensions
@@ -369,7 +456,7 @@ Common characteristics of malicious extensions and supply chain attacks:
 
 ### 4.8. Advanced Timing Side-Channel Attacks
 
-Subtle variations in operation execution times can be exploited to infer sensitive information within Chrome extensions[cite: 12, 13].
+Subtle variations in operation execution times can be exploited to infer sensitive information within Chrome extensions[cite: 12, 13, 32, 39]. These attacks exploit minute variations in processing time for different inputs to infer secrets like passwords or internal states[cite: 32, 39]. They can be effective even against cryptographic protocols and can be performed remotely with enough requests[cite: 33, 39]. Causes often stem from low-level CPU operations (cache hits/misses, conditional jumps, data-dependent math)[cite: 32, 40]. Any data-dependent processing in OriginMarker could create timing side channels[cite: 41, 42, 43]. A "constant-time" design philosophy is needed, but compiler optimizations can unintentionally introduce timing dependencies[cite: 44, 45].
 
 #### 4.8.1. Exploiting Shared Event Loops and Browser Processes
 
@@ -385,24 +472,38 @@ Subtle variations in operation execution times can be exploited to infer sensiti
 - **Relevant OriginMarker Component(s) Affected:** `chrome.storage` operations, cryptographic functions, data processing routines.
 - **Severity:** Medium.
 
+#### 4.8.3. Power Consumption Side-Channels
+- **Mechanism:** Software-based power side-channel attacks exploit variations in power consumption to leak secrets[cite: 40, 56]. Modern techniques can use unprivileged sensors (e.g., via Android sensor framework) or CPU frequency scaling (Hertzbleed attack) for remote inference of power usage[cite: 40, 56, 42]. Pixel-stealing attacks in Chrome leveraging sensor-based leakage via JavaScript have been demonstrated, breaking cross-origin isolation[cite: 40, 57]. This is "ambient data leakage"[cite: 57].
+- **Potential Impact:** OriginMarker's operations (UI rendering, background processing) might create discernible power patterns that a malicious page could analyze to infer what OriginMarker is doing or the data it's processing[cite: 59, 60]. This shifts focus to what is implicitly revealed via execution characteristics[cite: 61, 62].
+- **Relevant OriginMarker Component(s) Affected:** UI rendering, background processing, data transformations.
+- **Severity:** Medium to High.
+
+#### 4.8.4. UI Rendering Timing Attacks
+- **Mechanism:** Exploiting time taken for UI elements to render or change to infer information[cite: 43, 63]. CVE-2025-0446 allows UI spoofing by an extension rendering its popup over native browser prompts[cite: 43, 63, 47]. If OriginMarker's UI elements render with different delays based on sensitive internal states, a malicious entity could measure these delays to infer that state ("visual side channel")[cite: 65, 66, 67].
+- **Potential Impact:** Leakage of sensitive internal states (e.g., successful authentication, specific data presence) through visual cues[cite: 67, 68].
+- **Relevant OriginMarker Component(s) Affected:** UI elements (icons, popups, status indicators).
+- **Severity:** Medium.
+
 Summary of common timing attack vectors:
 
 | Attack Vector                  | Targeted Component                                     | Observable Characteristic                                           |
 | ------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------- |
 | Shared Event Loop Contention   | Chrome I/O thread, Renderer main thread [cite: 29]     | Event dispatch delays, CPU usage patterns [cite: 29]                |
-| Cache Timing                   | CPU caches, Shared LLM caches [cite: 29]               | Cache hit/miss times, Data access patterns [cite: 29]               |
-| Storage Access Timing          | `chrome.storage` API (local, sync, session) [cite: 29] | Read/write operation durations, `onChanged` event timing [cite: 29] |
-| Cryptographic Operation Timing | Cryptographic libraries (e.g., SHA-256) [cite: 29]     | Execution times of math operations, branching [cite: 4, 29]         |
+| Cache Timing                   | CPU caches, Shared LLM caches [cite: 29]               | Cache hit/miss times, Data access patterns [cite: 29, 4, 40]        |
+| Storage Access Timing          | `chrome.storage` API (local, sync, session) [cite: 29, 8] | Read/write operation durations, `onChanged` event timing [cite: 29, 23, 24] |
+| Cryptographic Operation Timing | Cryptographic libraries (e.g., SHA-256) [cite: 29]     | Execution times of math operations, branching [cite: 4, 29, 40]     |
+| Power Consumption              | CPU, System components [cite: 40, 56]                  | Power draw variations, sensor data, CPU frequency scaling [cite: 40, 56, 42] |
+| UI Rendering Timing            | Browser UI, Extension UI elements [cite: 43, 63]       | Delays in UI element appearance or updates [cite: 63, 65]           |
 
 ### 4.9. Race Conditions and Time-of-Check to Time-of-Use (TOCTOU) Vulnerabilities
 
-Race conditions occur when concurrent processes access/modify shared data, and the outcome depends on non-deterministic execution order[cite: 55, 101], often in "check-then-act" scenarios where state changes between check and action[cite: 56, 102].
+Race conditions occur when concurrent processes access/modify shared data, and the outcome depends on non-deterministic execution order[cite: 55, 101, 126], often in "check-then-act" scenarios where state changes between check and action[cite: 56, 102, 126].
 
 #### 4.9.1. Race Conditions in Asynchronous Extension Operations
 
-- **Mechanism:** Chrome extensions are inherently asynchronous[cite: 54, 102, 105]. API calls (e.g., `chrome.tabs.query`, `chrome.storage.get`) have delays before promises resolve or callbacks execute, creating TOCTOU windows[cite: 4, 57, 106]. A malicious entity could change underlying state (e.g., tab URL, stored value) during this delay[cite: 106, 107]. For instance, if OriginMarker fetches a URL, then asynchronously checks its safety, the tab could navigate to a malicious URL before the check completes, causing the check to apply to the old URL[cite: 107, 108].
-- **Potential Impact:** Bypassed security checks, incorrect extension behavior, actions performed on unintended data.
-- **Relevant OriginMarker Component(s) Affected:** Any logic involving asynchronous operations where state is checked and then acted upon (e.g., URL validation, storage lookups).
+- **Mechanism:** Chrome extensions are inherently asynchronous[cite: 54, 102, 105]. API calls (e.g., `chrome.tabs.query`, `chrome.storage.get`) have delays before promises resolve or callbacks execute, creating TOCTOU windows[cite: 4, 57, 106]. A malicious entity could change underlying state (e.g., tab URL, stored value) during this delay[cite: 106, 107]. For instance, if OriginMarker fetches a URL, then asynchronously checks its safety, the tab could navigate to a malicious URL before the check completes, causing the check to apply to the old URL[cite: 107, 108]. `chrome.storage` API, while asynchronous, does not inherently support transactions, making race conditions a concern if not managed[cite: 82, 128].
+- **Potential Impact:** Bypassed security checks, incorrect extension behavior, actions performed on unintended data. Use of stale or improperly persisted cryptographic data (like salts) if race conditions affect their storage or retrieval[cite: 127].
+- **Relevant OriginMarker Component(s) Affected:** Any logic involving asynchronous operations where state is checked and then acted upon (e.g., URL validation, storage lookups, salt management).
 - **Severity:** High.
 
 #### 4.9.2. TOCTOU Exploits in Extension State, Storage, and Permissions
@@ -416,14 +517,36 @@ Summary of race condition and TOCTOU vulnerabilities:
 
 | Vulnerability Type    | Mechanism                                                                           | Affected Components/Operations                                                | Potential Outcome                                                                                 |
 | --------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Race Condition (Gen.) | Concurrent access to shared data, non-deterministic execution order [cite: 55, 120] | Any shared state, async API calls, DOM manipulation [cite: 120]               | Data corruption, unpredictable behavior, incorrect output [cite: 120]                             |
+| Race Condition (Gen.) | Concurrent access to shared data, non-deterministic execution order [cite: 55, 120, 126] | Any shared state, async API calls, DOM manipulation[cite: 120], `chrome.storage` [cite: 82, 128] | Data corruption, unpredictable behavior, incorrect output, cryptographic failures [cite: 120, 127] |
 | TOCTOU (Specific)     | Check-then-act timing gap, state change between check and use [cite: 57, 120]       | `chrome.tabs` updates, `chrome.storage` ops, policy enforcement, user prompts | Bypassed security checks, unauthorized actions, privilege escalation, data corruption [cite: 120] |
+
+### 4.10. Cryptographic Weaknesses
+
+Beyond salt storage, other cryptographic aspects can be vulnerable.
+
+#### 4.10.1. Predictable Random Number Generation (RNG) and Entropy Loss
+- **Mechanism:** Security of cryptographic operations relies on unpredictable RNGs[cite: 4, 120]. Using statistical PRNGs (like `Math.random()`) instead of CSPRNGs (like `crypto.getRandomValues()`, `crypto.randomUUID()`[cite: 75, 124]) is a common pitfall[cite: 72, 121]. Statistical PRNGs may use predictable seeds (e.g., system time) or have limited internal state, making output guessable[cite: 72, 121]. This can lead to UUID collisions or prediction of future values[cite: 72, 121]. The Trust Wallet hack (Wasm entropy flaw reduced seed phrase bits from 256 to 32) is an example[cite: 74, 122].
+- **Potential Impact:** If OriginMarker uses client-side generated random values from a weak RNG for security-critical purposes (IDs, nonces, key parts), it could lead to severe compromises due to "predictable entropy"[cite: 122, 123].
+- **Relevant OriginMarker Component(s) Affected:** Salt generation (currently uses `crypto.randomUUID()`, which is good), any future use of random numbers for security.
+- **Severity:** High (if weak RNG used for critical functions).
+
+#### 4.10.2. Predictable Salt Generation
+- **Mechanism:** Salting prevents rainbow table attacks by adding unique random strings to passwords before hashing[cite: 80, 124]. If the salt is predictable (hard-coded, fixed, too small like 8 bytes), it defeats its purpose[cite: 81, 125]. Recommended minimum salt size is 16 bytes, ideally 32+[cite: 81, 125].
+- **Potential Impact:** Makes hashed data vulnerable to attacks as if no salt or a common salt was used[cite: 81, 125].
+- **Relevant OriginMarker Component(s) Affected:** Salt generation mechanism (currently UUID, so length and randomness are good).
+- **Severity:** High (if predictable/short salt used).
+
+#### 4.10.3. Information Loss in Base Conversion and Character Set Mapping
+- **Mechanism:** Hash functions map arbitrary data to fixed-size outputs; collisions are unavoidable[cite: 86, 133]. Converting a hash (e.g., hex string) to a smaller character set (e.g., limited alphanumeric, emojis) can cause information loss, reducing effective entropy and increasing collision probability ("collision probability amplification")[cite: 90, 132, 134]. E.g., SHA-512 (512 bits) to 64-char base-62 string reduces min-entropy to ~384 bits[cite: 90, 134]. Non-injective mapping functions further increase collisions[cite: 90, 135]. Emojis can hide invisible characters, affecting tokenization or AI safety checks[cite: 94, 136].
+- **Potential Impact:** For OriginMarker, converting SHA-256 hashes to emoji strings via `base2base` inherently involves character set mapping. While SHA-256 itself is strong, the conversion to a smaller or non-ideal emoji alphabet could theoretically increase the chance of different origins producing perceptually similar or even identical (if alphabet is too small or mapping flawed) markers, although the underlying hash is different. Relying on truncated hashes or non-cryptographic base conversions for uniqueness is risky[cite: 139]. This is an "implicit data transformation risk"[cite: 138, 140].
+- **Relevant OriginMarker Component(s) Affected:** `base2base` function, emoji alphabet, marker generation.
+- **Severity:** Low to Medium (for OriginMarker, as SHA-256 collision resistance is primary; perceptual collision is the main concern here, see 4.4.3).
 
 ---
 
 ## 5. Recommendations & Mitigations
 
-This section includes mitigations for issues identified in the initial audit (many of which are now marked "ADDRESSED") and new recommendations based on subsequent research to counter the advanced attack vectors detailed in Section 4[cite: 5].
+This section includes mitigations for issues identified in the initial audit (many of which are now marked "ADDRESSED") and new recommendations based on subsequent research to counter the advanced attack vectors detailed in Section 4[cite: 5, 170].
 
 ### Salt Management & Initialization (Initial Audit Recommendations)
 
@@ -456,7 +579,7 @@ This section includes mitigations for issues identified in the initial audit (ma
 
 ### Advanced Recommendations (Based on Subsequent Research)
 
-The following recommendations are proposed to address the advanced attack vectors identified in Section 4[cite: 142].
+The following recommendations are proposed to address the advanced attack vectors identified in Section 4[cite: 5, 142, 170].
 
 #### 5.1. Enhanced Salt and Storage Security
 
@@ -467,7 +590,7 @@ The following recommendations are proposed to address the advanced attack vector
 
 - **5.1.2. Proactive Storage Limit Monitoring and User Alerts:**
 
-  - **Recommendation:** To mitigate DoS via storage quota exhaustion , OriginMarker should monitor its `chrome.storage.sync` (using `getBytesInUse()` [cite: 8, 177]) and `chrome.storage.local` usage . If usage approaches quotas (e.g., 80% of 100KB for sync, 10MB for local ), alert the user via the options UI or a badge icon change .
+  - **Recommendation:** To mitigate DoS via storage quota exhaustion , OriginMarker should monitor its `chrome.storage.sync` (using `getBytesInUse()` [cite: 8, 177]) and `chrome.storage.local` usage . If usage approaches quotas (e.g., 80% of 100KB for sync, 10MB for local [cite: 105, 106]), alert the user via the options UI or a badge icon change . Implement robust error handling for quota limits[cite: 108, 181].
   - **Addresses:** 4.2.2 (Storage Quota Exhaustion).
 
 - **5.1.3. Regular Salt Rotation Mechanism:**
@@ -478,7 +601,7 @@ The following recommendations are proposed to address the advanced attack vector
 
 - **5.2.1. Strict Unicode Normalization and Invisible Character Stripping for Custom Markers:**
 
-  - **Recommendation:** To prevent "emoji smuggling" or hidden data injection in custom markers , implement robust input validation: perform Unicode normalization (e.g., to NFC using `String.prototype.normalize()`) and strip/disallow invisible Unicode characters (e.g., zero-width spaces U+200B, ZWJ U+200D, ZWNJ U+200C) from custom marker strings before storage . Use JavaScript regex with the "u" flag and Unicode property escapes (\p{C}, \p{Cc}, etc.) for detection .
+  - **Recommendation:** To prevent "emoji smuggling" or hidden data injection in custom markers , implement robust input validation: perform Unicode normalization (e.g., to NFC using `String.prototype.normalize()`) and strip/disallow invisible Unicode characters (e.g., zero-width spaces U+200B, ZWJ U+200D, ZWNJ U+200C, control characters)[cite: 94, 136] from custom marker strings before storage . Use JavaScript regex with the "u" flag and Unicode property escapes (\p{C}, \p{Cc}, etc.) for detection .
   - **Addresses:** 4.4.2.
 
 - **5.2.2. User Confirmation for External Bookmark Designation Changes:**
@@ -488,7 +611,7 @@ The following recommendations are proposed to address the advanced attack vector
 
 - **5.2.3. Heuristic Monitoring for Suspicious Bookmark Activity:**
   - **Recommendation:** As a defense-in-depth measure, implement heuristics to monitor for unusually rapid or numerous `chrome.bookmarks.onChanged` events not initiated by OriginMarker itself . If thresholds are exceeded, log a warning and potentially display a subtle user alert .
-  - **Addresses:** 4.3.1, 4.3.3 (broader DoS attempts).
+  - **Addresses:** 4.3.1, 4.3.4 (broader DoS attempts).
 
 #### 5.3. Addressing Visual Deception and User Trust
 
@@ -503,8 +626,8 @@ The following recommendations are proposed to address the advanced attack vector
     - Homoglyph attacks and visually similar characters representing different domains .
     - Auto-generated emoji markers being hash-derived for differentiation, not an endorsement of site security .
     - Potential for different origins to produce perceptually similar emoji sequences .
-    - The threat of polymorphic extensions that can mimic OriginMarker's appearance[cite: 11, 165].
-    - Use clear language and visual examples .
+    - The threat of polymorphic extensions that can mimic OriginMarker's appearance[cite: 11, 165, 7, 77].
+    - Use clear language and visual examples . Emphasize scrutinizing all browser UI elements[cite: 100, 185].
   - **Addresses:** 4.4.1, 4.4.3, 4.4.4.
 
 - **5.3.3. Re-evaluation of Emoji Alphabet for Perceptual Distinctiveness:**
@@ -516,18 +639,18 @@ The following recommendations are proposed to address the advanced attack vector
 
   - **Recommendation:** Design OriginMarker's UI elements (icon, popup) with unique, hard-to-mimic visual cues to make replication by polymorphic extensions more difficult[cite: 11].
   - **Recommendation:** Avoid using badge text for critical security indicators; reserve it for non-critical informational purposes to prevent spoofing from misleading users[cite: 14].
-  - **Addresses:** 4.4.4, 4.4.5.
+  - **Addresses:** 4.4.4, 4.4.7.
 
 - **5.3.5. Resistance to Framing/Overlaying and Tabnabbing:**
-  - **Recommendation:** Ensure OriginMarker's UI (popup, injected components) cannot be easily framed or overlaid by malicious content or other extensions to prevent clickjacking[cite: 20, 146].
+  - **Recommendation:** Ensure OriginMarker's UI (popup, injected components) cannot be easily framed or overlaid by malicious content or other extensions to prevent clickjacking[cite: 20, 146]. The manifest already includes `frame-ancestors 'none'`.
   - **Recommendation:** Implement robust checks for `window.opener` and ensure `rel="noopener"` is correctly applied to any links OriginMarker opens to prevent reverse tabnabbing[cite: 23, 146].
-  - **Addresses:** 4.4.6.
+  - **Addresses:** 4.4.8.
 
-#### 5.4. Strengthening Supply Chain Security
+#### 5.4. Strengthening Supply Chain Security (Shift Left Approach [cite: 34, 170])
 
 - **5.4.1. Mandatory Hardware-Based 2FA for Developer Accounts:**
 
-  - **Recommendation:** Mandate and enforce hardware-based 2FA (e.g., FIDO2/WebAuthn security keys) for all developer Google (CWS) and GitHub accounts with publishing or write permissions to OriginMarker's repository or CWS listing[cite: 51, 155].
+  - **Recommendation:** Mandate and enforce hardware-based 2FA (e.g., FIDO2/WebAuthn security keys) for all developer Google (CWS) and GitHub accounts with publishing or write permissions to OriginMarker's repository or CWS listing[cite: 51, 155, 171]. This is crucial as OAuth abuse for developer account takeover can bypass MFA for authentication by targeting authorization flows[cite: 15, 16, 18].
   - **Addresses:** 4.5.1, 4.5.2.
 
 - **5.4.2. Automated Code Signing in Isolated, Ephemeral CI/CD Environments:**
@@ -545,41 +668,49 @@ The following recommendations are proposed to address the advanced attack vector
   - **Recommendation:** Reference third-party GitHub Actions by their full commit SHA rather than tags to ensure immutability and prevent malicious updates to the action's code .
   - **Addresses:** 4.5.1.
 
-- **5.4.5. Code Integrity Checks in CI/CD:**
+- **5.4.5. Code Integrity Checks and Dependency Vetting in CI/CD:**
 
-  - **Recommendation:** Implement automated CI/CD pipelines with static and dynamic analysis tools to detect malicious code injections or suspicious changes before publishing updates[cite: 156].
-  - **Addresses:** 4.5.1, 4.5.3.
+  - **Recommendation:** Implement automated CI/CD pipelines with static and dynamic analysis tools to detect malicious code injections or suspicious changes before publishing updates[cite: 156]. Rigorously vet all third-party dependencies (npm packages, libraries) for known vulnerabilities or malicious behavior[cite: 27, 35, 171]. Implement EDR for developer workstations[cite: 171].
+  - **Addresses:** 4.5.1, 4.5.3, 4.5.4.
 
 - **5.4.6. Chrome Web Store Monitoring:**
   - **Recommendation:** Actively monitor OriginMarker's CWS listing for unauthorized updates, suspicious reviews, or unexpected permission changes as an early warning for supply chain compromise[cite: 50, 157, 158].
   - **Addresses:** 4.5.2, 4.5.3.
 
-#### 5.5. Mitigating Advanced Timing Attacks
+- **5.4.7. Developer Security Awareness Training:**
+    - **Recommendation:** Regularly train developers on sophisticated phishing, OAuth abuse tactics, and supply chain attack vectors[cite: 12, 15, 172].
+    - **Addresses:** 4.5.1, 4.5.2.
 
-- **5.5.1. Constant-Time Algorithms:**
+#### 5.5. Mitigating Advanced Side-Channel and Covert Channel Attacks
 
-  - **Recommendation:** Implement constant-time algorithms for sensitive operations like marker lookups or cryptographic checks to prevent timing-based information leakage[cite: 4, 143].
-  - **Addresses:** 4.8.1, 4.8.2.
+- **5.5.1. Implement Constant-Time Operations:**
+
+  - **Recommendation:** Review and refactor sensitive logic (cryptographic operations, critical data processing, UI updates related to sensitive states) to operate in constant time, minimizing data-dependent timing variations[cite: 4, 143, 44, 46, 62, 68, 173, 174]. This mitigates "invisible fingerprint" and "visual side channel" attacks[cite: 41, 66, 174].
+  - **Addresses:** 4.8.1, 4.8.2, 4.8.3, 4.8.4.
 
 - **5.5.2. Minimize Data-Dependent Branching/Memory Access:**
 
-  - **Recommendation:** Minimize data-dependent branching or memory access patterns in critical code paths to avoid measurable timing differences[cite: 4, 144].
+  - **Recommendation:** Minimize data-dependent branching or memory access patterns in critical code paths to avoid measurable timing differences[cite: 4, 144, 40].
   - **Addresses:** 4.8.1, 4.8.2.
 
 - **5.5.3. Analyze `chrome.storage` Access Patterns:**
   - **Recommendation:** Carefully analyze `chrome.storage` usage. If sensitive data is stored, ensure access patterns do not leak information via timing differences (cache hits/misses)[cite: 8, 24, 145].
   - **Addresses:** 4.8.2.
 
+- **5.5.4. Monitor System-Level Resource Contention (Advanced):**
+    - **Recommendation:** For highly sensitive applications (potentially beyond OriginMarker's scope), consider specialized detection for covert channels by monitoring system-level resource contention and timing, though this is complex[cite: 76].
+    - **Addresses:** 4.3.6 (Covert Channels).
+
 #### 5.6. Preventing Resource Exhaustion and DoS
 
 - **5.6.1. Event Throttling and Debouncing:**
 
-  - **Recommendation:** Implement event throttling/debouncing for frequent browser events (e.g., `tabs.onUpdated`) to prevent event storms from overwhelming the background script[cite: 30, 65, 146].
+  - **Recommendation:** Implement event throttling/debouncing for frequent browser events (e.g., `tabs.onUpdated`) to prevent event storms from overwhelming the background script[cite: 30, 65, 146]. (Debouncing for `onBookmarkChange` is already implemented).
   - **Addresses:** 4.2.2 (JavaScript Infinite Loops/Event Storm).
 
 - **5.6.2. Graceful Load Handling and Resource Management:**
 
-  - **Recommendation:** Design background scripts to handle high loads gracefully and release resources promptly when idle to prevent local DoS[cite: 26, 63, 147].
+  - **Recommendation:** Design background scripts to handle high loads gracefully and release resources promptly when idle to prevent local DoS[cite: 26, 63, 147]. Ensure OriginMarker is resource-efficient[cite: 108, 181].
   - **Addresses:** 4.2.2 (JavaScript Infinite Loops/Event Storm).
 
 - **5.6.3. Minimize CPU in Content Scripts:**
@@ -591,23 +722,35 @@ The following recommendations are proposed to address the advanced attack vector
   - **Recommendation:** Consider mechanisms to detect or alert users to potential DNS cache poisoning if OriginMarker heavily relies on URL origin for security decisions, as this can lead to misdirection[cite: 35, 69, 147].
   - **Addresses:** 4.2.2 (DNS Cache Poisoning).
 
-#### 5.7. Hardening Against Covert Channels and IPC Leakage
+- **5.6.5. Server-Side API Rate Limiting:**
+    - **Recommendation:** If OriginMarker uses backend APIs, all critical API rate limiting and resource protection must be enforced server-side, with robust detection for anomalous client behavior[cite: 69, 116, 118, 182, 183].
+    - **Addresses:** 4.2.2 (Network Connection Saturation).
+
+#### 5.7. Fortifying Inter-Extension Interaction Security & Hardening Against Covert Channels
 
 - **5.7.1. Review `sendMessage` for Implicit Leaks:**
 
-  - **Recommendation:** Review all `chrome.runtime.sendMessage` and `chrome.tabs.sendMessage` calls to ensure sensitive information is not implicitly leaked through message characteristics (size, frequency, timing)[cite: 41, 94, 148, 189].
-  - **Addresses:** 4.3.4, 4.3.5.
+  - **Recommendation:** Review all `chrome.runtime.sendMessage` and `chrome.tabs.sendMessage` calls to ensure sensitive information is not implicitly leaked through message characteristics (size, frequency, timing)[cite: 41, 94, 148, 189]. Minimize information leakage via message responses to prevent fingerprinting[cite: 153, 180].
+  - **Addresses:** 4.3.5 (IPC), 4.3.5 (Fingerprinting).
 
 - **5.7.2. Avoid Reliance on Global Browser Events for Critical Logic:**
   - **Recommendation:** Avoid using global browser events (e.g., `tabs.onUpdated`, `bookmarks.onChanged`) for critical security logic if other extensions can observe them, to prevent covert channel inference[cite: 27, 85, 149].
-  - **Addresses:** 4.3.4.
+  - **Addresses:** 4.3.5 (Covert Channels).
+
+- **5.7.3. Explicit `externally_connectable` Manifest Property:**
+    - **Recommendation:** Explicitly define the `externally_connectable` property in the manifest to restrict external communication to a strict allow-list, preventing unwanted messages and reducing fingerprinting surface[cite: 98, 152, 156, 179].
+    - **Addresses:** 4.3.5 (Fingerprinting), 4.3.1.
+
+- **5.7.4. Rigorous Sanitization of External Inputs:**
+    - **Recommendation:** Rigorously validate and sanitize all data received from other extensions or web pages (e.g., browser history if used in future) to prevent "history poisoning" and other data tampering[cite: 98, 151, 155, 180].
+    - **Addresses:** 4.3.7, 4.3.1.
 
 #### 5.8. Building Resilience to Race Conditions and TOCTOU
 
 - **5.8.1. Re-validate State or Use Atomic Operations:**
 
-  - **Recommendation:** For "check-then-act" operations on sensitive state (URL, marker status, permissions), re-validate the state immediately before acting, or use atomic operations if available[cite: 56, 109, 110, 149].
-  - **Addresses:** 4.9.1, 4.9.2.
+  - **Recommendation:** For "check-then-act" operations on sensitive state (URL, marker status, permissions), re-validate the state immediately before acting, or use atomic operations if available[cite: 56, 109, 110, 149]. Design multi-step cryptographic operations involving shared state/storage to be atomic or include robust concurrency controls[cite: 127, 131].
+  - **Addresses:** 4.9.1, 4.9.2, 4.10.2 (Race Conditions in Crypto).
 
 - **5.8.2. Mindful Asynchronous Operations and Data Re-verification:**
 
@@ -616,78 +759,90 @@ The following recommendations are proposed to address the advanced attack vector
 
 - **5.8.3. Robust Error Handling and Input Validation for IPC:**
   - **Recommendation:** Implement robust error handling and input validation for all data received, especially from content scripts or via IPC, to prevent state changes that could lead to race conditions or TOCTOU issues[cite: 45, 89, 151].
-  - **Addresses:** 4.9.1, 4.9.2, 4.3.5.
+  - **Addresses:** 4.9.1, 4.9.2, 4.3.8.
 
-#### 5.9. Architectural Safeguards
+#### 5.9. Cryptographic Hygiene Enhancements
 
-- **5.9.1. Manifest V3 Adoption:**
+- **5.9.1. Ensure Use of Cryptographically Secure PRNGs:**
+    - **Recommendation:** Exclusively use CSPRNGs like `crypto.getRandomValues()` or `crypto.randomUUID()` for all security-critical random values (IDs, nonces, salts)[cite: 72, 75, 124, 175]. (OriginMarker currently does this for its salt).
+    - **Addresses:** 4.10.1.
+- **5.9.2. Proper Salt Management:**
+    - **Recommendation:** Ensure salts are generated from CSPRNGs, are of sufficient length (min 16 bytes, ideally 32+), and unique per instance[cite: 81, 125, 130, 176]. (OriginMarker's UUID salt meets this).
+    - **Addresses:** 4.10.2.
+- **5.9.3. Analyze Data Transformations for Entropy Loss:**
+    - **Recommendation:** Analyze all data transformations (hashing, base conversions) for potential entropy loss or collision amplification. Prioritize lossless or cryptographically sound methods. Avoid relying on truncated hashes or non-cryptographic base conversions for security-sensitive identifiers[cite: 90, 134, 135, 139, 140, 177].
+    - **Addresses:** 4.10.3.
+
+#### 5.10. Architectural Safeguards
+
+- **5.10.1. Manifest V3 Adoption:**
 
   - **Recommendation:** Ensure full compliance with Manifest V3 for stricter security policies, improved content script isolation, and a service worker model[cite: 47, 152].
   - **Addresses:** General security posture.
 
-- **5.9.2. Content Script Isolation:**
+- **5.10.2. Content Script Isolation:**
 
   - **Recommendation:** Leverage Chrome's isolated worlds for content scripts to prevent direct interaction with webpage JS/DOM, reducing XSS risks[cite: 47, 152].
   - **Addresses:** XSS, content script integrity.
 
-- **5.9.3. Secure Communication Channels (Internal):**
+- **5.10.3. Secure Communication Channels (Internal):**
 
   - **Recommendation:** Ensure all communication between content scripts and background service worker is explicit, well-defined, and rigorously validated. Consider encrypting sensitive data in internal messages as defense-in-depth[cite: 47, 95, 152].
-  - **Addresses:** 4.3.5, IPC integrity.
+  - **Addresses:** 4.3.8, IPC integrity.
 
-- **5.9.4. Strict Content Security Policy (CSP):**
-  - **Recommendation:** Maintain and regularly review the rigorous CSP in `manifest.json` to restrict script sources, prevent inline scripts, and control resource loading, minimizing code injection risks[cite: 47, 153, 154].
+- **5.10.4. Strict Content Security Policy (CSP):**
+  - **Recommendation:** Maintain and regularly review the rigorous CSP in `manifest.json` to restrict script sources, prevent inline scripts, and control resource loading, minimizing code injection risks[cite: 47, 153, 154, 2, 188].
   - **Addresses:** XSS, code injection.
 
-#### 5.10. General Security Posture Enhancements (Including Proactive Monitoring & User Education)
+#### 5.11. General Security Posture Enhancements (Including Proactive Monitoring & User Education)
 
-- **5.10.1. User Education on Browser Update Importance:**
+- **5.11.1. User Education on Browser Update Importance:**
 
   - **Recommendation:** Include prominent messaging in `options.html` or documentation urging users to keep their Chrome browser updated . Explain that underlying browser vulnerabilities can compromise security regardless of extension-specific protections .
   - **Addresses:** 4.6.
 
-- **5.10.2. Continuous Re-evaluation of Permissions (Principle of Least Privilege):**
+- **5.11.2. Continuous Re-evaluation of Permissions (Principle of Least Privilege):**
 
-  - **Recommendation:** Continuously review manifest permissions (`tabs`, `bookmarks`, `storage`) to ensure they remain strictly minimal and necessary . Assess if new permissions for features are truly required and if their scope can be limited[cite: 43, 137, 148].
+  - **Recommendation:** Continuously review manifest permissions (`tabs`, `bookmarks`, `storage`) to ensure they remain strictly minimal and necessary . Assess if new permissions for features are truly required and if their scope can be limited[cite: 43, 137, 148, 29, 178].
   - **Addresses:** General attack surface reduction.
 
-- **5.10.3. User Awareness of Co-Installed Extension Risks:**
+- **5.11.3. User Awareness of Co-Installed Extension Risks:**
 
   - **Recommendation:** Include a disclaimer in documentation or `options.html` about risks from other extensions, especially those with broad permissions (e.g., "Allow CORS" extensions) . Explain that other extensions can indirectly weaken overall browser security[cite: 98].
   - **Addresses:** 4.7.
 
-- **5.10.4. User Reporting Mechanisms:**
+- **5.11.4. User Reporting Mechanisms:**
 
   - **Recommendation:** Establish clear, accessible channels for users to report suspicious behavior or perceived compromises of OriginMarker[cite: 159].
   - **Addresses:** Incident detection.
 
-- **5.10.5. Incident Response Plan:**
+- **5.11.5. Incident Response Plan:**
 
   - **Recommendation:** Develop and test a comprehensive incident response plan for browser extension compromise, including steps for CWS removal, user notification, and forensic analysis[cite: 2, 160, 161].
   - **Addresses:** Post-compromise handling.
 
-- **5.10.6. Debugging Security:**
+- **5.11.6. Debugging Security:**
 
   - **Recommendation:** Use developer mode [cite: 60, 195] and browser DevTools securely; disable developer mode when not actively debugging to minimize exposure[cite: 162].
   - **Addresses:** Secure development practices.
 
-- **5.10.7. Permission Transparency with Users:**
+- **5.11.7. Permission Transparency with Users:**
 
   - **Recommendation:** Clearly explain why OriginMarker requests specific permissions and how they are used to foster user trust and informed decisions[cite: 43, 163, 164].
   - **Addresses:** User trust and education.
 
-- **5.10.8. User Education on Phishing and UI Anomalies:**
+- **5.11.8. User Education on Phishing and UI Anomalies:**
 
-  - **Recommendation:** Educate users about sophisticated phishing (including polymorphic extensions [cite: 11, 165]) and advise vigilance for UI anomalies or unexpected behavior, encouraging reporting[cite: 39, 166].
+  - **Recommendation:** Educate users about sophisticated phishing (including polymorphic extensions [cite: 11, 165, 7, 77]) and advise vigilance for UI anomalies or unexpected behavior, encouraging reporting[cite: 39, 166, 184]. Consider recommending browser-level security solutions for real-time phishing protection[cite: 92, 185].
   - **Addresses:** 4.4.4, User vigilance.
 
-- **5.10.9. Promote Extension Management Best Practices:**
+- **5.11.9. Promote Extension Management Best Practices:**
   - **Recommendation:** Advise users to limit installed extensions, regularly audit them, remove unused ones, and install only from reputable sources[cite: 43, 140, 167, 198].
   - **Addresses:** Reducing overall user attack surface.
 
 ## 6. Permissions Justification
 
-The extension requests the following permissions, all of which are **necessary** for its intended operation:
+The extension requests the following permissions, all of which are **necessary** for its intended operation and adhere to the Principle of Least Privilege to minimize risk, as excessive permissions are a common vector for abuse in compromised extensions[cite: 29, 141]:
 
 - **`tabs`:** Required to access the URL of the currently active tab to determine its origin[cite: 28].
 - **`bookmarks`:** Required to create, read, and update the designated bookmark used for displaying the marker[cite: 28, 42].
