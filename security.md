@@ -8,9 +8,26 @@ This document reflects the security state of OriginMarker after an initial audit
 
 ### GitHub Actions CI/CD Security
 
+The repository utilizes GitHub Actions for continuous integration and code quality. The security of these workflows is maintained by adhering to the principle of least privilege and isolating write operations.
+
 #### Build Workflow (`build.yml`)
 
-The `build.yml` workflow includes a step that automatically formats code using Prettier and then commits and pushes these changes directly to the `main` branch. This behavior was temporarily changed to a `--check` mode but has been reverted to the auto-commit behavior as per user request. While this provides convenience by ensuring consistent formatting, it's important to note that it bypasses the standard pull request and review process for these automated changes to the `main` branch. This could also potentially lead to CI loops or unintended pushes if triggered by pull requests from forks under certain conditions. Users of this repository should be aware of this workflow automation.
+The `build.yml` workflow is responsible for creating build artifacts (e.g., for the Chrome extension).
+- **Permissions:** This workflow operates with `contents: read` permissions, which are sufficient for checking out code and creating artifacts. It does not have write access to the repository.
+- **Prettier Formatting:** This workflow no longer handles automatic code formatting.
+
+#### Formatting Workflow (`format-on-merge.yml`)
+
+A dedicated workflow, `format-on-merge.yml`, handles automatic code formatting using Prettier.
+- **Trigger:** This workflow runs exclusively on pushes to the `main` branch (e.g., after a pull request is merged).
+- **Action:** It checks out the code, applies Prettier formatting, and then commits and pushes any changes back to the `main` branch.
+- **Permissions:** To perform the commit and push operations, this workflow is granted `contents: write` permission. This isolates the write access needed for formatting to this specific, controlled workflow, preventing broader write permissions in other workflows.
+- **Commit Identity:** Changes are committed using a "Prettier Bot" identity.
+
+#### CodeQL Workflow (`codeql.yml`)
+
+The `codeql.yml` workflow is used for static code analysis to identify potential security vulnerabilities.
+- **Permissions:** It uses `security-events: write` to report findings, and read-only permissions like `contents: read` and `packages: read` to access code and CodeQL analysis packs. These permissions are scoped to its analysis tasks.
 
 **Purpose:** The "OriginMarker" Chrome extension provides an origin-dependent marker by changing the title of a designated bookmark to reflect the origin of the currently active tab.
 
