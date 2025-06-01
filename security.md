@@ -13,12 +13,14 @@ The repository utilizes GitHub Actions for continuous integration and code quali
 #### Build Workflow (`build.yml`)
 
 The `build.yml` workflow is responsible for creating build artifacts (e.g., for the Chrome extension).
+
 - **Permissions:** This workflow operates with `contents: read` permissions, which are sufficient for checking out code and creating artifacts. It does not have write access to the repository.
 - **Prettier Formatting:** This workflow no longer handles automatic code formatting.
 
 #### Formatting Workflow (`format-on-merge.yml`)
 
 A dedicated workflow, `format-on-merge.yml`, handles automatic code formatting using Prettier.
+
 - **Trigger:** This workflow runs exclusively on pushes to the `main` branch (e.g., after a pull request is merged).
 - **Action:** It checks out the code, applies Prettier formatting, and then commits and pushes any changes back to the `main` branch.
 - **Permissions:** To perform the commit and push operations, this workflow is granted `contents: write` permission. This isolates the write access needed for formatting to this specific, controlled workflow, preventing broader write permissions in other workflows.
@@ -27,6 +29,7 @@ A dedicated workflow, `format-on-merge.yml`, handles automatic code formatting u
 #### CodeQL Workflow (`codeql.yml`)
 
 The `codeql.yml` workflow is used for static code analysis to identify potential security vulnerabilities.
+
 - **Permissions:** It uses `security-events: write` to report findings, and read-only permissions like `contents: read` and `packages: read` to access code and CodeQL analysis packs. These permissions are scoped to its analysis tasks.
 
 **Purpose:** The "OriginMarker" Chrome extension provides an origin-dependent marker by changing the title of a designated bookmark to reflect the origin of the currently active tab.
