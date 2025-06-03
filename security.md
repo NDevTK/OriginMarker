@@ -454,6 +454,175 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 
 ---
 
+### 4.11. AI-Driven Adaptive Phishing and Vulnerability Discovery 
+
+- **4.11.1. AI-Powered Phishing Campaigns:** Threat actors leveraging Artificial Intelligence to generate highly convincing, context-aware, and adaptive phishing websites.  These sites might dynamically alter content or UI elements to appear more legitimate or specifically bypass visual cues that users rely on, potentially including those influenced by OriginMarker if user patterns were somehow inferred (though OriginMarker aims to make this hard with salted hashes). 
+- **4.11.2. AI-Assisted Vulnerability Research:** The use of AI tools by malicious actors to probe for novel or complex vulnerabilities within the OriginMarker codebase, its dependencies, or its interactions with browser APIs at a scale and speed surpassing traditional methods. 
+- **Impact:**
+    - Increased risk of users falling for sophisticated phishing attacks if AI can effectively neutralize or mimic security indicators, or create highly tailored deceptive narratives. 
+    - Accelerated discovery of potential zero-day vulnerabilities in OriginMarker, shortening the window for proactive defense. 
+
+### 4.12. Advanced Browser Sync Manipulation and State Forcing 
+
+(Expanding on 4.2.1)
+- **Mechanism:** Beyond passive exfiltration of the salt or custom markers from `chrome.storage.sync`, an attacker who gains control over a user's synchronized storage (e.g., via a compromised Google account) could actively attempt to maliciously modify, corrupt, or strategically manipulate OriginMarker's synced settings.  This could involve:
+    - Injecting a known (compromised) salt to make automatic markers predictable across the user's devices. 
+    - Forcing the extension into "Manual Mode" (`**`) or changing the store preference to a less secure option (e.g., forcing session storage to cause frequent salt regeneration and marker changes, leading to user confusion or habituation bypass). 
+    - Deliberately causing data conflicts or pushing malformed data to disrupt functionality or trigger error conditions. 
+- **Impact:**
+    - Degradation of security guarantees (e.g., predictable markers). 
+    - Denial of service or inconsistent behavior across synced devices. 
+    - User confusion, potentially leading to distrust or misconfiguration of the extension. 
+    - Cross-device attack amplification or targeted operational disruption. 
+
+### 4.13. Service Worker Lifecycle Exploitation (Manifest V3 Context) 
+
+- **Mechanism:** Sophisticated attacks specifically targeting the Manifest V3 service worker lifecycle.  This could include:
+    - Exploiting subtle vulnerabilities in how the Chrome browser manages service worker updates, registration, message passing, or termination. 
+    - Attempting to force the extension's service worker into an inactive, unstable, or broken state by manipulating events or its operational environment (e.g., exhausting resources available to service workers). 
+    - If a vulnerability exists in the browser's service worker update mechanism, an attacker might try to prevent legitimate updates or inject a rogue service worker if other security layers are bypassed. 
+- **Impact:**
+    - OriginMarker failing to reliably process tab updates, generate markers, respond to bookmark changes, or handle storage operations, rendering it ineffective or intermittent. 
+    - Potential for an attacker to disable the extension's core logic without direct code modification if the service worker can be consistently suppressed or crashed. 
+
+### 4.14. Granular Denial of Service via Custom Marker Item Limits 
+
+(More specific than 4.2.2)
+- **Mechanism:** An attacker, potentially through social engineering (e.g., tricking a user into rapidly bookmarking many distinct generated subdomains of a malicious site, and then custom-naming them via prompts) or by controlling a compromised webpage that interacts with the user in a specific way, could lead to the creation of a very large number of unique custom markers.  While individual marker sizes are small, a high volume of distinct storage entries could specifically target `chrome.storage.sync`'s limit of 512 items per extension more effectively than filling the total byte quota with fewer, larger items. 
+- **Impact:**
+    - Premature exhaustion of storage item quotas, especially when using sync storage, preventing legitimate new custom markers or other critical settings (like salt or mode) from being saved. 
+    - Degraded user experience and potential loss of user-defined settings or extension configuration. 
+
+### 4.15. Enhanced Developer Environment Security Risks 
+
+(Expanding on 4.5.4)
+- **Mechanism:** Compromise of the developer's local machine and development toolchain beyond just compromised runtime dependencies (like npm packages) or CI/CD pipeline vulnerabilities.  This broader scope includes:
+    - Malicious Integrated Development Environment (IDE) extensions or plugins. 
+    - Compromised build tools (compilers, bundlers, minifiers) that are run locally before code is pushed to version control. 
+    - Infected debuggers or other developer utilities. 
+    - Compromised operating system or browser extensions used by the developer that have high privilege levels on the development machine. 
+- **Impact:**
+    - Injection of highly privileged malicious code directly into the OriginMarker source code before it reaches version control or the CI/CD pipeline.  This can be very stealthy and bypass many standard checks. 
+    - Leakage of sensitive development credentials, signing keys, or API tokens stored locally. 
+
+### 4.16. Lack of Formalized and Recurring Threat Modeling Lifecycle 
+
+- **Process Weakness:** Lack of continuous, formalized threat modeling integrated into the development lifecycle.  One-off security audits might miss threats introduced by new features, changes in dependencies, or evolving attacker methodologies. 
+- **Impact:**
+    - New vulnerabilities or design weaknesses could be introduced and remain undetected until a later audit or, worse, an exploit. 
+    - Security might not be "baked in" to new features from the start. 
+
+### 4.17. Absence of Automated Security Regression Testing 
+
+- **Process Weakness:** Accidental reintroduction of previously fixed vulnerabilities or the introduction of new, similar vulnerabilities during code refactoring, feature additions, or dependency updates, if not specifically tested for. 
+- **Impact:**
+    - Security vulnerabilities believed to be resolved could resurface, leading to user risk. 
+    - Inconsistent application of security controls across the codebase over time. 
+
+### 4.18. Advanced Side-Channel Attacks via Web APIs or Resource Monitoring 
+
+- **Mechanism:** Highly sophisticated side-channel attacks where a malicious webpage (or another less-privileged extension) attempts to infer information about the current origin being processed by OriginMarker.  This is beyond simple timing of `chrome.storage` and could involve:
+    - Precise measurement of JavaScript execution time for marker generation if its performance varies subtly based on specific characteristics of the origin string (e.g., length, character complexity influencing pre-hashing steps, if any, or the base2base conversion, though SHA-256 itself is generally resistant to simple timing attacks). 
+    - Monitoring fine-grained resource usage (e.g., CPU, memory fluctuations) through emerging Web APIs, if such APIs could provide insight into another extension's background operations (this is generally prevented by browser sandboxing but new APIs or vulnerabilities could change this). 
+    - Exploiting browser rendering pipeline characteristics if the timing of bookmark bar updates could be precisely measured and correlated with origin data. 
+- **Impact:**
+    - Potential (though technically challenging) leakage of information about the user's current Browse origin to an attacker, undermining the privacy aspect of salted markers. 
+
+### 4.19. Accessibility (A11y) Issues of Security Indicators and Feedback 
+
+- **Usability Issue:** Security indicators (emoji markers, error badges) or configuration options that are not accessible to users with disabilities (e.g., visual impairments requiring screen readers, motor impairments).  For example, if emoji markers are not properly announced by screen readers, or if color alone is used to convey critical information. 
+- **Impact:**
+    - A segment of users may not be able to perceive or understand OriginMarker's security cues, effectively negating its benefits for them and potentially leaving them more vulnerable. 
+    - Frustration and inability to configure the extension securely. 
+
+### 4.20. User Security Fatigue and Marker Desensitization 
+
+- **User Behavior Risk:** Over time, users may become desensitized to the OriginMarker indicators ("alert fatigue" or "indicator blindness"), especially if the markers for frequently visited sites remain static.  This could reduce their effectiveness as an early warning for phishing or misdirection. 
+- **Impact:**
+    - Decreased vigilance from users, potentially leading them to overlook a changed or "unknown" marker that should signal a problem. 
+    - Reduction in the long-term security benefit of the extension. 
+
+### 4.21. Deceptive Gradient or "Emoji Blending/Similarity" Attacks 
+
+(Expanding on 4.4.3 Perceptual Collisions)
+- **Mechanism:** A more nuanced visual deception attack where an attacker crafts a phishing domain (or a series of domains) whose auto-generated OriginMarker emoji sequence is not identical but perceptually very close to a legitimate target site's marker.  This goes beyond simple homoglyphs in the domain itself and focuses on the visual similarity of the resulting emoji strings, especially for users who only glance quickly.  This could involve finding origins that produce markers differing by only one or two visually confusable emojis (e.g., 克 vs. 酷 if the user isn't paying close attention) or using sequences of emojis that "blend" together or share common visual elements. 
+- **Impact:**
+    - User may mistakenly trust a malicious site because the OriginMarker appears "close enough" to the expected one, undermining the differentiation goal. 
+
+### 4.22. Post-Quantum Cryptography (PQC) Future Risks 
+
+- **Long-Term Risk:** The current cryptographic hashing algorithm used (SHA-256 for hashing the origin+salt) is secure against current classical computers.  However, the advent of sufficiently powerful quantum computers in the future could theoretically weaken or break SHA-256 (e.g., through Grover's algorithm reducing effective search complexity). 
+- **Impact (Long-Term):**
+    - If SHA-256 were compromised, the uniqueness and collision resistance of the origin hashes could be undermined, potentially allowing attackers to find origins that intentionally collide with legitimate site markers or to reverse parts of the input from the hash. 
+
+### 4.23. Lack of Security Champions Program Focus 
+
+- **Process Weakness:** Absence of a formalized "Security Champion" role or dedicated time allocation for focused security advocacy, research, and integration within the development lifecycle, especially for solo developers or small teams. 
+- **Impact:**
+    - Security considerations might be inconsistently applied or overlooked due to competing development pressures. 
+    - Slower adoption of new security best practices or responses to emerging threats. 
+
+### 4.24. Insufficient Adversarial Simulation ("Red Team" Exercises) 
+
+- **Testing Gap:** Lack of periodic internal or external "red team" exercises specifically designed to actively attempt to circumvent OriginMarker's security controls or achieve malicious objectives. 
+- **Impact:**
+    - Potential vulnerabilities from an attacker's perspective may be missed by standard testing or static analysis. 
+    - Ineffective validation of existing security controls under realistic attack scenarios. 
+    - Unidentified unexpected interactions or logic flaws. 
+
+### 4.25. Ambiguity in Fail-State Design Philosophy 
+
+- **Design Principle Weakness:** Critical security functions may lack explicitly defined "fail-secure" (prioritizing security, potentially reducing functionality) versus "fail-open" (prioritizing availability, potentially at security cost) behaviors in unexpected error conditions. 
+- **Impact:**
+    - Ambiguous failure states could be misinterpreted by users or exploited by attackers. 
+    - Inconsistent behavior of the extension under duress. 
+
+### 4.26. Over-Reliance on Browser-Level Integrity Without User Awareness 
+
+- **User Awareness Gap:** While browsers provide extension integrity checks (e.g., Chrome Web Store signing), users may not be aware of the importance of installing only from official sources to benefit from these protections. 
+- **Impact:**
+    - Users might install versions of OriginMarker from unofficial sources, bypassing browser integrity checks and risking installation of tampered or malicious versions. 
+    - Reduced user trust if they are unaware of the protections offered by official store installations. 
+
+### 4.27. Data Remnants After Uninstall (Local Storage) 
+
+- **Data Lifecycle Issue:** Data stored in `chrome.storage.local` (if selected by the user or for certain settings like `bookmark` ID, `mode`, `store` preference) might persist on the user's machine after the extension is uninstalled, as reliable uninstall hooks for cleanup are limited. 
+- **Impact:**
+    - User data (though pseudonymized or user-chosen) remains on the local device post-uninstallation, which might not be expected by privacy-conscious users. 
+    - Does not fully align with data minimization principles if data persists unnecessarily. 
+
+### 4.28. Unmanaged "Security Debt" 
+
+- **Process Weakness:** Identified security risks, audit recommendations, or planned improvements that are consciously deferred might not be formally tracked as "security debt." 
+- **Impact:**
+    - Deferred security items can be forgotten or indefinitely ignored, leading to an accumulation of unaddressed weaknesses. 
+    - Lack of a structured way to manage and communicate evolving security risk over time. 
+    - Hinders informed decision-making about resource allocation for security. 
+
+### 4.29. Insufficient Fuzz Testing 
+
+- **Testing Gap:** Lack of fuzz testing for inputs handled by the extension, such as custom marker names or data parsed from `chrome.storage`. 
+- **Impact:**
+    - Potential for crashes (DoS), unexpected behavior, or logic errors when handling malformed or unexpected inputs, which might be missed by other testing methods. 
+    - Reduced overall robustness and resilience. 
+
+### 4.30. Brand Impersonation or Misuse 
+
+- **Ecosystem Risk:** Lack of periodic monitoring for unauthorized uses of the OriginMarker name, logo, or branding in app stores or on the internet. 
+- **Impact:**
+    - Users could be tricked into installing malicious copycat extensions. 
+    - Damage to OriginMarker's reputation. 
+    - Spread of misinformation or scams related to the extension. 
+
+### 4.31. Neglect of Cognitive Biases in User Interaction 
+
+- **Human Factor Risk:** User interaction and education design may not fully account for cognitive biases (e.g., confirmation bias, anchoring bias, automation bias, familiarity heuristic) that can affect how users perceive and react to OriginMarker's indicators. 
+- **Impact:**
+    - Technically sound security indicators can be less effective if user psychology leads to misinterpretation or mental shortcuts. 
+    - Users might over-trust, under-scrutinize, or develop habits that attackers could exploit. 
+
+---
+
 ## 5. Recommendations & Mitigations
 
 This section includes mitigations for issues identified in the initial audit (many of which are now marked "ADDRESSED") and new recommendations based on subsequent research to counter the advanced attack vectors detailed in Section 4.
@@ -853,6 +1022,220 @@ The following recommendations are proposed to address the advanced attack vector
   - **Relevance/Feasibility:** Low to moderate relevance for OriginMarker's direct security; good for user ecosystem. Feasibility is high.
   - **Addresses:** Reducing overall user attack surface.
 
+---
+
+#### 5.12. Mitigations for AI-Driven Threats (Ref: 4.11)
+
+- **5.12.1. Enhanced User Education on AI-Phishing:**
+  - **Recommendation:** Update user guidance to specifically warn about the capabilities of AI in creating deceptive content.  Reinforce that OriginMarker is one component of a broader security strategy and that critical thinking remains essential. 
+  - **Status: PROPOSED**
+- **5.12.2. Proactive Use of AI-Powered Security Tools:**
+  - **Recommendation:** Integrate AI-assisted Static Application Security Testing (SAST) and Dynamic Application Security Testing (DAST) tools into the development lifecycle to identify and remediate complex vulnerabilities that might be discoverable by adversarial AI. 
+  - **Status: PROPOSED**
+- **5.12.3. Agile Vulnerability Management for AI-Accelerated Discovery:**
+  - **Recommendation:** Further strengthen the existing incident response plan to accommodate the potential for faster vulnerability discovery by AI, ensuring rapid patching, and transparent disclosure processes. 
+  - **Status: PROPOSED**
+
+#### 5.13. Mitigations for Advanced Browser Sync Manipulation (Ref: 4.12)
+
+- **5.13.1. Stricter Sync Data Validation and Sanitization:**
+  - **Recommendation:** Implement rigorous validation for all data retrieved from `chrome.storage.sync`.  Treat this data as potentially untrusted upon retrieval, verifying types, ranges, and structural integrity before use.  If malformed or unexpected data is detected, revert to secure defaults, attempt to restore from a local valid cache, or alert the user.  (Partially addressed by existing type validation).
+  - **Status: PROPOSED** (for aspects beyond current type validation)
+- **5.13.2. Robust Conflict Resolution Strategy for Synced Data:**
+  - **Recommendation:** Define and implement a clear strategy for handling data conflicts that may arise in `chrome.storage.sync` (e.g., if settings are changed on multiple devices offline and then synced).  Prioritize user security or prompt for manual intervention in ambiguous cases. 
+  - **Status: PROPOSED**
+- **5.13.3. User Alerts for Suspicious Critical Setting Changes via Sync:**
+  - **Recommendation:** If critical settings (like the salt, mode, or store type) are observed to change via `chrome.storage.sync` in a manner that is unexpected or reduces security, consider mechanisms to alert the user on other synced devices, prompting them to review the changes. 
+  - **Status: PROPOSED**
+
+#### 5.14. Mitigations for Service Worker Lifecycle Exploitation (Ref: 4.13)
+
+- **5.14.1. Resilient Initialization and Error Recovery for Service Worker:**
+  - **Recommendation:** Design the extension to gracefully handle unexpected service worker terminations or errors.  Implement robust re-initialization logic that verifies state and ensures the service worker can recover securely. 
+  - **Status: PROPOSED**
+- **5.14.2. Monitoring Service Worker Health (if feasible):**
+  - **Recommendation:** Explore if Chrome APIs offer any direct or indirect way for the extension (e.g., through its options page or devtools) to report on the perceived health or registration status of its service worker, potentially aiding in diagnosing issues. [cite: 30] (This is more of an advanced diagnostic). 
+  - **Status: PROPOSED**
+- **5.14.3. Adherence to Service Worker Best Practices:**
+  - **Recommendation:** Continuously review and adhere to Google's best practices for Manifest V3 service worker development, particularly around event handling, avoiding blocking operations, and managing state in an event-driven environment. 
+  - **Status: PROPOSED** (as an ongoing effort)
+
+#### 5.15. Mitigations for Granular DoS via Custom Marker Item Limits (Ref: 4.14)
+
+- **5.15.1. Rate Limiting on New Custom Marker Creation:**
+  - **Recommendation:** Implement specific rate limiting for the creation of new custom markers (e.g., a maximum number of new, uniquely hashed origins for which custom markers can be saved per minute or per hour).  This would be distinct from debouncing bookmark title changes for an existing marker. 
+  - **Status: PROPOSED**
+- **5.15.2. User Warnings on Approaching Custom Marker Item Limits:**
+  - **Recommendation:** If the number of stored custom markers approaches a significant percentage (e.g., 80-90%) of the 512-item limit when sync storage is in use, provide a clear warning to the user in the extension's options page. 
+  - **Status: PROPOSED**
+
+#### 5.16. Mitigations for Enhanced Developer Environment Security Risks (Ref: 4.15)
+
+- **5.16.1. Hardened Developer Workstations and Practices:**
+  - **Recommendation:** Enforce strict security policies for all developer machines, including Endpoint Detection and Response (EDR) solutions, principle of least privilege for user accounts, regular OS and software patching, encrypted storage, and restricted installation of software/browser extensions. 
+  - **Status: PROPOSED** (as organizational/personal policy)
+- **5.16.2. Secure Development Tooling and Environment Vetting:**
+  - **Recommendation:** Mandate the vetting of all IDE extensions, build tools, and other development utilities.  Use official, signed versions from trusted sources. Consider dedicated, isolated virtual machines or containers for development and build processes. 
+  - **Status: PROPOSED**
+- **5.16.3. Out-of-Band Build Verification (Defense in Depth):**
+  - **Recommendation:** If practical for critical releases, implement a process where the source code from version control is independently re-compiled and re-packaged in a separate, highly secure "clean room" environment.  The resulting artifact can then be compared bit-by-bit against the official build artifact generated by the primary CI/CD pipeline to detect any unauthorized modifications. 
+  - **Status: PROPOSED**
+
+#### 5.17. Mitigations for Lack of Formalized Threat Modeling (Ref: 4.16)
+
+- **5.17.1. Integrate Recurring Threat Modeling:**
+  - **Recommendation:** Adopt a formal threat modeling methodology (e.g., STRIDE, PASTA, DREAD) and make it a mandatory, recurring activity for: 
+    - Every significant new feature or architectural change. 
+    - Periodic review of existing core functionalities (e.g., annually or biennially). 
+  - Document the threat models and track identified threats and their mitigations. This ensures that security thinking evolves alongside the extension. 
+  - **Status: PROPOSED**
+
+#### 5.18. Mitigations for Absence of Automated Security Regression Testing (Ref: 4.17)
+
+- **5.18.1. Develop Security-Specific Automated Tests:**
+  - **Recommendation:** Create and maintain a dedicated suite of automated tests that verify critical security properties and controls.  Examples include:
+    - Tests ensuring salt regeneration occurs correctly and securely under defined conditions (e.g., after reset). 
+    - Tests verifying that invalid or malformed data retrieved from `chrome.storage` is handled safely without causing errors or unexpected states. 
+    - Assertions that the Content Security Policy (CSP) is correctly configured and enforced for extension pages. 
+    - Tests confirming that marker generation logic consistently produces expected outputs for known inputs and handles edge cases securely. 
+    - Negative tests for input validation (e.g., ensuring custom markers cannot contain disallowed characters once that logic is in place). 
+  - Integrate these security regression tests into the CI/CD pipeline. 
+  - **Status: PROPOSED**
+
+#### 5.19. Mitigations for Advanced Side-Channel Attacks (Ref: 4.18)
+
+- **5.19.1. Strive for Constant-Time Behavior in Critical Logic:**
+  - **Recommendation:** Where feasible, ensure that security-critical operations (like aspects of marker generation before the hash, or the base2base conversion) operate in a way that is as close to "constant time" as possible, meaning their execution time does not significantly vary based on the input data's characteristics. 
+  - **Status: PROPOSED** (Similar to 5.5.1, low relevance unless specific susceptible operations identified)
+- **5.19.2. Principle of Least Information Exposure:**
+  - **Recommendation:** Minimize any internal processing states or intermediate values related to origin processing that might be indirectly observable. 
+  - **Status: PROPOSED**
+- **5.19.3. Monitor Browser API Developments:**
+  - **Recommendation:** Stay informed about new browser APIs, especially those related to performance monitoring or cross-origin information access, and assess their potential impact on extension security. 
+  - **Status: PROPOSED** (as an ongoing effort)
+
+#### 5.20. Mitigations for Accessibility (A11y) Issues (Ref: 4.19)
+
+- **5.20.1. Conduct Accessibility Audits:**
+  - **Recommendation:** Regularly audit OriginMarker’s UI elements, including the emoji markers (how they might be programmatically determined or announced), error badges, and the entire `options.html` page, against accessibility standards (e.g., WCAG). 
+  - **Status: PROPOSED**
+- **5.20.2. Provide Text Alternatives and ARIA Attributes:**
+  - **Recommendation:** Ensure that emojis used as markers have appropriate text alternatives or ARIA (Accessible Rich Internet Applications) labels if their visual representation is key to their meaning and not inherently conveyed by their Unicode name.  For example, an automatically generated marker could be announced as "OriginMarker: Site marker apple, banana, star" rather than just the emojis themselves if context is needed. 
+  - **Status: PROPOSED**
+- **5.20.3. Ensure Keyboard Navigability and Screen Reader Compatibility:**
+  - **Recommendation:** All interactive elements should be fully keyboard navigable, and all information should be clearly perceivable and understandable with assistive technologies. 
+  - **Status: PROPOSED**
+
+#### 5.21. Mitigations for User Security Fatigue and Marker Desensitization (Ref: 4.20)
+
+- **5.21.1. Research on Indicator Salience:**
+  - **Recommendation:** Consider (or review existing research on) the long-term salience of visual security indicators. 
+  - **Status: PROPOSED**
+- **5.21.2. (Optional/Careful Consideration) Subtle Marker Evolution or User Engagement:**
+  - **Recommendation:**
+    - Potentially controversial and needs careful thought against marker stability: Explore options for very subtle, infrequent visual "refreshers" or variations in the presentation (not the core emoji sequence itself unless the salt changes) for highly familiar sites, designed to recapture attention without causing confusion.  This is high risk. 
+    - Provide optional, non-intrusive educational tips or reminders within the `options.html` page about the importance of actively checking markers. 
+  - **Status: PROPOSED** (High risk item needs careful consideration)
+- **5.21.3. Gather User Feedback on Long-Term Perception:**
+  - **Recommendation:** If feasible, establish channels for long-term user feedback on how they perceive and use the markers over time. 
+  - **Status: PROPOSED**
+
+#### 5.22. Mitigations for Deceptive Gradient/Emoji Similarity Attacks (Ref: 4.21)
+
+- **5.22.1. Advanced Emoji Alphabet Curation for Sequence Distinctiveness:**
+  - **Recommendation:** When curating the emoji list in `static.js` (as mentioned in 5.3.3), consider not just the distinctiveness of individual emojis but also their potential for confusion when placed in sequences.  Avoid emojis that are too visually similar or that might form ambiguous visual patterns when combined.  This could involve excluding emojis with very similar shapes or color palettes if they are not easily distinguishable at small sizes. 
+  - **Status: PROPOSED** (Extends 5.3.3)
+- **5.22.2. User Education on Careful Marker Scrutiny:**
+  - **Recommendation:** Further emphasize in user education materials (options page, README) the importance of carefully scrutinizing the entire emoji sequence, not just getting a general "feel" for it.  Highlight that attackers may try to create similar-looking markers. 
+  - **Status: PROPOSED** (Extends 5.3.2)
+- **5.22.3. (Experimental) Consider Marker Length or Separators:**
+  - **Recommendation:** While it adds complexity, briefly evaluate if the fixed length of the emoji marker is optimal, or if introducing a non-emoji "separator" character at a fixed position within the sequence could help break up patterns and improve the distinguishability of adjacent emojis.  This would need careful consideration against the goal of keeping markers short and easily glanceable. 
+  - **Status: PROPOSED** (Experimental)
+
+#### 5.23. Mitigations for Post-Quantum Cryptography (PQC) Risks (Ref: 4.22)
+
+- **5.23.1. Monitor PQC Developments:**
+  - **Recommendation:** State an organizational commitment to monitor the development and standardization of Post-Quantum Cryptography (PQC) algorithms by bodies like NIST. 
+  - **Status: PROPOSED**
+- **5.23.2. Plan for Crypto Agility:**
+  - **Recommendation:** Design the extension with cryptographic agility in mind, meaning that the hashing algorithm used for marker generation could be updated in the future if necessary.  This involves abstracting the hashing function and being prepared to manage a transition period if algorithms change (e.g., how to handle existing markers or salts).  This is a very long-term consideration but demonstrates forward-thinking security posture. 
+  - **Status: PROPOSED**
+
+#### 5.24. Mitigations for Lack of Security Champions Program (Ref: 4.23)
+
+- **5.24.1. Implement a Security Champions Program (or Dedicated Time):**
+  - **Recommendation:** Formally define the role and responsibilities of a Security Champion, or consciously allocate dedicated time for these "champion" activities for solo developers.  This includes staying abreast of threats, advocating for security in development, being a security contact, and facilitating knowledge sharing. 
+  - **Status: PROPOSED**
+
+#### 5.25. Mitigations for Insufficient Adversarial Simulation (Ref: 4.24)
+
+- **5.25.1. Conduct Periodic Adversarial Simulations:**
+  - **Recommendation:** Schedule and perform "red team" exercises focused on OriginMarker, attempting to circumvent controls and achieve malicious objectives.  Document findings and use them to improve defenses. Start with simple scenarios and increase complexity over time. 
+  - **Status: PROPOSED**
+
+#### 5.26. Mitigations for Ambiguity in Fail-State Design (Ref: 4.25)
+
+- **5.26.1. Document and Adhere to Fail-Secure Principles:**
+  - **Recommendation:** Explicitly state in security documentation and internal design guidelines that OriginMarker's critical functions will adhere to fail-secure principles (defaulting to a state prioritizing security, even if functionality is reduced, e.g., displaying prominent "ERROR" marker).  The current "ERR" badge for initialization failures is a good example; ensure this philosophy is applied consistently. 
+  - **Status: PROPOSED** (Reinforce existing good practice)
+
+#### 5.27. Mitigations for Over-Reliance on Browser Integrity (Ref: 4.26)
+
+- **5.27.1. Educate Users on Official Installation Sources:**
+  - **Recommendation:** Briefly explain in user-facing documentation (e.g., README or options page) the importance of installing OriginMarker only from the official Chrome Web Store to benefit from browser-level integrity checks. 
+  - **Status: PROPOSED**
+- **5.27.2. Internal Verification of Published Code:**
+  - **Recommendation:** While relying on CWS, developers can also use tools like 'ExtensionTransparency' to verify published code matches source code, as mentioned in the existing document. 
+  - **Status: PROPOSED** (Reinforce existing practice)
+
+#### 5.28. Mitigations for Data Remnants After Uninstall (Ref: 4.27)
+
+- **5.28.1. Investigate Uninstall Hooks for Local Data Cleanup:**
+  - **Recommendation:** Research current Chrome extension APIs (e.g., `chrome.runtime.setUninstallURL` or other potential mechanisms) to determine if it's feasible to trigger a cleanup of `chrome.storage.local` data upon uninstallation.  Note that direct, guaranteed uninstall hooks with arbitrary code execution are generally limited for security reasons. 
+  - **Status: PROPOSED**
+- **5.28.2. User Guidance on Data Removal Before Uninstall:**
+  - **Recommendation:** If programmatic cleanup is not reliably feasible, provide clear instructions in the documentation (e.g., `options.html` or README) on how users can manually ensure all extension data is cleared if they wish (e.g., using the "Clear All Extension Data" button before uninstalling, and managing their synced data via Google account settings). 
+  - **Status: PROPOSED**
+
+#### 5.29. Mitigations for Unmanaged "Security Debt" (Ref: 4.28)
+
+- **5.29.1. Implement a Security Debt Log:**
+  - **Recommendation:** Create and maintain a formal log for tracking deferred security items, including reason for deferral and potential risks. 
+  - **Status: PROPOSED**
+- **5.29.2. Regular Review and Prioritization of Security Debt:**
+  - **Recommendation:** Schedule regular reviews (e.g., quarterly or bi-annually) of the security debt log and allocate resources to address high-priority items from the debt list for implementation in future development cycles. 
+  - **Status: PROPOSED**
+
+#### 5.30. Mitigations for Insufficient Fuzz Testing (Ref: 4.29)
+
+- **5.30.1. Introduce Fuzz Testing for Key Inputs:**
+  - **Recommendation:** Identify key input vectors (e.g., custom marker names, parsed storage data) and implement fuzz testing using appropriate tools or custom scripts to feed malformed, unexpected, or random data. 
+  - **Status: PROPOSED**
+- **5.30.2. Integrate Fuzzing into Testing Cycles:**
+  - **Recommendation:** Where possible, incorporate fuzz testing into regular testing cycles or CI/CD pipelines. 
+  - **Status: PROPOSED**
+
+#### 5.31. Mitigations for Brand Impersonation or Misuse (Ref: 4.30)
+
+- **5.31.1. Periodic Brand Monitoring:**
+  - **Recommendation:** Implement a process for periodically searching the Chrome Web Store and the broader internet for potential brand impersonation, copycat extensions, or misuse of the OriginMarker name/logo. 
+  - **Status: PROPOSED**
+- **5.31.2. Establish a Reporting Channel for Impersonations:**
+  - **Recommendation:** Ensure users have a clear way to report suspected impersonations they encounter (potentially through the same GitHub Issues channel used for bugs/feedback). 
+  - **Status: PROPOSED** (Extends 5.11.4)
+
+#### 5.32. Mitigations for Neglect of Cognitive Biases (Ref: 4.31)
+
+- **5.32.1. Review User Education with Cognitive Biases in Mind:**
+  - **Recommendation:** Craft educational materials and UI text to gently counteract potential cognitive biases (e.g., confirmation, anchoring, automation bias, familiarity heuristic).  For instance, explicitly encourage users to double-check markers even on familiar sites and explain why "close enough" isn't secure. 
+  - **Status: PROPOSED** (Extends 5.3.2)
+- **5.32.2. Design for "Mindful Interaction":**
+  - **Recommendation:** Explore subtle UI cues or educational prompts that encourage users to engage more mindfully with the markers, rather than treating them as passive background information.  This needs to be balanced against intrusiveness. 
+  - **Status: PROPOSED**
+- **5.32.3. User Research on Trust and Cognitive Shortcuts (If Feasible):**
+  - **Recommendation:** If resources ever allow, conduct user studies specifically focused on understanding how users interpret and build trust with OriginMarker's indicators over time, and what cognitive shortcuts they might be using. 
+  - **Status: PROPOSED**
+
 ## 6. Permissions Justification
 
 The extension requests the following permissions, all of which are **necessary** for its intended operation and adhere to the Principle of Least Privilege to minimize risk, as excessive permissions are a common vector for abuse in compromised extensions:
@@ -860,3 +1243,31 @@ The extension requests the following permissions, all of which are **necessary**
 - **`tabs`:** Required to access the URL of the currently active tab to determine its origin.
 - **`bookmarks`:** Required to create, read, and update the designated bookmark used for displaying the marker.
 - **`storage`** (`local` and `sync`): Required to store user settings (mode, `salt`, bookmark ID) and custom markers.
+
+---
+
+## 7. Ethical Considerations and Data Handling Transparency 
+
+While not direct attack vectors, addressing these enhances transparency and responsible data handling, which indirectly supports security by fostering user trust and informed behavior. 
+
+### 7.1. User Data Minimization and Purpose Limitation 
+
+- **Discussion:** OriginMarker, by its nature, stores data related to a user's Browse activity (hashed origins or user-defined custom names for origins).  Although the salt in automatic mode aims to pseudonymize these markers, a compromised salt could potentially de-anonymize this stored data.  Custom markers are stored as plaintext chosen by the user. 
+- **Commitment:**
+    - Reiterate clearly that all data stored by OriginMarker (the salt, custom markers, the mode, the designated bookmark ID, and store preference) is used solely for the explicit functionality of providing visual origin differentiation. 
+    - Emphasize that no data is ever transmitted externally by the OriginMarker extension itself. 
+    - Clearly state that the user has full control to view (where applicable, e.g., custom marker names if a UI were built for it, or by inspecting storage) and delete all their OriginMarker data via the reset function. 
+
+### 7.2. Potential for User Misinterpretation and Over-Reliance 
+
+- **Discussion:** Address the inherent risk that users might place undue faith in OriginMarker as a definitive indicator of a website's safety, potentially leading to complacency.  The visual markers, especially if custom-named with terms like "My Safe Bank," could create a strong psychological anchor. 
+- **Commitment:**
+    - Continue to prominently message within the extension's UI (options page) and any documentation that OriginMarker is a supplementary security tool and does not by itself guarantee the safety or trustworthiness of any website. 
+    - Reinforce that markers (automatic or custom) are for origin differentiation to help detect unexpected domain changes, not as an endorsement or security audit of the site's content or operational security. 
+
+### 7.3. Transparency in Operation and Open Source Commitment 
+
+- **Discussion:** The open-source nature of OriginMarker is a cornerstone of its trustworthiness, allowing for public scrutiny of its code and security logic. 
+- **Commitment:**
+    - Maintain the project's open-source license and encourage community review. 
+    - Ensure that the logic for data storage, marker generation (including hashing and emoji conversion), and security features like salting are clearly documented, both within the code (comments) and in user-facing materials (like the README or a dedicated wiki page).
