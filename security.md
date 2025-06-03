@@ -1,4 +1,4 @@
-> **Note:** This document outlines the security considerations and mitigations for the OriginMarker extension. It should be reviewed and updated regularly, especially when changes are made to the extension's functionality, dependencies, permissions, or build process, to ensure it accurately reflects the current security posture. This version incorporates findings from additional security research, including an analysis of emerging attack vectors[cite: 1, 2].
+> **Note:** This document outlines the security considerations and mitigations for the OriginMarker extension. It should be reviewed and updated regularly, especially when changes are made to the extension's functionality, dependencies, permissions, or build process, to ensure it accurately reflects the current security posture. This version incorporates findings from additional security research, including an analysis of emerging attack vectors.
 
 # Chrome Extension Security Audit: OriginMarker
 
@@ -6,11 +6,11 @@
 
 This document reflects the security state of OriginMarker after an initial audit and subsequent hardening cycles. Recent updates from these review and hardening cycles have further addressed error handling, state consistency, and input validation, and fixed specific bugs related to storage interaction; additional recent hardening has further enhanced robustness through stricter type validation for all critical data retrieved from storage and by applying defensive coding practices for internal data handling (such as for marker encoding alphabets). **A subsequent review re-verified that the hardening measures and mitigations detailed in this document are implemented in the codebase.**
 
-The digital landscape is witnessing a **significant escalation in the sophistication and stealth of attacks targeting browser extensions**[cite: 1]. Further research into advanced Chrome extension security threats [cite: 1, 2] has identified additional potential attack vectors and corresponding mitigation strategies, which are detailed in Sections 4 and 5. Modern threats increasingly leverage subtle browser behaviors, exploit asynchronous operations, and manipulate user trust through deceptive UIs[cite: 3]. Threat actors are now **leveraging advanced techniques that exploit intricate aspects of browser functionality, developer ecosystems, and even human psychology**[cite: 2]. The analysis identifies **several key categories of advanced threats that extend beyond the scope of conventional security audits**[cite: 4]. These include **highly targeted supply chain compromises** that weaponize trusted development processes, **subtle side-channel and covert channel attacks** that leak sensitive data through unintended information flows, **increasingly deceptive user interface (UI) and social engineering tactics** that bypass human and automated defenses, **resource exhaustion attacks** designed to impact availability, and **vulnerabilities stemming from cryptographic weaknesses and complex inter-extension interactions**[cite: 5]. These attack types often **bypass standard security measures** and necessitate a deeper understanding of their underlying mechanisms for effective mitigation[cite: 6].
+The digital landscape is witnessing a **significant escalation in the sophistication and stealth of attacks targeting browser extensions**. Research into advanced Chrome extension security threats has identified several key categories of advanced threats that extend beyond the scope of conventional security audits. These include **covert data exfiltration** (e.g., via bookmark synchronization), **visual spoofing attacks** leveraging perceptual collisions in UI elements or emoji homoglyphs, **timing and race condition exploits** that manipulate transient states, critical vulnerabilities arising from **compromised stored data** (such as cryptographic salts accessed via supply chain attacks), and **sophisticated social engineering tactics** that exploit user perception and trust, including misleading users about hijacked subdomains. Modern threats increasingly leverage subtle browser behaviors, exploit asynchronous operations, and manipulate user trust through deceptive UIs. Threat actors are now **leveraging advanced techniques that exploit intricate aspects of browser functionality, developer ecosystems, and even human psychology**. The analysis identifies **several key categories of advanced threats that extend beyond the scope of conventional security audits**. These include **highly targeted supply chain compromises** that weaponize trusted development processes, **subtle side-channel and covert channel attacks** that leak sensitive data through unintended information flows, **increasingly deceptive user interface (UI) and social engineering tactics** that bypass human and automated defenses, **resource exhaustion attacks** designed to impact availability, and **vulnerabilities stemming from cryptographic weaknesses and complex inter-extension interactions**. These attack types often **bypass standard security measures** and necessitate a deeper understanding of their underlying mechanisms for effective mitigation.
 
-Browser extensions, by their very nature, operate with elevated privileges and direct access to user Browse data, making them an attractive target for cybercriminals[cite: 7]. The extensive permissions often granted to extensions mean that a compromised add-on can lead to widespread data theft, session hijacking, ad injection, and even serve as a persistent foothold for further network infiltration[cite: 7, 4]. The inherent trust users place in these tools, often installed for productivity or convenience, represents a critical vulnerability that attackers actively exploit[cite: 8, 4].
+Browser extensions, by their very nature, operate with elevated privileges and direct access to user Browse data, making them an attractive target for cybercriminals. The extensive permissions often granted to extensions mean that a compromised add-on can lead to widespread data theft, session hijacking, ad injection, and even serve as a persistent foothold for further network infiltration. The inherent trust users place in these tools, often installed for productivity or convenience, represents a critical vulnerability that attackers actively exploit.
 
-Conventional security audits typically focus on known vulnerabilities and common misconfigurations[cite: 9]. However, the rapid evolution of attack techniques, particularly in the supply chain and side-channel domains, means that an audit alone is insufficient[cite: 10]. Modern threats often leverage zero-day vulnerabilities—flaws unknown to the vendor—or employ sophisticated social engineering and multi-stage attacks designed to evade traditional security tools[cite: 11, 4]. Proactive threat intelligence is therefore essential[cite: 11].
+Conventional security audits typically focus on known vulnerabilities and common misconfigurations. However, the rapid evolution of attack techniques, particularly in the supply chain and side-channel domains, means that an audit alone is insufficient. Modern threats often leverage zero-day vulnerabilities—flaws unknown to the vendor—or employ sophisticated social engineering and multi-stage attacks designed to evade traditional security tools. Proactive threat intelligence is therefore essential.
 
 ### GitHub Actions CI/CD Security
 
@@ -61,12 +61,12 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 
 ### Manifest Configuration
 
-- **Permissions (`tabs`, `bookmarks`, `storage`):** Deemed appropriate and necessary for the extension's core functionality. No overly broad permissions requested. Adherence to the Principle of Least Privilege is crucial, as extensions requesting more privileges than necessary can lead to significant privacy risks if compromised[cite: 29, 141].
+- **Permissions (`tabs`, `bookmarks`, `storage`):** Deemed appropriate and necessary for the extension's core functionality. No overly broad permissions requested. Adherence to the Principle of Least Privilege is crucial, as extensions requesting more privileges than necessary can lead to significant privacy risks if compromised.
 - **Content Security Policy (CSP):**
   - ```json
     "extension_pages": "default-src 'none'; script-src 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests; block-all-mixed-content"
     ```
-  - This is a **strong CSP** , effectively mitigating common web vulnerabilities like XSS on extension pages by restricting script sources to the extension's own files and disallowing inline scripts or external resources . `frame-ancestors 'none'` protects against clickjacking[cite: 20, 21].
+  - This is a **strong CSP**, effectively mitigating common web vulnerabilities like XSS on extension pages by restricting script sources to the extension's own files and disallowing inline scripts or external resources. `frame-ancestors 'none'` protects against clickjacking.
 - **Other Security Headers:**
   - ```json
     "cross_origin_embedder_policy": { "value": "require-corp" }
@@ -76,14 +76,15 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 
 ### Salt Management and Storage
 
-- **Vulnerability:** The cryptographic `salt` (a UUID generated by `crypto.randomUUID()`) used for hashing origins is stored in a user-configurable storage area (`sync`, `local`, or `session`), selected via the extension's options. The default is `sync`. Custom markers are also stored in these areas.
+- **Vulnerability:** The cryptographic `salt` (a UUID generated by `crypto.randomUUID()`) used for hashing origins is stored in a user-configurable storage area (`sync`, `local`, or `session`), selected via the extension's options. The default is `sync`. Custom markers are also stored in these areas. Chrome's documentation explicitly warns that `chrome.storage.local` and `chrome.storage.sync` are not encrypted and are therefore unsuitable for confidential user data.
 - **Risk:** The `salt` and custom markers are vulnerable to exfiltration and other storage-related attacks:
-  - **Synchronized Storage (`chrome.storage.sync`):** If a user's Google account is compromised, or their local Chrome profile data (which caches synced storage) is accessed by malware, the `salt` and custom markers can be exfiltrated . This would allow an attacker with additional access to the user's bookmarks to deanonymize auto-generated markers and expose custom marker content . `chrome.storage.sync` is not recommended for confidential user data as it is not encrypted by default .
-  - **Local Storage (`chrome.storage.local`):** While using `local` or `session` storage mitigates cross-device exfiltration via sync, `chrome.storage.local` is **not encrypted by default** . Sophisticated malware gaining access to the user's local file system can directly read the salt and custom markers stored locally from the browser's profile directory . This can lead to complete deanonymization of auto-generated markers and exposure of custom markers , undermining privacy and utility . For truly sensitive data, local storage without additional client-side encryption carries significant risk if the user's system is compromised .
-  - **Denial-of-Service (DoS) / Data Corruption via Storage Quota Exhaustion:** OriginMarker's storage can be targeted by a malicious co-installed extension with the `storage` permission. By repeatedly writing data or exceeding API rate limits, an attacker could cause OriginMarker's storage operations to fail . This could disrupt saving of custom markers, salt updates, or persistence of the bookmark ID, impairing functionality .
-    - `chrome.storage.sync`: Has a total quota of approximately 100 KB, an 8 KB per-item limit, a maximum of 512 items, and is rate-limited to 120 write operations per minute and 1800 per hour[cite: 177, 8].
-    - `chrome.storage.local`: Has an approximate limit of 10 MB by default[cite: 177, 8].
-    - Exceeding quotas results in `runtime.lastError` being set .
+  - **Synchronized Storage (`chrome.storage.sync`):** If a user's Google account is compromised, or their local Chrome profile data (which caches synced storage) is accessed by malware, the `salt` and custom markers can be exfiltrated. This would allow an attacker with additional access to the user's bookmarks to deanonymize auto-generated markers and expose custom marker content. `chrome.storage.sync` is not recommended for confidential user data as it is not encrypted by default. A compromise on any synced device can expose critical data, rendering OriginMarker ineffective across the user's entire Browse ecosystem (cross-device attack amplification).
+  - **Local Storage (`chrome.storage.local`):** While using `local` or `session` storage mitigates cross-device exfiltration via sync, `chrome.storage.local` is **not encrypted by default**. Sophisticated malware gaining access to the user's local file system can directly read the salt and custom markers stored locally from the browser's profile directory. This can lead to complete deanonymization of auto-generated markers and exposure of custom markers, undermining privacy and utility. For truly sensitive data, local storage without additional client-side encryption carries significant risk if the user's system is compromised.
+  - **Compromised Extension:** If the OriginMarker extension itself is compromised (e.g., through a supply chain attack), the attacker gains direct access to the stored salt. This enables perfect prediction and spoofing of automatic markers, neutralizing the primary anti-spoofing mechanism. Access to custom markers would allow for highly personalized and convincing phishing campaigns.
+  - **Denial-of-Service (DoS) / Data Corruption via Storage Quota Exhaustion:** OriginMarker's storage can be targeted by a malicious co-installed extension with the `storage` permission. By repeatedly writing data or exceeding API rate limits, an attacker could cause OriginMarker's storage operations to fail. This could disrupt saving of custom markers, salt updates, or persistence of the bookmark ID, impairing functionality.
+    - `chrome.storage.sync`: Has a total quota of approximately 100 KB, an 8 KB per-item limit, a maximum of 512 items, and is rate-limited to 120 write operations per minute and 1800 per hour.
+    - `chrome.storage.local`: Has an approximate limit of 10 MB by default.
+    - Exceeding quotas results in `runtime.lastError` being set.
 
 **Further Hardening (Post-Initial Audit):**
 
@@ -105,7 +106,7 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 - **Vulnerability:** Previously, if a storage operation (e.g., saving `salt`, `mode`, or `bookmark` ID) failed, the in-memory variables might have been updated regardless, leading to a **divergence between the extension's active state and its persisted state.** This could cause inconsistent behavior or reliance on settings that weren't actually saved.
 - **Mitigation:** The refactoring of `setMode` and `initBookmark` in `background.js` now ensures that in-memory state variables (`salt`, `mode`, `bookmark`) are **only updated _after_ the corresponding `chrome.storage.local.set` or `chrome.storage[store].set` operation successfully completes.** If a storage write operation fails, an error is logged, and the in-memory variable retains its previous value (either the last successfully persisted state or `undefined` if being initialized). This **prevents the in-memory state from reflecting unconfirmed changes, significantly improving state consistency.**
 - **Risk:** The primary risk of using incorrect `salt`, `mode`, or `bookmark` ID due to failed writes is now **substantially mitigated.** The extension will operate on the last known good configuration or fail to initialize critical components if initial setup cannot be persisted.
-- **`initBookmark` Re-entrancy Prevention:** The `initBookmark` and `onPlaceholder` functions have been refactored using `AbortController`. If `initBookmark` is called (e.g., due to rapid bookmark removals or other events) while a previous `onPlaceholder` operation is still awaiting user action (naming a bookmark `*` or `**`), the earlier `onPlaceholder` call is now aborted. This **prevents a potential race condition** where an older, user-abandoned placeholder bookmark ID could be erroneously persisted after a newer initialization sequence has already begun, further enhancing state consistency during setup. This is important as race conditions can undermine cryptographic operations or lead to inconsistent state if not carefully managed[cite: 126, 127, 82].
+- **`initBookmark` Re-entrancy Prevention:** The `initBookmark` and `onPlaceholder` functions have been refactored using `AbortController`. If `initBookmark` is called (e.g., due to rapid bookmark removals or other events) while a previous `onPlaceholder` operation is still awaiting user action (naming a bookmark `*` or `**`), the earlier `onPlaceholder` call is now aborted. This **prevents a potential race condition** where an older, user-abandoned placeholder bookmark ID could be erroneously persisted after a newer initialization sequence has already begun, further enhancing state consistency during setup. This is important as race conditions can undermine cryptographic operations or lead to inconsistent state if not carefully managed.
 
 #### Stale `active_origin` in `onBookmarkChange`
 
@@ -122,7 +123,7 @@ The `codeql.yml` workflow is used for static code analysis to identify potential
 
 ### Marker Encoding (`base2base`)
 
-- **Note:** The `source` (hexadecimal characters) and `emoji` alphabets used by the `base2base` conversion function are fixed and publicly visible in `static.js`. The SHA-256 hash provides the cryptographic strength; the `base2base` conversion to emoji is **purely for obfuscation and visual distinction, not for security.** (See Section 4.10.3 for potential risks related to information loss in base conversion).
+- **Note:** The `source` (hexadecimal characters) and `emoji` alphabets used by the `base2base` conversion function are fixed and publicly visible in `static.js`. The SHA-256 hash provides the cryptographic strength; the `base2base` conversion to emoji is **purely for obfuscation and visual distinction, not for security.** (See Section 4.10.3 for potential risks related to information loss in base conversion and Section 4.4.3 for perceptual collision risks).
 - **Further Review (Post-Initial Audit):**
   - The `base2base` algorithm was **re-verified and found to be a standard, logically sound implementation** for its purpose.
   - The processing of the `emoji` array in `static.js` by `base2base` results in an alphabet composed of individual Unicode code points. This means that complex emojis (grapheme clusters made of multiple code points) are effectively broken down into these constituent points for the purpose of the destination alphabet. While this impacts the visual composition of the generated marker (it's an alphabet of individual code points, not necessarily whole visual emojis), the process is **deterministic and not a security concern.** The `source` (hex) alphabet is correctly defined and used.
@@ -138,66 +139,71 @@ This verification step is an additional layer of security. If an uploaded packag
 
 ## 3. UI/UX and User Comprehension Issues
 
-(This section describes issues that were largely related to the `options.html` page's clarity and user guidance. The 'Recommendations & Mitigations' section notes these as **ADDRESSED**.)
+This section describes issues that were largely related to the `options.html` page's clarity and user guidance. The 'Recommendations & Mitigations' section notes these as **ADDRESSED**. User perception challenges and social engineering are significant threats; users can be tricked into misinterpreting security indicators or misconfiguring tools to their detriment, especially due to habituation or deceptive prompts.
 
 - **Clarity of Reset Function (`options.html`):**
   - **Issue:** The "Reset" button text ("Clear custom marker names", then "Done but feel free to click again :)") doesn't adequately explain that it also clears the `salt` (changing all auto-markers) and requires full re-setup.
-  - **Risk:** **Users might click it without understanding the full data loss and re-initialization implications.** This is critical because users are often the weakest link and can be tricked by deceptive UI or social engineering tactics[cite: 5, 77].
+  - **Risk:** **Users might click it without understanding the full data loss and re-initialization implications.** This is critical because users are often the weakest link and can be tricked by deceptive UI or social engineering tactics.
 - **Setup Guidance (`options.html`):**
   - **Issue:** Minimal and potentially confusing setup instructions (e.g., "folder" vs. bookmark, reliance on implicit `onPlaceholder` mechanism).
   - **Risk:** **High likelihood of user error and misconfiguration during setup.**
 - **Misinterpretation of Emoji Meanings:**
   - **Issue:** The `emoji` array contains symbols (e.g., 🔒, ✅, ❓, ❗) users might associate with website security status, which the extension doesn't provide.
-  - **Risk:** **False sense of security or confusion about a site's trustworthiness based on the marker.** Polymorphic attacks exploit such user trust in visual cues[cite: 77, 78].
+  - **Risk:** **False sense of security or confusion about a site's trustworthiness based on the marker.** Polymorphic attacks exploit such user trust in visual cues.
 - **Meaning of `*` Suffix on Markers:**
   - **Issue:** The UI doesn't explain that the `*` suffix on auto-generated markers indicates they are automatic and affects how they are handled (as detailed in the `onBookmarkChange` clarification above).
   - **Risk:** **User confusion about marker appearance and behavior.**
+- **Abuse of Custom Marker Functionality via Social Engineering:**
+  - **Issue:** Attackers can trick users on a phishing site into manually setting a "trusted" custom marker (e.g., "My Verified Bank") for that malicious domain.
+  - **Risk:** OriginMarker would then faithfully display this user-defined trusted marker on subsequent visits to the phishing site, creating a persistent false sense of security and turning a security feature into a self-deception mechanism.
 
 ---
 
 ## 4. Potential Attack Vectors
 
-This section details potential attack vectors relevant to OriginMarker, condensing general threats to focus on specific impacts and acknowledging existing or recommended mitigations. Advanced threats are drawn from recent security research[cite: 1, 2, 3, 4].
+This section details potential attack vectors relevant to OriginMarker, condensing general threats to focus on specific impacts and acknowledging existing or recommended mitigations. Advanced threats are drawn from recent security research.
 
-### 4.1. Salt Exfiltration and Marker Deanonymization
+### 4.1. Salt Exfiltration and Marker Deanonymization / Spoofing
 
-- **Scenario:** An attacker gains unauthorized access to `chrome.storage.sync` (via compromised Google account, malware) or local Chrome profile files (where `chrome.storage.local` and cached sync data are stored). Access to user's bookmark data is also assumed.
-- **Vector:** Retrieve the `salt`. With the `salt` and knowledge of OriginMarker's `base2base` logic (source/emoji alphabets are public in `static.js`), an attacker can map auto-generated emoji markers back to their origin hashes, effectively deanonymizing them. Custom markers, stored alongside the `salt`, would also be exposed.
-- **Impact:** Complete loss of privacy for auto-generated markers and exposure of all custom marker content, undermining OriginMarker's primary utility.
+- **Scenario:** An attacker gains unauthorized access to `chrome.storage.sync` (via compromised Google account, malware with local profile access) or local Chrome profile files (where `chrome.storage.local` and cached sync data are stored unencrypted). Access to user's bookmark data is also assumed. Alternatively, the OriginMarker extension itself is compromised (e.g., via a supply chain attack).
+- **Vector:**
+    - Retrieve the `salt`. With the `salt` and knowledge of OriginMarker's `base2base` logic (source/emoji alphabets are public in `static.js`), an attacker can map auto-generated emoji markers back to their origin hashes, effectively deanonymizing them.
+    - If the extension is compromised, the malicious code has direct access to the `salt`.
+- **Impact:**
+    - Complete loss of privacy for auto-generated markers and exposure of all custom marker content.
+    - If the `salt` is known to an attacker, they can perfectly predict and spoof the automatic emoji marker for any legitimate domain, neutralizing OriginMarker's primary anti-spoofing defense.
+    - Access to custom markers allows attackers to craft highly personalized and convincing phishing attacks that incorporate these user-defined trust signals.
 - **Mitigation Context:** Storing the `salt` in `local` or `session` storage (user-configurable option) limits cross-device exfiltration via sync. Section 2 notes `salt` value validation. Section 5.1.1 recommends client-side encryption for `salt` and custom markers, and 5.1.3 suggests user-initiated salt rotation.
 
 ### 4.2. Storage Exploitation
 
-#### 4.2.1. Covert Data Exfiltration via Local Compromise
+#### 4.2.1. Covert Data Exfiltration and Unauthorized Data Access
 
-- **Mechanism:** Malware with file system access reads OriginMarker's data directly from Chrome's user profile directory, where `chrome.storage.local` and cached `chrome.storage.sync` data are stored unencrypted.
-- **Impact:** Deanonymization of auto-generated markers and exposure of custom markers.
+- **Mechanism (Direct Storage Access):** Malware with file system access reads OriginMarker's data directly from Chrome's user profile directory, where `chrome.storage.local` and cached `chrome.storage.sync` data are stored unencrypted. Malicious extensions with the `storage` permission could also read this data.
+- **Mechanism (Bookmark Synchronization Channel):** Malicious extensions or compromised browser profiles could exploit Chrome's built-in bookmark synchronization. They might leverage OriginMarker's designated bookmark or create hidden ones as a clandestine channel for data exfiltration. OriginMarker's legitimate, dynamic bookmark manipulation normalizes such activity, potentially masking malicious bookmark operations.
+- **Impact:** Deanonymization of auto-generated markers and exposure of custom markers. OriginMarker's bookmark could become an unwitting data mule.
 - **Severity:** High.
-- **Mitigation Context:** Same as 4.1. Client-side encryption (5.1.1) is the primary mitigation.
+- **Mitigation Context:** Client-side encryption (5.1.1) is the primary mitigation for direct storage access. Monitoring and user confirmation for external changes to the designated bookmark (5.2.2) can help against bookmark channel abuse.
 
 #### 4.2.2. Resource Exhaustion Attacks
 
 - **Storage Quota Exhaustion:**
-
   - **Mechanism:** A co-installed malicious extension with `storage` permission could fill `chrome.storage.sync` (approx. 100KB, rate limits apply) or `chrome.storage.local` (approx. 10MB) by writing excessive data.
   - **Impact on OriginMarker:** Failure to save custom markers, update the `salt`, or persist configuration, degrading functionality.
   - **Severity:** Medium.
   - **Mitigation Context:** Debouncing for `onBookmarkChange` (Section 2.2.4, Section 5) mitigates rapid bookmark updates. Section 5.1.2 recommends proactive storage limit monitoring.
 
 - **Memory and File System Exhaustion (General):**
-
   - **Relevance to OriginMarker:** Low. While general browser performance can be affected by extensions with memory leaks or excessive file system use, OriginMarker's own resource footprint is minimal. Standard browser resource management provides primary defense.
   - **Impact on OriginMarker:** Indirect, through browser slowdown or crashes.
 
 - **JavaScript Infinite Loops / Event Storms:**
-
   - **Mechanism:** Malicious web pages causing event storms (e.g., rapid `tabs.onUpdated` events) could force OriginMarker's background script into continuous, resource-intensive processing if not handled.
   - **Impact on OriginMarker:** High CPU/memory usage by OriginMarker, leading to unresponsiveness or interference with its core logic.
   - **Severity:** Medium.
   - **Mitigation Context:** Debouncing for `onBookmarkChange` is implemented. Section 5.6.1 recommends broader event throttling (e.g., for `tabs.onUpdated`).
 
 - **Network Connection Saturation:**
-
   - **Relevance to OriginMarker:** Not applicable. OriginMarker makes no external network calls.
 
 - **DNS Cache Poisoning (General Browser Vulnerability):**
@@ -221,15 +227,15 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 
 #### 4.3.2. Covert Data Exfiltration via Bookmark Title/URL Changes (by co-installed extension)
 
-- **Mechanism:** A malicious extension with `bookmarks` permission alters OriginMarker's _designated_ bookmark's title/URL to encode exfiltrated data. Browser sync propagates this.
-- **Impact:** OriginMarker's bookmark becomes an unwitting data mule.
+- **Mechanism:** A malicious extension with `bookmarks` permission alters OriginMarker's _designated_ bookmark's title/URL to encode exfiltrated data, or creates other hidden bookmarks. Browser sync propagates this. OriginMarker's legitimate bookmark activity can provide cover.
+- **Impact:** OriginMarker's bookmark becomes an unwitting data mule or its activity masks other malicious bookmark operations.
 - **Severity:** High.
 - **Mitigation Context:** Section 5.2.2 recommends user confirmation for external changes to the designated bookmark.
 
 #### 4.3.3. Bookmark Spoofing and Visual Misdirection (by co-installed extension)
 
 - **Mechanism:** A malicious extension with `bookmarks` permission creates _other_ bookmarks mimicking OriginMarker's style (emoji sequences, titles) to confuse users.
-- **Impact:** User confusion, desensitization to markers, aiding phishing.
+- **Impact:** User confusion, desensitization to markers, aiding phishing. Disruption of OriginMarker's expected behavior or its absence can create a window of vulnerability.
 - **Severity:** Medium.
 - **Mitigation Context:** User education (Section 5.3.2).
 
@@ -267,17 +273,17 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 
 #### 4.3.9. Risk of Sensitive Data Exfiltration by Other Co-Installed Extensions
 
-- **Mechanism:** A co-installed malicious extension exfiltrates data (e.g., browsing history, cookies).
+- **Mechanism:** A co-installed malicious extension exfiltrates data (e.g., Browse history, cookies).
 - **Impact on OriginMarker:** Indirect. If OriginMarker marks sensitive URLs, another extension with history access could identify these marked URLs, reducing OriginMarker's privacy benefits.
 - **Severity:** Medium (indirect ecosystem risk).
 - **Mitigation Context:** User awareness about vetting other extensions (5.11.3, 5.11.9).
 
-### 4.4. Visual Deception and UI/UX Impersonation Attacks
+### 4.4. Visual Deception, UI/UX Impersonation, and Social Engineering Attacks
 
-#### 4.4.1. Homoglyph Spoofing of Origins
+#### 4.4.1. Homoglyph Spoofing of Origins and Visually Similar Emoji Domains
 
-- **Mechanism:** Attacker uses Unicode characters visually similar to legitimate ones in a domain name (e.g., Cyrillic 'а' vs. Latin 'a'). OriginMarker generates a unique marker for this visually deceptive domain.
-- **Impact:** User may trust the phishing site due to visual similarity, despite a unique marker. Undermines origin distinction.
+- **Mechanism:** Attackers use Unicode characters visually similar to legitimate ones in a domain name (e.g., Cyrillic 'а' vs. Latin 'a'). Similarly, attackers can register emoji domains that utilize confusingly similar emojis to a legitimate site. OriginMarker will correctly generate a unique cryptographic marker for this visually deceptive domain.
+- **Impact:** The user might visually confuse the domain itself (in the URL bar) or the resulting OriginMarker emoji sequence if the differences are subtle. This undermines the intended visual authenticity signal, even with a cryptographically unique marker.
 - **Severity:** High.
 - **Mitigation Context:** Section 5.3.1 recommends displaying Punycode/IDN. User education (5.3.2).
 
@@ -290,8 +296,8 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 
 #### 4.4.3. Perceptual Collisions/Ambiguity in Auto-Generated Emoji Markers
 
-- **Mechanism:** Cryptographically unique hashes might produce visually similar emoji sequences via `base2base`, especially with a limited or poorly chosen emoji alphabet.
-- **Impact:** User confusion, reduced confidence in marker distinctiveness.
+- **Mechanism:** Cryptographically unique SHA-256 hashes, when converted to a limited or non-optimally distinct emoji alphabet via `base2base`, might produce emoji sequences that are visually similar enough to confuse a human user (perceptual collisions). This is not a cryptographic collision of SHA-256 itself.
+- **Impact:** User confusion, reduced confidence in marker distinctiveness. The security strength from SHA-256 is bottlenecked by human visual perception.
 - **Severity:** Medium.
 - **Mitigation Context:** Addressed by curation of `emoji` list in `static.js` (Section 3, Section 5). Section 5.3.3 recommends formal review of emoji alphabet. User education (5.3.2).
 
@@ -303,11 +309,12 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 - **Severity:** Critical.
 - **Mitigation Context:** User education (5.3.2). Section 5.3.4 recommends hard-to-mimic UI cues.
 
-#### 4.4.5. Phishing Leveraging Trusted Domains and Live Validation
+#### 4.4.5. Abuse of Custom Marker Functionality via Social Engineering
 
-- **Relevance to OriginMarker:** Indirect. This is a general web threat.
-- **Impact:** If a user is phished and their Google account (used for Chrome Sync) is compromised, OriginMarker's synced data (if `sync` storage is used for salt/markers) could be exposed.
-- **Severity:** High (for user compromise, indirect to OriginMarker).
+- **Mechanism:** Attackers redirect a user to a convincing lookalike phishing site and then, through social engineering (e.g., fake pop-up, email instruction), prompt them to "verify" or "personalize" their security by renaming the OriginMarker bookmark to a trusted phrase (e.g., "My Verified Bank").
+- **Impact:** The user inadvertently associates a trusted custom marker with the malicious domain's hash. Subsequently, OriginMarker will faithfully display this user-defined "trusted" marker whenever the malicious site is visited, providing a persistent and deceptive false sense of security. This turns a security feature into a self-deception mechanism.
+- **Severity:** High.
+- **Mitigation Context:** Enhanced user education on this specific tactic (5.3.2).
 
 #### 4.4.6. Exploiting Browser UI Elements: Bookmark and Custom Marker Spoofing
 
@@ -332,12 +339,19 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 - **Severity:** Low (for direct clickjacking of OriginMarker pages), Medium (for tabnabbing's general user impact).
 - **Mitigation Context:** Existing CSP. User awareness for tabnabbing (Section 5.3.5).
 
+#### 4.4.9. Subdomain Takeover Risks
+
+- **Mechanism:** An attacker gains control of a subdomain of a legitimate domain. OriginMarker would correctly generate and display the marker associated with the (now attacker-controlled) legitimate parent domain.
+- **Impact:** OriginMarker inadvertently validates the attacker's control over the hijacked subdomain, potentially misleading the user into trusting a malicious site because the marker appears "correct" for the parent domain.
+- **Severity:** Medium to High.
+- **Mitigation Context:** User education on the limitations of OriginMarker regarding subdomain takeovers (5.3.2).
+
 ### 4.5. Supply Chain Risks
 
 #### 4.5.1. CI/CD Pipeline Compromise
 
 - **Mechanism:** Attacker compromises the GitHub repository (e.g., stolen developer credentials) and injects malicious code. The `format-on-merge.yml` workflow, with `contents: write` permission, could be a vector.
-- **Impact:** Malicious code distributed in the official extension, leading to widespread data exfiltration or other malicious actions.
+- **Impact:** Malicious code distributed in the official extension, leading to widespread data exfiltration or other malicious actions. If the extension is compromised, the attacker gains direct access to the salt, rendering the primary anti-spoofing mechanism ineffective (the "Salt Paradox").
 - **Severity:** Critical.
 - **Mitigation Context:** Sections 5.4.1 (hardware 2FA), 5.4.3 (CI/CD audits), 5.4.4 (pinning actions), 5.4.5 (code integrity checks).
 
@@ -388,15 +402,21 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 
 ### 4.9. Race Conditions and Time-of-Check to Time-of-Use (TOCTOU) Vulnerabilities
 
-#### 4.9.1. Race Conditions in Asynchronous Extension Operations
+#### 4.9.1. Race Conditions in Asynchronous Extension Operations and UI Spoofing
 
-- **Mechanism:** Chrome extension APIs are asynchronous. State can change between an operation being initiated (e.g., fetching a tab's URL) and its callback/promise resolving.
-- **Impact on OriginMarker:** Could lead to actions based on stale data. For example, if `active_origin` changed rapidly, an old origin might be used for saving a custom marker.
-- **Severity:** Medium.
+- **Mechanism:** Chrome extension APIs are asynchronous. State can change between an operation being initiated and its resolution. Attackers can leverage transient states during tab reloads or rapid navigation.
+    - **Manipulating `chrome.tabs.onUpdated` Events:** The `onUpdated` event can fire at various stages. If OriginMarker processes an initial, legitimate-looking URL in a redirect chain before the browser fully resolves to a final phishing URL, it might briefly display a "correct" marker for the benign redirector.
+    - **Impact of Tab Discarding/Reloading:** Chrome's memory optimization discards inactive tabs, reloading them on reactivation. During this reload, the marker might be briefly absent, show a default, or be outdated.
+    - **URL Loading and Content Script Injection (Snapshot Inaccuracy):** OriginMarker might take a "snapshot" of a URL in a transient state (e.g., during redirects, JS-driven URL changes) before it's fully resolved, displaying an inaccurate origin marker.
+- **Impact on OriginMarker:**
+    - **Transient Trust:** Users might be misled by a momentary display of a legitimate marker for a malicious page or a redirecting page.
+    - **State Staleness:** Inconsistent marker displays erode user trust and vigilance, making them more susceptible to phishing during these transient periods.
+    - **Snapshot Inaccuracy:** The marker, intended as a real-time reflection, could show a past or intermediate state, leading to confusion or a false sense of security.
+- **Severity:** Medium to High.
 - **Mitigation Context:**
   - Stale `active_origin` in `onBookmarkChange`: **ADDRESSED**. The relevant origin is captured at the start of processing (Section 2.2.3).
   - `initBookmark` re-entrancy: **ADDRESSED**. `AbortController` is used to prevent race conditions if `initBookmark` is called multiple times rapidly (Section 2.2.2).
-  - General: Section 5.8.1 (re-validate state) and 5.8.2 (mindful async ops) provide guidance.
+  - General: Section 5.8.1 (re-validate state), 5.8.2 (mindful async ops), and 5.6.1 (event throttling for `tabs.onUpdated`) provide guidance. Robust state management to ensure marker updates only occur after a URL is fully resolved and stable, or displaying explicit "loading/unverified" states during transient periods (5.6.1).
 
 #### 4.9.2. TOCTOU Exploits in Extension State, Storage, and Permissions
 
@@ -424,7 +444,7 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 #### 4.10.3. Information Loss in Base Conversion and Character Set Mapping
 
 - **Mechanism:** Converting hash output (hex string from SHA-256) to a smaller/different character set (emojis via `base2base`).
-- **Impact on OriginMarker:** The primary risk is not cryptographic weakness of the hash itself, but potential for _perceptual collisions_ where different unique origins might map to visually similar or identical emoji strings if the `base2base` mapping or emoji alphabet were flawed or too small. This does not compromise the underlying SHA-256 hash.
+- **Impact on OriginMarker:** The primary risk is not cryptographic weakness of the hash itself, but potential for _perceptual collisions_ where different unique origins might map to visually similar or identical emoji strings if the `base2base` mapping or emoji alphabet were flawed or too small. This does not compromise the underlying SHA-256 hash but undermines visual distinctiveness.
 - **Severity:** Low (for cryptographic impact), Medium (for perceptual collision risk, linked to 4.4.3).
 - **Mitigation Context:** The `base2base` function uses a defined mapping; SHA-256 provides cryptographic strength. The main concern is visual distinctiveness, addressed by emoji list curation (Section 3, Section 5) and user education (5.3.2). Recommendation 5.9.3 advises analyzing transformations for entropy loss, though for OriginMarker, the input to hashing (origin string) is variable-entropy, and the output of SHA-256 is fixed-entropy. The `base2base` is a presentation layer.
 
@@ -432,13 +452,12 @@ OriginMarker does not use `chrome.runtime.onMessageExternal`, limiting direct ex
 
 ## 5. Recommendations & Mitigations
 
-This section includes mitigations for issues identified in the initial audit (many of which are now marked "ADDRESSED") and new recommendations based on subsequent research to counter the advanced attack vectors detailed in Section 4[cite: 5, 170].
+This section includes mitigations for issues identified in the initial audit (many of which are now marked "ADDRESSED") and new recommendations based on subsequent research to counter the advanced attack vectors detailed in Section 4.
 
 ### Salt Management & Initialization (Initial Audit Recommendations)
 
-- **Status: ADDRESSED.** **Warn Users:** A warning has been added to `options.html` directly below the storage area selection. This warning explains the privacy implications of using "Sync" storage for the `salt` (potential exfiltration if the user's Google account is compromised) versus "Local" storage (device-specific markers, no syncing but better privacy in that specific scenario).
-
-- **Status: ADDRESSED & HARDENED.** **Offer Local Salt Option & Validate Salt/Store Types:** The extension allows users to select `local` (or `session`) storage for all data, including the `salt`, via the options page. This makes markers device-specific (or session-specific) and mitigates the risk of `salt` exfiltration through Chrome sync. The options page should ideally explain these trade-offs clearly. **Additionally, the `salt` value fetched from storage is now validated to be a non-empty string, and regenerated if invalid. The storage type preference itself is also validated upon loading, defaulting to 'sync' if corrupted.**
+- **Status: ADDRESSED.** **Warn Users:** A warning has been added to `options.html` directly below the storage area selection. This warning explains the privacy implications of using "Sync" storage for the `salt` (potential exfiltration if the user's Google account is compromised, leading to cross-device attack amplification) versus "Local" storage (device-specific markers, no syncing but better privacy in that specific scenario).
+- **Status: ADDRESSED & HARDENED.** **Offer Local Salt Option & Validate Salt/Store Types:** The extension allows users to select `local` (or `session`) storage for all data, including the `salt`, via the options page. This makes markers device-specific (or session-specific) and mitigates the risk of `salt` exfiltration through Chrome sync. **Additionally, the `salt` value fetched from storage is now validated to be a non-empty string, and regenerated if invalid. The storage type preference itself is also validated upon loading, defaulting to 'sync' if corrupted.**
 
 ### Initial Bookmark Setup & UI/UX (Initial Audit Recommendations)
 
@@ -465,445 +484,295 @@ This section includes mitigations for issues identified in the initial audit (ma
 
 ### Advanced Recommendations (Based on Subsequent Research)
 
-The following recommendations are proposed to address the advanced attack vectors identified in Section 4[cite: 5, 142, 170].
+The following recommendations are proposed to address the advanced attack vectors identified in Section 4.
 
 #### 5.1. Enhanced Salt and Storage Security
 
 - **5.1.1. Client-Side Encryption for Sensitive Data in Storage:**
-
-  - **Recommendation:** To counter exfiltration of salt and custom markers from `chrome.storage.local` or compromised `chrome.storage.sync` , implement client-side encryption for the salt and all custom marker data before storing them . This could use a user-provided passphrase (not stored by the extension) or explore keys derived from non-syncing identifiers (with careful risk assessment) . Use strong algorithms like AES-GCM via the Web Crypto API .
+  - **Recommendation:** To counter exfiltration of salt and custom markers from unencrypted `chrome.storage.local` or compromised `chrome.storage.sync` (refs: 4.1, 4.2.1, "Trusted Data, Untrusted Access" paradox), implement client-side encryption for the salt and all custom marker data before storing them. This could use a user-provided passphrase (not stored by the extension) or explore keys derived from non-syncing identifiers (with careful risk assessment). Use strong algorithms like AES-GCM via the Web Crypto API.
+  - **Rationale:** The "Salt Paradox" (compromised salt leads to spoofing) and unencrypted storage make this data a prime target. Encryption at rest is critical.
   - **Addresses:** 4.1, 4.2.1.
 
 - **5.1.2. Proactive Storage Limit Monitoring and User Alerts:**
-
-  - **Recommendation:** To mitigate DoS via storage quota exhaustion , OriginMarker should monitor its `chrome.storage.sync` (using `getBytesInUse()` [cite: 8, 177]) and `chrome.storage.local` usage . If usage approaches quotas (e.g., 80% of 100KB for sync, 10MB for local [cite: 105, 106]), alert the user via the options UI or a badge icon change . Implement robust error handling for quota limits[cite: 108, 181].
+  - **Recommendation:** To mitigate DoS via storage quota exhaustion (ref: 4.2.2), OriginMarker should monitor its `chrome.storage.sync` (using `getBytesInUse()`) and `chrome.storage.local` usage. If usage approaches quotas (e.g., 80%), alert the user via the options UI or a badge icon change. Implement robust error handling for quota limits.
+  - **Relevance/Feasibility:** Low to moderate relevance, as OriginMarker's storage footprint per user is small. Feasibility is moderate.
   - **Addresses:** 4.2.2 (Storage Quota Exhaustion).
 
 - **5.1.3. Regular Salt Rotation Mechanism:**
-  - **Recommendation:** Introduce a user-initiated salt rotation feature on the options page to limit the deanonymization window if a salt is exfiltrated . This would regenerate the salt and re-hash/update all auto-markers . The UI must clearly explain the implications (all auto-markers change) .
+  - **Recommendation:** Introduce a user-initiated salt rotation feature on the options page to limit the deanonymization window if a salt is exfiltrated (refs: 4.1, 4.2.1). This would regenerate the salt and re-hash/update all auto-markers. The UI must clearly explain the implications (all auto-markers change).
+  - **Relevance/Feasibility:** Moderate relevance for mitigating `salt` compromise. Feasibility is high.
   - **Addresses:** 4.1, 4.2.1.
 
 #### 5.2. Fortifying Bookmark Interaction and Validation
 
 - **5.2.1. Strict Unicode Normalization and Invisible Character Stripping for Custom Markers:**
-
-  - **Recommendation:** To prevent "emoji smuggling" or hidden data injection in custom markers , implement robust input validation: perform Unicode normalization (e.g., to NFC using `String.prototype.normalize()`) and strip/disallow invisible Unicode characters (e.g., zero-width spaces U+200B, ZWJ U+200D, ZWNJ U+200C, control characters)[cite: 94, 136] from custom marker strings before storage . Use JavaScript regex with the "u" flag and Unicode property escapes (\p{C}, \p{Cc}, etc.) for detection .
+  - **Recommendation:** To prevent "emoji smuggling" or hidden data injection in custom markers (ref: 4.4.2), implement robust input validation: perform Unicode normalization (e.g., to NFC using `String.prototype.normalize()`) and strip/disallow invisible Unicode characters (e.g., zero-width spaces, control characters) from custom marker strings before storage. Use JavaScript regex with the "u" flag and Unicode property escapes.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high using JavaScript's string manipulation and Unicode property escapes.
   - **Addresses:** 4.4.2.
 
 - **5.2.2. User Confirmation for External Bookmark Designation Changes:**
-
-  - **Recommendation:** If OriginMarker's designated bookmark title/URL is altered by an entity other than OriginMarker itself (e.g., another extension or manual edit not via options page) in a way that impacts functionality, trigger a prominent user alert (modal dialog or distinct badge) . Require explicit user confirmation to re-designate or revert the change .
+  - **Recommendation:** If OriginMarker's designated bookmark title/URL is altered by an entity other than OriginMarker itself (e.g., another extension or manual edit not via options page) in a way that impacts functionality (refs: 4.3.1, 4.3.2), trigger a prominent user alert (modal dialog or distinct badge). Require explicit user confirmation to re-designate or revert the change.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is moderate, requires careful implementation to avoid excessive alerts.
   - **Addresses:** 4.3.1, 4.3.2.
 
 - **5.2.3. Heuristic Monitoring for Suspicious Bookmark Activity:**
-  - **Recommendation:** As a defense-in-depth measure, implement heuristics to monitor for unusually rapid or numerous `chrome.bookmarks.onChanged` events not initiated by OriginMarker itself . If thresholds are exceeded, log a warning and potentially display a subtle user alert .
+  - **Recommendation:** As a defense-in-depth measure against co-installed malicious extensions (refs: 4.3.1, 4.3.4), implement heuristics to monitor for unusually rapid or numerous `chrome.bookmarks.onChanged` events not initiated by OriginMarker itself. If thresholds are exceeded, log a warning and potentially display a subtle user alert.
+  - **Relevance/Feasibility:** Low to moderate relevance. Feasibility is moderate, potential for false positives.
   - **Addresses:** 4.3.1, 4.3.4 (broader DoS attempts).
 
 #### 5.3. Addressing Visual Deception and User Trust
 
 - **5.3.1. Displaying Punycode/IDN for Homoglyph Origins:**
-
-  - **Recommendation:** To counter homoglyph spoofing , when an origin contains IDN characters, consider displaying its Punycode equivalent (e.g., `xn--...`) alongside or within the emoji marker (e.g., in a tooltip) . Use browser-native IDN-to-Punycode conversion.
+  - **Recommendation:** To counter homoglyph spoofing (ref: 4.4.1), when an origin contains IDN characters, consider displaying its Punycode equivalent (e.g., `xn--...`) alongside or within the emoji marker (e.g., in a tooltip). Use browser-native IDN-to-Punycode conversion.
+  - **Relevance/Feasibility:** High relevance for user awareness. Feasibility is moderate.
   - **Addresses:** 4.4.1.
 
-- **5.3.2. Enhanced User Education on Visual Deception:**
-
-  - **Recommendation:** Expand user education in `options.html` and onboarding about :
-    - Homoglyph attacks and visually similar characters representing different domains .
-    - Auto-generated emoji markers being hash-derived for differentiation, not an endorsement of site security .
-    - Potential for different origins to produce perceptually similar emoji sequences .
-    - The threat of polymorphic extensions that can mimic OriginMarker's appearance[cite: 11, 165, 7, 77].
-    - Use clear language and visual examples . Emphasize scrutinizing all browser UI elements[cite: 100, 185].
-  - **Addresses:** 4.4.1, 4.4.3, 4.4.4.
+- **5.3.2. Enhanced User Education on Visual Deception and Extension Limitations:**
+  - **Recommendation:** Expand user education in `options.html` and onboarding about:
+    - Homoglyph attacks and visually similar characters representing different domains (ref: 4.4.1).
+    - Auto-generated emoji markers being hash-derived for differentiation, not an endorsement of site security.
+    - Potential for different origins to produce perceptually similar emoji sequences (ref: 4.4.3).
+    - The threat of polymorphic extensions that can mimic OriginMarker's appearance (ref: 4.4.4).
+    - Social engineering tactics that can trick users into setting custom markers for malicious sites (ref: 4.4.5).
+    - The blind spot of subdomain takeovers (ref: 4.4.9), where OriginMarker might validate a hijacked subdomain.
+    - The inherent limitations of any single security tool.
+    - Use clear language and visual examples. Emphasize scrutinizing all browser UI elements and that OriginMarker is a supplementary tool.
+  - **Relevance/Feasibility:** High relevance. Feasibility is high.
+  - **Addresses:** 4.4.1, 4.4.3, 4.4.4, 4.4.5, 4.4.9.
 
 - **5.3.3. Re-evaluation of Emoji Alphabet for Perceptual Distinctiveness:**
-
-  - **Recommendation:** Formally review the emoji alphabet in `static.js` to minimize perceptual collisions . Prioritize emojis that are visually unique, simple, and unlikely to be mistaken for one another, potentially using human-in-the-loop testing or image processing concepts .
+  - **Recommendation:** Formally review the emoji alphabet in `static.js` (ref: 4.4.3) to minimize perceptual collisions. Prioritize emojis that are visually unique, simple, and unlikely to be mistaken for one another, potentially using human-in-the-loop testing or image processing concepts.
+  - **Rationale:** The effectiveness of OriginMarker hinges on the user's ability to quickly and accurately distinguish markers.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is moderate (could involve user studies).
   - **Addresses:** 4.4.3.
 
 - **5.3.4. Hard-to-Mimic UI Cues and Badge Text Usage:**
-
-  - **Recommendation:** Design OriginMarker's UI elements (icon, popup) with unique, hard-to-mimic visual cues to make replication by polymorphic extensions more difficult[cite: 11].
-  - **Recommendation:** Avoid using badge text for critical security indicators; reserve it for non-critical informational purposes to prevent spoofing from misleading users[cite: 14].
+  - **Recommendation:** Design OriginMarker's UI elements (icon, popup) with unique, hard-to-mimic visual cues to make replication by polymorphic extensions more difficult (ref: 4.4.4).
+  - **Recommendation:** Avoid using badge text for critical security indicators unless absolutely necessary and clearly distinct; reserve it for non-critical informational purposes to prevent spoofing from misleading users (ref: 4.4.7). The current "ERR" badge is for a critical state; ensure its presentation is as unambiguous as possible.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility varies.
   - **Addresses:** 4.4.4, 4.4.7.
 
 - **5.3.5. Resistance to Framing/Overlaying and Tabnabbing:**
-  - **Recommendation:** Ensure OriginMarker's UI (popup, injected components) cannot be easily framed or overlaid by malicious content or other extensions to prevent clickjacking[cite: 20, 146]. The manifest already includes `frame-ancestors 'none'`.
-  - **Recommendation:** Implement robust checks for `window.opener` and ensure `rel="noopener"` is correctly applied to any links OriginMarker opens to prevent reverse tabnabbing[cite: 23, 146].
+  - **Recommendation:** Ensure OriginMarker's UI (popup, injected components) cannot be easily framed or overlaid by malicious content or other extensions to prevent clickjacking (ref: 4.4.8). The manifest already includes `frame-ancestors 'none'`.
+  - **Recommendation:** Implement robust checks for `window.opener` and ensure `rel="noopener"` is correctly applied to any links OriginMarker opens to prevent reverse tabnabbing.
+  - **Relevance/Feasibility:** Moderate relevance. Current CSP is good.
   - **Addresses:** 4.4.8.
 
-#### 5.4. Strengthening Supply Chain Security (Shift Left Approach [cite: 34, 170])
+#### 5.4. Strengthening Supply Chain Security
 
 - **5.4.1. Mandatory Hardware-Based 2FA for Developer Accounts:**
-
-  - **Recommendation:** Mandate and enforce hardware-based 2FA (e.g., FIDO2/WebAuthn security keys) for all developer Google (CWS) and GitHub accounts with publishing or write permissions to OriginMarker's repository or CWS listing[cite: 51, 155, 171]. This is crucial as OAuth abuse for developer account takeover can bypass MFA for authentication by targeting authorization flows[cite: 15, 16, 18].
+  - **Recommendation:** Mandate and enforce hardware-based 2FA (e.g., FIDO2/WebAuthn security keys) for all developer Google (CWS) and GitHub accounts with publishing or write permissions to OriginMarker's repository or CWS listing (refs: 4.5.1, 4.5.2). This is crucial as OAuth abuse for developer account takeover can bypass MFA.
+  - **Rationale:** Fortifying the extension's integrity is the most critical defense against the "Salt Paradox" and other supply chain compromises.
+  - **Relevance/Feasibility:** High relevance. Feasibility is high (organizational/personal policy).
   - **Addresses:** 4.5.1, 4.5.2.
 
 - **5.4.2. Automated Code Signing in Isolated, Ephemeral CI/CD Environments:**
-
-  - **Recommendation:** Perform Chrome Web Store package signing in a highly isolated, ephemeral, and audited CI/CD environment . Use dedicated, short-lived runners destroyed after signing . Inject the private signing key as a secret only at the moment of signing and never persist it on the runner . Restrict access and log rigorously .
+  - **Recommendation:** Perform Chrome Web Store package signing in a highly isolated, ephemeral, and audited CI/CD environment (ref: 4.5.2). Use dedicated, short-lived runners destroyed after signing. Inject the private signing key as a secret only at the moment of signing and never persist it on the runner. Restrict access and log rigorously.
+  - **Relevance/Feasibility:** High relevance for supply chain integrity. Feasibility depends on existing build/deploy infrastructure.
   - **Addresses:** 4.5.2.
 
 - **5.4.3. Regular Security Audits and Penetration Testing of CI/CD Workflows:**
-
-  - **Recommendation:** Conduct periodic, independent security audits and penetration tests specifically targeting GitHub Actions CI/CD workflows . Focus on workflow permissions (especially `contents: write` for `format-on-merge.yml`), secret management, code injection points, and integrity checks .
+  - **Recommendation:** Conduct periodic, independent security audits and penetration tests specifically targeting GitHub Actions CI/CD workflows (ref: 4.5.1). Focus on workflow permissions (especially `contents: write` for `format-on-merge.yml`), secret management, code injection points, and integrity checks.
+  - **Relevance/Feasibility:** Moderate to High relevance. Feasibility depends on resources for audits.
   - **Addresses:** 4.5.1.
 
 - **5.4.4. Pinning GitHub Actions to Specific SHAs:**
-
-  - **Recommendation:** Reference third-party GitHub Actions by their full commit SHA rather than tags to ensure immutability and prevent malicious updates to the action's code .
+  - **Recommendation:** Reference third-party GitHub Actions by their full commit SHA rather than tags to ensure immutability and prevent malicious updates to the action's code (ref: 4.5.1).
+  - **Relevance/Feasibility:** High relevance. Feasibility is high.
   - **Addresses:** 4.5.1.
 
 - **5.4.5. Code Integrity Checks and Dependency Vetting in CI/CD:**
-
-  - **Recommendation:** Implement automated CI/CD pipelines with static and dynamic analysis tools to detect malicious code injections or suspicious changes before publishing updates[cite: 156]. Rigorously vet all third-party dependencies (npm packages, libraries) for known vulnerabilities or malicious behavior[cite: 27, 35, 171]. Implement EDR for developer workstations[cite: 171].
+  - **Recommendation:** Implement automated CI/CD pipelines with static and dynamic analysis tools (like CodeQL, already in use) to detect malicious code injections or suspicious changes before publishing updates (refs: 4.5.1, 4.5.3, 4.5.4). Rigorously vet all third-party dependencies (npm packages, libraries) for known vulnerabilities or malicious behavior. Implement EDR for developer workstations.
+  - **Relevance/Feasibility:** High relevance. Current practices (CodeQL) are good.
   - **Addresses:** 4.5.1, 4.5.3, 4.5.4.
 
 - **5.4.6. Chrome Web Store Monitoring:**
-
-  - **Recommendation:** Actively monitor OriginMarker's CWS listing for unauthorized updates, suspicious reviews, or unexpected permission changes as an early warning for supply chain compromise[cite: 50, 157, 158].
+  - **Recommendation:** Actively monitor OriginMarker's CWS listing for unauthorized updates, suspicious reviews, or unexpected permission changes as an early warning for supply chain compromise (refs: 4.5.2, 4.5.3).
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high (manual or automated checks).
   - **Addresses:** 4.5.2, 4.5.3.
 
 - **5.4.7. Developer Security Awareness Training:**
-  - **Recommendation:** Regularly train developers on sophisticated phishing, OAuth abuse tactics, and supply chain attack vectors[cite: 12, 15, 172].
+  - **Recommendation:** Regularly train developers on sophisticated phishing, OAuth abuse tactics, and supply chain attack vectors (refs: 4.5.1, 4.5.2).
+  - **Relevance/Feasibility:** High relevance. Feasibility is high.
   - **Addresses:** 4.5.1, 4.5.2.
 
 #### 5.5. Mitigating Advanced Side-Channel and Covert Channel Attacks
 
 - **5.5.1. Implement Constant-Time Operations:**
-
-  - **Recommendation:** Review and refactor sensitive logic (cryptographic operations, critical data processing, UI updates related to sensitive states) to operate in constant time, minimizing data-dependent timing variations[cite: 4, 143, 44, 46, 62, 68, 173, 174]. This mitigates "invisible fingerprint" and "visual side channel" attacks[cite: 41, 66, 174].
-  - **Addresses:** 4.8.1, 4.8.2, 4.8.3, 4.8.4.
+  - **Recommendation:** Review and refactor sensitive logic (cryptographic operations, critical data processing, UI updates related to sensitive states) to operate in constant time, minimizing data-dependent timing variations (ref: 4.8). This mitigates "invisible fingerprint" and "visual side channel" attacks.
+  - **Relevance/Feasibility:** Low relevance for OriginMarker's current functionality and risk profile. High complexity to implement thoroughly. Standard library (Web Crypto) usage is generally preferred for crypto.
+  - **Addresses:** 4.8 (general timing side-channels).
 
 - **5.5.2. Minimize Data-Dependent Branching/Memory Access:**
-
-  - **Recommendation:** Minimize data-dependent branching or memory access patterns in critical code paths to avoid measurable timing differences[cite: 4, 144, 40].
-  - **Addresses:** 4.8.1, 4.8.2.
+  - **Recommendation:** Minimize data-dependent branching or memory access patterns in critical code paths to avoid measurable timing differences (ref: 4.8).
+  - **Relevance/Feasibility:** Low relevance.
+  - **Addresses:** 4.8.
 
 - **5.5.3. Analyze `chrome.storage` Access Patterns:**
-
-  - **Recommendation:** Carefully analyze `chrome.storage` usage. If sensitive data is stored, ensure access patterns do not leak information via timing differences (cache hits/misses)[cite: 8, 24, 145].
-  - **Addresses:** 4.8.2.
+  - **Recommendation:** Carefully analyze `chrome.storage` usage. If sensitive data is stored, ensure access patterns do not leak information via timing differences (cache hits/misses) (ref: 4.8).
+  - **Relevance/Feasibility:** Low relevance.
+  - **Addresses:** 4.8.
 
 - **5.5.4. Monitor System-Level Resource Contention (Advanced):**
-  - **Recommendation:** For highly sensitive applications (potentially beyond OriginMarker's scope), consider specialized detection for covert channels by monitoring system-level resource contention and timing, though this is complex[cite: 76].
+  - **Recommendation:** For highly sensitive applications (potentially beyond OriginMarker's scope), consider specialized detection for covert channels by monitoring system-level resource contention and timing, though this is complex (ref: 4.3.6).
+  - **Relevance/Feasibility:** Very low relevance/practicality for OriginMarker.
   - **Addresses:** 4.3.6 (Covert Channels).
 
-#### 5.6. Preventing Resource Exhaustion and DoS
+#### 5.6. Preventing Resource Exhaustion, DoS and Enhancing Robust State Management
 
-- **5.6.1. Event Throttling and Debouncing:**
-
-  - **Recommendation:** Implement event throttling/debouncing for frequent browser events (e.g., `tabs.onUpdated`) to prevent event storms from overwhelming the background script[cite: 30, 65, 146]. (Debouncing for `onBookmarkChange` is already implemented).
-  - **Addresses:** 4.2.2 (JavaScript Infinite Loops/Event Storm).
+- **5.6.1. Event Throttling and Debouncing (Broader) & Robust State Management:**
+  - **Recommendation:** Implement event throttling/debouncing for frequent browser events (e.g., `tabs.onUpdated`) to prevent event storms from overwhelming the background script (ref: 4.2.2 - JavaScript Infinite Loops/Event Storm). Refine `checkOrigin` and `setMarker` functions to account for browser-level timing complexities, tab discarding, and rapid navigation (ref: 4.9.1). This could involve more sophisticated debouncing, ensuring marker updates only occur after a URL is fully resolved and stable, or displaying explicit "loading" or "unverified" states during transient periods.
+  - **Rationale:** Addresses "Transient Trust," "Snapshot Inaccuracy," and "State Staleness" problems arising from race conditions, event delays, and tab discarding.
+  - **Relevance/Feasibility:** Moderate relevance for future robustness. Feasibility is high.
+  - **Addresses:** 4.2.2 (JavaScript Infinite Loops/Event Storm), 4.9.1.
 
 - **5.6.2. Graceful Load Handling and Resource Management:**
-
-  - **Recommendation:** Design background scripts to handle high loads gracefully and release resources promptly when idle to prevent local DoS[cite: 26, 63, 147]. Ensure OriginMarker is resource-efficient[cite: 108, 181].
+  - **Recommendation:** Design background scripts to handle high loads gracefully and release resources promptly when idle to prevent local DoS (ref: 4.2.2). Ensure OriginMarker is resource-efficient.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
   - **Addresses:** 4.2.2 (JavaScript Infinite Loops/Event Storm).
 
 - **5.6.3. Minimize CPU in Content Scripts:**
-
-  - **Recommendation:** Minimize CPU-intensive operations in content scripts, especially those on every page load, to avoid performance impact[cite: 31, 147, 184].
+  - **Recommendation:** Minimize CPU-intensive operations in content scripts, especially those on every page load, to avoid performance impact.
+  - **Relevance/Feasibility:** Not currently applicable as no significant content scripts are used. Important if this changes.
   - **Addresses:** General performance, indirect DoS mitigation.
 
 - **5.6.4. DNS Cache Poisoning Awareness:**
-
-  - **Recommendation:** Consider mechanisms to detect or alert users to potential DNS cache poisoning if OriginMarker heavily relies on URL origin for security decisions, as this can lead to misdirection[cite: 35, 69, 147].
+  - **Recommendation:** Consider mechanisms to detect or alert users to potential DNS cache poisoning if OriginMarker heavily relies on URL origin for security decisions, as this can lead to misdirection (ref: 4.2.2 - DNS Cache Poisoning).
+  - **Relevance/Feasibility:** Low relevance for direct mitigation by OriginMarker.
   - **Addresses:** 4.2.2 (DNS Cache Poisoning).
 
 - **5.6.5. Server-Side API Rate Limiting:**
-  - **Recommendation:** If OriginMarker uses backend APIs, all critical API rate limiting and resource protection must be enforced server-side, with robust detection for anomalous client behavior[cite: 69, 116, 118, 182, 183].
+  - **Recommendation:** If OriginMarker uses backend APIs, all critical API rate limiting and resource protection must be enforced server-side, with robust detection for anomalous client behavior.
+  - **Relevance/Feasibility:** Not applicable as OriginMarker makes no external/backend API calls.
   - **Addresses:** 4.2.2 (Network Connection Saturation).
 
 #### 5.7. Fortifying Inter-Extension Interaction Security & Hardening Against Covert Channels
 
 - **5.7.1. Review `sendMessage` for Implicit Leaks:**
-
-  - **Recommendation:** Review all `chrome.runtime.sendMessage` and `chrome.tabs.sendMessage` calls to ensure sensitive information is not implicitly leaked through message characteristics (size, frequency, timing)[cite: 41, 94, 148, 189]. Minimize information leakage via message responses to prevent fingerprinting[cite: 153, 180].
+  - **Recommendation:** Review all `chrome.runtime.sendMessage` and `chrome.tabs.sendMessage` calls to ensure sensitive information is not implicitly leaked through message characteristics (size, frequency, timing) (refs: 4.3.5, 4.3.8). Minimize information leakage via message responses to prevent fingerprinting.
+  - **Relevance/Feasibility:** Moderate relevance for hardening. Feasibility is high.
   - **Addresses:** 4.3.5 (IPC), 4.3.5 (Fingerprinting).
 
 - **5.7.2. Avoid Reliance on Global Browser Events for Critical Logic:**
-
-  - **Recommendation:** Avoid using global browser events (e.g., `tabs.onUpdated`, `bookmarks.onChanged`) for critical security logic if other extensions can observe them, to prevent covert channel inference[cite: 27, 85, 149].
+  - **Recommendation:** Avoid using global browser events (e.g., `tabs.onUpdated`, `bookmarks.onChanged`) for critical security logic if other extensions can observe them, to prevent covert channel inference (ref: 4.3.5).
+  - **Relevance/Feasibility:** Moderate relevance for hardening. Feasibility is high.
   - **Addresses:** 4.3.5 (Covert Channels).
 
 - **5.7.3. Explicit `externally_connectable` Manifest Property:**
-
-  - **Recommendation:** Explicitly define the `externally_connectable` property in the manifest to restrict external communication to a strict allow-list, preventing unwanted messages and reducing fingerprinting surface[cite: 98, 152, 156, 179].
+  - **Recommendation:** Explicitly define the `externally_connectable` property in the manifest to restrict external communication to a strict allow-list (or block all if no external communication is intended by setting `{"ids": [""]}`), preventing unwanted messages and reducing fingerprinting surface (refs: 4.3.5, 4.3.1).
+  - **Relevance/Feasibility:** Moderate relevance for hardening. Feasibility is high.
   - **Addresses:** 4.3.5 (Fingerprinting), 4.3.1.
 
 - **5.7.4. Rigorous Sanitization of External Inputs:**
-  - **Recommendation:** Rigorously validate and sanitize all data received from other extensions or web pages (e.g., browser history if used in future) to prevent "history poisoning" and other data tampering[cite: 98, 151, 155, 180].
+  - **Recommendation:** Rigorously validate and sanitize all data received from other extensions or web pages (e.g., browser history if used in future) to prevent "history poisoning" and other data tampering (ref: 4.3.7).
+  - **Relevance/Feasibility:** Not currently applicable as OriginMarker does not process external inputs like browser history titles. Important if this changes.
   - **Addresses:** 4.3.7, 4.3.1.
 
 #### 5.8. Building Resilience to Race Conditions and TOCTOU
 
 - **5.8.1. Re-validate State or Use Atomic Operations:**
-
-  - **Recommendation:** For "check-then-act" operations on sensitive state (URL, marker status, permissions), re-validate the state immediately before acting, or use atomic operations if available[cite: 56, 109, 110, 149]. Design multi-step cryptographic operations involving shared state/storage to be atomic or include robust concurrency controls[cite: 127, 131].
+  - **Recommendation:** For "check-then-act" operations on sensitive state (URL, marker status, permissions), re-validate the state immediately before acting, or use atomic operations if available (refs: 4.9.1, 4.9.2). Design multi-step cryptographic operations involving shared state/storage to be atomic or include robust concurrency controls.
+  - **Relevance/Feasibility:** High relevance. Feasibility is moderate to high.
   - **Addresses:** 4.9.1, 4.9.2, 4.10.2 (Race Conditions in Crypto).
 
 - **5.8.2. Mindful Asynchronous Operations and Data Re-verification:**
-
-  - **Recommendation:** Be mindful of TOCTOU windows in asynchronous API calls; ensure critical data is immutable or re-verified during these delays[cite: 54, 106, 109, 150, 151].
+  - **Recommendation:** Be mindful of TOCTOU windows in asynchronous API calls; ensure critical data is immutable or re-verified during these delays (refs: 4.9.1, 4.9.2).
+  - **Relevance/Feasibility:** High relevance. Feasibility is moderate to high.
   - **Addresses:** 4.9.1, 4.9.2.
 
 - **5.8.3. Robust Error Handling and Input Validation for IPC:**
-  - **Recommendation:** Implement robust error handling and input validation for all data received, especially from content scripts or via IPC, to prevent state changes that could lead to race conditions or TOCTOU issues[cite: 45, 89, 151].
+  - **Recommendation:** Implement robust error handling and input validation for all data received, especially from content scripts or via IPC, to prevent state changes that could lead to race conditions or TOCTOU issues (refs: 4.9.1, 4.9.2, 4.3.8).
+  - **Relevance/Feasibility:** High relevance.
   - **Addresses:** 4.9.1, 4.9.2, 4.3.8.
 
 #### 5.9. Cryptographic Hygiene Enhancements
 
 - **5.9.1. Ensure Use of Cryptographically Secure PRNGs:**
-  - **Recommendation:** Exclusively use CSPRNGs like `crypto.getRandomValues()` or `crypto.randomUUID()` for all security-critical random values (IDs, nonces, salts)[cite: 72, 75, 124, 175]. (OriginMarker currently does this for its salt).
+  - **Recommendation:** Exclusively use CSPRNGs like `crypto.getRandomValues()` or `crypto.randomUUID()` for all security-critical random values (IDs, nonces, salts) (ref: 4.10.1). (OriginMarker currently does this for its salt).
+  - **Relevance/Feasibility:** High relevance. Current practice is good.
   - **Addresses:** 4.10.1.
 - **5.9.2. Proper Salt Management:**
-  - **Recommendation:** Ensure salts are generated from CSPRNGs, are of sufficient length (min 16 bytes, ideally 32+), and unique per instance[cite: 81, 125, 130, 176]. (OriginMarker's UUID salt meets this).
+  - **Recommendation:** Ensure salts are generated from CSPRNGs, are of sufficient length (min 16 bytes, ideally 32+), and unique per instance (ref: 4.10.2). (OriginMarker's UUID salt meets this).
+  - **Relevance/Feasibility:** High relevance. Current practice is good.
   - **Addresses:** 4.10.2.
 - **5.9.3. Analyze Data Transformations for Entropy Loss:**
-  - **Recommendation:** Analyze all data transformations (hashing, base conversions) for potential entropy loss or collision amplification. Prioritize lossless or cryptographically sound methods. Avoid relying on truncated hashes or non-cryptographic base conversions for security-sensitive identifiers[cite: 90, 134, 135, 139, 140, 177].
+  - **Recommendation:** Analyze all data transformations (hashing, base conversions) for potential entropy loss or collision amplification. Prioritize lossless or cryptographically sound methods. Avoid relying on truncated hashes or non-cryptographic base conversions for security-sensitive identifiers (ref: 4.10.3). For OriginMarker, the main concern is perceptual collisions from the emoji mapping, not cryptographic weakness of the hash-to-emoji process.
+  - **Relevance/Feasibility:** Low cryptographic relevance for current use; moderate for perceptual aspects.
   - **Addresses:** 4.10.3.
 
 #### 5.10. Architectural Safeguards
 
 - **5.10.1. Manifest V3 Adoption:**
-
-  - **Recommendation:** Ensure full compliance with Manifest V3 for stricter security policies, improved content script isolation, and a service worker model[cite: 47, 152].
+  - **Recommendation:** Ensure full compliance with Manifest V3 for stricter security policies, improved content script isolation, and a service worker model.
+  - **Relevance/Feasibility:** High relevance. Assumed current practice.
   - **Addresses:** General security posture.
 
 - **5.10.2. Content Script Isolation:**
-
-  - **Recommendation:** Leverage Chrome's isolated worlds for content scripts to prevent direct interaction with webpage JS/DOM, reducing XSS risks[cite: 47, 152].
+  - **Recommendation:** Leverage Chrome's isolated worlds for content scripts to prevent direct interaction with webpage JS/DOM, reducing XSS risks.
+  - **Relevance/Feasibility:** Low current relevance as no significant content scripts are used; high if content scripts are added.
   - **Addresses:** XSS, content script integrity.
 
 - **5.10.3. Secure Communication Channels (Internal):**
-
-  - **Recommendation:** Ensure all communication between content scripts and background service worker is explicit, well-defined, and rigorously validated. Consider encrypting sensitive data in internal messages as defense-in-depth[cite: 47, 95, 152].
+  - **Recommendation:** Ensure all communication between content scripts and background service worker is explicit, well-defined, and rigorously validated. Consider encrypting sensitive data in internal messages as defense-in-depth.
+  - **Relevance/Feasibility:** Moderate relevance. Current practice is standard.
   - **Addresses:** 4.3.8, IPC integrity.
 
 - **5.10.4. Strict Content Security Policy (CSP):**
-  - **Recommendation:** Maintain and regularly review the rigorous CSP in `manifest.json` to restrict script sources, prevent inline scripts, and control resource loading, minimizing code injection risks[cite: 47, 153, 154, 2, 188].
+  - **Recommendation:** Maintain and regularly review the rigorous CSP in `manifest.json` to restrict script sources, prevent inline scripts, and control resource loading, minimizing code injection risks.
+  - **Relevance/Feasibility:** High relevance. Current practice is good.
   - **Addresses:** XSS, code injection.
 
 #### 5.11. General Security Posture Enhancements (Including Proactive Monitoring & User Education)
 
 - **5.11.1. User Education on Browser Update Importance:**
-
-  - **Recommendation:** Include prominent messaging in `options.html` or documentation urging users to keep their Chrome browser updated . Explain that underlying browser vulnerabilities can compromise security regardless of extension-specific protections .
+  - **Recommendation:** Include prominent messaging in `options.html` or documentation urging users to keep their Chrome browser updated (ref: 4.6). Explain that underlying browser vulnerabilities can compromise security regardless of extension-specific protections.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
   - **Addresses:** 4.6.
 
 - **5.11.2. Continuous Re-evaluation of Permissions (Principle of Least Privilege):**
-
-  - **Recommendation:** Continuously review manifest permissions (`tabs`, `bookmarks`, `storage`) to ensure they remain strictly minimal and necessary . Assess if new permissions for features are truly required and if their scope can be limited[cite: 43, 137, 148, 29, 178].
+  - **Recommendation:** Continuously review manifest permissions (`tabs`, `bookmarks`, `storage`) to ensure they remain strictly minimal and necessary. Assess if new permissions for features are truly required and if their scope can be limited.
+  - **Relevance/Feasibility:** High relevance. Current permissions seem appropriate.
   - **Addresses:** General attack surface reduction.
 
 - **5.11.3. User Awareness of Co-Installed Extension Risks:**
-
-  - **Recommendation:** Include a disclaimer in documentation or `options.html` about risks from other extensions, especially those with broad permissions (e.g., "Allow CORS" extensions) . Explain that other extensions can indirectly weaken overall browser security[cite: 98].
+  - **Recommendation:** Include a disclaimer in documentation or `options.html` about risks from other extensions, especially those with broad permissions (e.g., "Allow CORS" extensions) (ref: 4.7). Explain that other extensions can indirectly weaken overall browser security.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
   - **Addresses:** 4.7.
 
 - **5.11.4. User Reporting Mechanisms:**
-
-  - **Recommendation:** Establish clear, accessible channels for users to report suspicious behavior or perceived compromises of OriginMarker[cite: 159].
+  - **Recommendation:** Establish clear, accessible channels for users to report suspicious behavior or perceived compromises of OriginMarker.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high (e.g., support email, GitHub issues).
   - **Addresses:** Incident detection.
 
 - **5.11.5. Incident Response Plan:**
-
-  - **Recommendation:** Develop and test a comprehensive incident response plan for browser extension compromise, including steps for CWS removal, user notification, and forensic analysis[cite: 2, 160, 161].
+  - **Recommendation:** Develop and test a comprehensive incident response plan for browser extension compromise, including steps for CWS removal, user notification, and forensic analysis.
+  - **Relevance/Feasibility:** Moderate relevance for a small extension; increases with user base. Feasibility is moderate.
   - **Addresses:** Post-compromise handling.
 
 - **5.11.6. Debugging Security:**
-
-  - **Recommendation:** Use developer mode [cite: 60, 195] and browser DevTools securely; disable developer mode when not actively debugging to minimize exposure[cite: 162].
+  - **Recommendation:** Use developer mode and browser DevTools securely; disable developer mode when not actively debugging to minimize exposure.
+  - **Relevance/Feasibility:** High relevance.
   - **Addresses:** Secure development practices.
 
 - **5.11.7. Permission Transparency with Users:**
-
-  - **Recommendation:** Clearly explain why OriginMarker requests specific permissions and how they are used to foster user trust and informed decisions[cite: 43, 163, 164].
+  - **Recommendation:** Clearly explain why OriginMarker requests specific permissions and how they are used to foster user trust and informed decisions.
+  - **Relevance/Feasibility:** High relevance. Feasibility is high.
   - **Addresses:** User trust and education.
 
 - **5.11.8. User Education on Phishing and UI Anomalies:**
-
-  - **Recommendation:** Educate users about sophisticated phishing (including polymorphic extensions [cite: 11, 165, 7, 77]) and advise vigilance for UI anomalies or unexpected behavior, encouraging reporting[cite: 39, 166, 184]. Consider recommending browser-level security solutions for real-time phishing protection[cite: 92, 185].
+  - **Recommendation:** Educate users about sophisticated phishing (including polymorphic extensions, ref: 4.4.4) and advise vigilance for UI anomalies or unexpected behavior, encouraging reporting. Consider recommending browser-level security solutions for real-time phishing protection.
+  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
   - **Addresses:** 4.4.4, User vigilance.
 
 - **5.11.9. Promote Extension Management Best Practices:**
-  - **Recommendation:** Advise users to limit installed extensions, regularly audit them, remove unused ones, and install only from reputable sources[cite: 43, 140, 167, 198].
+  - **Recommendation:** Advise users to limit installed extensions, regularly audit them, remove unused ones, and install only from reputable sources.
+  - **Relevance/Feasibility:** Low to moderate relevance for OriginMarker's direct security; good for user ecosystem. Feasibility is high.
   - **Addresses:** Reducing overall user attack surface.
 
 ## 6. Permissions Justification
 
-The extension requests the following permissions, all of which are **necessary** for its intended operation and adhere to the Principle of Least Privilege to minimize risk, as excessive permissions are a common vector for abuse in compromised extensions[cite: 29, 141]:
+The extension requests the following permissions, all of which are **necessary** for its intended operation and adhere to the Principle of Least Privilege to minimize risk, as excessive permissions are a common vector for abuse in compromised extensions:
 
-- **`tabs`:** Required to access the URL of the currently active tab to determine its origin[cite: 28].
-- **`bookmarks`:** Required to create, read, and update the designated bookmark used for displaying the marker[cite: 28, 42].
-- **`storage`** (`local` and `sync`): Required to store user settings (mode, `salt`, bookmark ID) and custom markers[cite: 8, 28, 177].
-
-[end of security.md]
-
-[start of proposed_advanced_recommendations.md]
-
-### Further Security Enhancements and Considerations
-
-The following points are based on advanced security research and could be considered for future reviews or enhancements to OriginMarker, should its functionality expand or the threat landscape evolve significantly. The practicality and relevance for OriginMarker's current scope are also briefly assessed.
-
-#### Storage and Data Security
-
-- **5.1.1. Client-Side Encryption for Sensitive Data:**
-  - **Consideration:** For enhanced protection against `salt` and custom marker exfiltration (refs: 4.1, 4.2.1), future versions _could consider_ client-side encryption (e.g., AES-GCM via Web Crypto API) before storing this data. This would likely require a user-provided passphrase (not stored by the extension).
-  - **Relevance/Feasibility:** High relevance for data protection. Feasibility is moderate; adds complexity to the user experience (passphrase management).
-- **5.1.3. User-Initiated Salt Rotation:**
-  - **Consideration:** A potential enhancement _could be_ a user-initiated salt rotation feature. This would regenerate the `salt`, altering all auto-markers, to limit the impact window of a compromised `salt`. Clear UI explanation of its effect would be crucial.
-  - **Relevance/Feasibility:** Moderate relevance for mitigating `salt` compromise (refs: 4.1, 4.2.1). Feasibility is high.
-- **5.2.1. Strict Unicode Normalization and Invisible Character Stripping for Custom Markers:**
-  - **Consideration:** To further harden against potential "emoji smuggling" or hidden data in custom markers (ref: 4.4.2), future reviews _could evaluate_ stricter input validation, including Unicode normalization (e.g., NFC) and stripping/disallowing known invisible Unicode characters.
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high using JavaScript's string manipulation and Unicode property escapes.
-- **5.9.1. Ensure Use of Cryptographically Secure PRNGs:**
-  - **Context:** OriginMarker currently uses `crypto.randomUUID()` for `salt` generation, which is a CSPRNG and aligns with best practices (ref: 4.10.1).
-  - **Consideration:** Continued adherence to using CSPRNGs for any future security-critical random value generation is recommended.
-  - **Relevance/Feasibility:** High relevance. Current practice is good.
-- **5.9.2. Proper Salt Management:**
-  - **Context:** OriginMarker's UUID-based `salt` meets requirements for length, randomness, and uniqueness (ref: 4.10.2).
-  - **Consideration:** Current salt management practices should be maintained.
-  - **Relevance/Feasibility:** High relevance. Current practice is good.
-- **5.9.3. Analyze Data Transformations for Entropy Loss:**
-  - **Context:** The `base2base` function maps SHA-256 hashes to emoji strings for visual distinction (ref: 4.10.3). The primary security relies on SHA-256 collision resistance, not the emoji representation.
-  - **Consideration:** While the current `base2base` conversion is not a cryptographic boundary, future reviews of any new encoding or transformation process should assess potential information loss if used for security-sensitive identifiers. Perceptual collision of emojis is the main related concern (see 5.3.3).
-  - **Relevance/Feasibility:** Low cryptographic relevance for current use; moderate for perceptual aspects.
-
-#### User Interface, User Trust, and Interaction Security
-
-- **5.1.2. Proactive Storage Limit Monitoring and User Alerts:**
-  - **Consideration:** To improve robustness against potential storage quota exhaustion (ref: 4.2.2), OriginMarker _could consider_ monitoring `chrome.storage` usage and alerting the user if it approaches limits.
-  - **Relevance/Feasibility:** Low to moderate relevance, as OriginMarker's storage footprint per user is small. Feasibility is moderate.
-- **5.2.2. User Confirmation for External Bookmark Designation Changes:**
-  - **Consideration:** If the designated bookmark is altered externally (ref: 4.3.1, 4.3.2), a potential enhancement _could involve_ triggering a user alert and requiring confirmation to accept the change, to prevent malicious redirection or data exfiltration via the bookmark.
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is moderate, requires careful implementation to avoid excessive alerts.
-- **5.3.1. Displaying Punycode/IDN for Homoglyph Origins:**
-  - **Consideration:** To help users identify homoglyph spoofing attempts (ref: 4.4.1), OriginMarker _could consider_ displaying the Punycode representation of internationalized domain names (IDNs) in a tooltip or alongside the marker.
-  - **Relevance/Feasibility:** High relevance for user awareness. Feasibility is moderate.
-- **5.3.2. Enhanced User Education on Visual Deception:**
-  - **Consideration:** Future updates to user documentation (e.g., in `options.html`) _could expand on_ visual deception tactics like homoglyph attacks, the nature of emoji markers (differentiation, not security endorsement), perceptual similarities, and polymorphic extensions (refs: 4.4.1, 4.4.3, 4.4.4).
-  - **Relevance/Feasibility:** High relevance. Feasibility is high.
-- **5.3.3. Re-evaluation of Emoji Alphabet for Perceptual Distinctiveness:**
-  - **Context:** The emoji list in `static.js` has been curated (Section 3).
-  - **Consideration:** For future reviews, the emoji alphabet (ref: 4.4.3) _could be re-evaluated_ for perceptual distinctiveness to further minimize potential confusion between markers for different origins.
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is moderate (could involve user studies or image processing concepts if taken to an advanced level).
-- **5.3.4. Hard-to-Mimic UI Cues and Badge Text Usage:**
-  - **Consideration:** Future UI design reviews _could explore_ unique visual cues to make OriginMarker harder to mimic by polymorphic extensions (ref: 4.4.4). The use of badge text for the "ERR" state (ref: 4.4.7) is critical; alternatives or additional indicators could be weighed if badge spoofing becomes a practical threat.
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility varies.
-- **5.3.5. Resistance to Framing/Overlaying and Tabnabbing:**
-  - **Context:** The manifest's CSP includes `frame-ancestors 'none'`, mitigating clickjacking on extension pages (ref: 4.4.8).
-  - **Consideration:** Standard web best practices like `rel="noopener"` for outbound links should continue to be applied to mitigate reverse tabnabbing.
-  - **Relevance/Feasibility:** Moderate relevance. Current CSP is good.
-- **5.11.1. User Education on Browser Update Importance:**
-  - **Consideration:** Documentation _could remind_ users to keep Chrome updated, as browser vulnerabilities can impact overall security (ref: 4.6).
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
-- **5.11.3. User Awareness of Co-Installed Extension Risks:**
-  - **Consideration:** Documentation _could include_ a general note about risks from other extensions, especially those modifying browser security settings (ref: 4.7).
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
-- **5.11.8. User Education on Phishing and UI Anomalies:**
-  - **Consideration:** User guidance _could be expanded_ to cover general phishing awareness and encourage reporting of UI anomalies (ref: 4.4.4).
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
-
-#### Development Process, Supply Chain, and Architectural Considerations
-
-- **5.4.1. Mandatory Hardware-Based 2FA for Developer Accounts:**
-  - **Consideration:** For all accounts with publishing or write permissions (GitHub, CWS), it is _strongly recommended_ to use hardware-based 2FA to mitigate phishing and OAuth abuse (refs: 4.5.1, 4.5.2).
-  - **Relevance/Feasibility:** High relevance. Feasibility is high (organizational/personal policy).
-- **5.4.2. Automated Code Signing in Isolated CI/CD Environments:**
-  - **Consideration:** If not already standard practice for CWS submissions, performing package signing in highly isolated, ephemeral CI/CD environments with strict key management is _recommended for review_ (ref: 4.5.2).
-  - **Relevance/Feasibility:** High relevance for supply chain integrity. Feasibility depends on existing build/deploy infrastructure.
-- **5.4.3. Regular Security Audits of CI/CD Workflows:**
-  - **Consideration:** Periodic security reviews of GitHub Actions workflows, focusing on permissions (especially `contents: write` for `format-on-merge.yml`), secret management, and code injection points, _could be considered_ (ref: 4.5.1).
-  - **Relevance/Feasibility:** Moderate to High relevance. Feasibility depends on resources for audits.
-- **5.4.4. Pinning GitHub Actions to Specific SHAs:**
-  - **Consideration:** To ensure immutability of third-party GitHub Actions, referencing them by full commit SHA instead of tags is a _recommended practice_ (ref: 4.5.1).
-  - **Relevance/Feasibility:** High relevance. Feasibility is high.
-- **5.4.5. Code Integrity Checks and Dependency Vetting in CI/CD:**
-  - **Context:** OriginMarker has minimal third-party runtime dependencies. Development dependencies (like Prettier) are standard.
-  - **Consideration:** Continued vigilance in vetting any new runtime dependencies and using tools like CodeQL (already in use) for static analysis is _recommended_ (refs: 4.5.1, 4.5.3, 4.5.4).
-  - **Relevance/Feasibility:** High relevance. Current practices (CodeQL) are good.
-- **5.4.6. Chrome Web Store Monitoring:**
-  - **Consideration:** Active monitoring of the CWS listing for unauthorized changes or suspicious reviews _could serve as an early warning_ for compromise (refs: 4.5.2, 4.5.3).
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high (manual or automated checks).
-- **5.4.7. Developer Security Awareness Training:**
-  - **Consideration:** Ongoing developer education on phishing, OAuth abuse, and supply chain attacks is _a valuable consideration_ (refs: 4.5.1, 4.5.2).
-  - **Relevance/Feasibility:** High relevance. Feasibility is high.
-- **5.7.3. Explicit `externally_connectable` Manifest Property:**
-  - **Context:** OriginMarker does not currently define `externally_connectable` in its manifest, meaning it cannot be communicated with by other extensions unless they know its ID.
-  - **Consideration:** If no external communication is intended (which appears to be the case), explicitly setting `"externally_connectable": {"ids": [""]}` (effectively blocking all) or specifying a list of allowed extension IDs (if any) _could be reviewed_ to reduce fingerprinting surface and prevent unwanted messages (refs: 4.3.5, 4.3.1).
-  - **Relevance/Feasibility:** Moderate relevance for hardening. Feasibility is high.
-- **5.10.1. Manifest V3 Adoption:**
-  - **Context:** OriginMarker should be compliant with Manifest V3.
-  - **Consideration:** Ongoing adherence to Manifest V3 policies is essential for maintaining security posture.
-  - **Relevance/Feasibility:** High relevance. Assumed current practice.
-- **5.10.2. Content Script Isolation:**
-  - **Context:** OriginMarker does not appear to use content scripts that interact with arbitrary web page DOMs. Its UI is primarily in `options.html`.
-  - **Consideration:** If future functionality involves content scripts, leveraging Chrome's isolated worlds is critical.
-  - **Relevance/Feasibility:** Low current relevance; high if content scripts are added.
-- **5.10.3. Secure Communication Channels (Internal):**
-  - **Context:** Internal communication (e.g., `options.js` to `background.js`) uses `chrome.runtime.sendMessage`.
-  - **Consideration:** Current internal communication methods are standard. If message complexity or sensitivity increases, further validation or context-specific checks _could be reviewed_.
-  - **Relevance/Feasibility:** Moderate relevance. Current practice is standard.
-- **5.10.4. Strict Content Security Policy (CSP):**
-  - **Context:** OriginMarker has a strong CSP (Section 2.1).
-  - **Consideration:** Regular review and maintenance of this CSP are _recommended_.
-  - **Relevance/Feasibility:** High relevance. Current practice is good.
-
-#### Robustness, Environment Hardening, and Advanced Threat Mitigation
-
-- **5.2.3. Heuristic Monitoring for Suspicious Bookmark Activity:**
-  - **Consideration:** As a defense-in-depth measure against co-installed malicious extensions (ref: 4.3.1, 4.3.4), future reviews _could explore_ heuristics to detect and alert on unusually rapid or numerous bookmark changes not initiated by OriginMarker.
-  - **Relevance/Feasibility:** Low to moderate relevance. Feasibility is moderate, potential for false positives.
-- **5.5.1. Implement Constant-Time Operations & 5.5.2. Minimize Data-Dependent Branching/Memory Access & 5.5.3. Analyze `chrome.storage` Access Patterns:**
-  - **Consideration:** For protection against highly theoretical timing side-channel attacks (ref: 4.8), ensuring critical operations (especially cryptographic ones, though SHA-256 in Web Crypto is typically hardened) are constant-time _could be reviewed_ if specific, credible threats emerge.
-  - **Relevance/Feasibility:** Low relevance for OriginMarker's current functionality and risk profile. High complexity to implement thoroughly. Standard library (Web Crypto) usage is generally preferred.
-- **5.5.4. Monitor System-Level Resource Contention (Advanced):**
-  - **Consideration:** Specialized detection for covert channels via system resource contention (ref: 4.3.6) is likely out of scope.
-  - **Relevance/Feasibility:** Very low relevance/practicality for OriginMarker.
-- **5.6.1. Event Throttling and Debouncing (Broader):**
-  - **Context:** Debouncing for `onBookmarkChange` is implemented.
-  - **Consideration:** If `tabs.onUpdated` or other frequent browser events were to trigger more resource-intensive processing in the future, implementing further event throttling/debouncing _would be advisable_ (ref: 4.2.2).
-  - **Relevance/Feasibility:** Moderate relevance for future robustness. Feasibility is high.
-- **5.6.2. Graceful Load Handling and Resource Management:**
-  - **Consideration:** Continued attention to efficient resource use in the background script is _good practice_ to prevent local DoS (ref: 4.2.2).
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high.
-- **5.6.3. Minimize CPU in Content Scripts:**
-  - **Relevance/Feasibility:** Not currently applicable as no significant content scripts are used. Important if this changes.
-- **5.6.4. DNS Cache Poisoning Awareness:**
-  - **Consideration:** Educating users or providing alerts about potential DNS cache poisoning (ref: 4.2.2) _could be considered_ if OriginMarker's functionality evolves to make more critical security decisions based on origin, though the primary defense lies outside the extension.
-  - **Relevance/Feasibility:** Low relevance for direct mitigation by OriginMarker.
-- **5.6.5. Server-Side API Rate Limiting:**
-  - **Relevance/Feasibility:** Not applicable as OriginMarker makes no external/backend API calls.
-- **5.7.1. Review `sendMessage` for Implicit Leaks & 5.7.2. Avoid Reliance on Global Browser Events for Critical Logic:**
-  - **Consideration:** For any inter-script communication or event handling, future reviews _should ensure_ that sensitive information is not implicitly leaked (e.g., through message timing/frequency) and that critical logic does not solely depend on observable global events if covert channel inference by other extensions is a concern (ref: 4.3.5).
-  - **Relevance/Feasibility:** Moderate relevance for hardening. Feasibility is high.
-- **5.7.4. Rigorous Sanitization of External Inputs:**
-  - **Relevance/Feasibility:** Not currently applicable as OriginMarker does not process external inputs like browser history titles (ref: 4.3.7). Important if this changes.
-- **5.8.1. Re-validate State or Use Atomic Operations & 5.8.2. Mindful Asynchronous Operations and Data Re-verification & 5.8.3. Robust Error Handling and Input Validation for IPC:**
-  - **Context:** Some race conditions/TOCTOU risks have been addressed (e.g., `initBookmark` re-entrancy, `active_origin` capture).
-  - **Consideration:** Continued application of principles like re-validating state before action in asynchronous operations and robust input validation for any IPC _is recommended_ to mitigate race conditions (refs: 4.9.1, 4.9.2, 4.3.8).
-  - **Relevance/Feasibility:** High relevance. Feasibility is moderate to high.
-
-#### General Security Posture and Practices
-
-- **5.11.2. Continuous Re-evaluation of Permissions:**
-  - **Consideration:** The Principle of Least Privilege should be continuously applied. Permissions (`tabs`, `bookmarks`, `storage`) _should be reviewed_ periodically to ensure they remain minimal and necessary.
-  - **Relevance/Feasibility:** High relevance. Current permissions seem appropriate.
-- **5.11.4. User Reporting Mechanisms:**
-  - **Consideration:** Establishing clear channels for users to report suspicious behavior _is a good practice_.
-  - **Relevance/Feasibility:** Moderate relevance. Feasibility is high (e.g., support email, GitHub issues).
-- **5.11.5. Incident Response Plan:**
-  - **Consideration:** Developing a basic incident response plan (e.g., steps for CWS removal, user notification) _could be considered_ for preparedness.
-  - **Relevance/Feasibility:** Moderate relevance for a small extension; increases with user base. Feasibility is moderate.
-- **5.11.6. Debugging Security:**
-  - **Consideration:** Using developer mode and DevTools securely (disabling when not needed) is _standard advice_.
-  - **Relevance/Feasibility:** High relevance.
-- **5.11.7. Permission Transparency with Users:**
-  - **Consideration:** Clearly explaining permission use in the extension description or options page _helps build user trust_.
-  - **Relevance/Feasibility:** High relevance. Feasibility is high.
-- **5.11.9. Promote Extension Management Best Practices:**
-  * **Consideration:** User documentation *could suggest* general extension hygiene (limit installed extensions, audit regularly).
-  * **Relevance/Feasibility:** Low to moderate relevance for OriginMarker's direct security; good for user ecosystem. Feasibility is high.
-  [end of proposed_advanced_recommendations.md]
+- **`tabs`:** Required to access the URL of the currently active tab to determine its origin.
+- **`bookmarks`:** Required to create, read, and update the designated bookmark used for displaying the marker.
+- **`storage`** (`local` and `sync`): Required to store user settings (mode, `salt`, bookmark ID) and custom markers.
