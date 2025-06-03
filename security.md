@@ -851,7 +851,7 @@ The following recommendations are proposed to address the advanced attack vector
   - **Recommendation:** Advise users to limit installed extensions, regularly audit them, remove unused ones, and install only from reputable sources.
   - **Status: CONSIDERED BUT NOT IMPLEMENTED - Omitted from UI to keep user guidance focused on OriginMarker. Users encouraged to seek general advice elsewhere.**
   - **Relevance/Feasibility:** Low to moderate relevance for OriginMarker's direct security; good for user ecosystem. Feasibility is high.
-  -  **Addresses:** Reducing overall user attack surface.
+  - **Addresses:** Reducing overall user attack surface.
 
 ## 6. Permissions Justification
 
