@@ -7,7 +7,7 @@ It can be renamed per origin manually or automatic using the hash of the origin 
 
 # How to setup
 
-- Add a folder to the bookmarks bar with the ID of the mode like \* as the name.
+- Add or rename a **bookmark** in the bookmarks bar with its title set to the ID of the mode (e.g., `*` or `**`).
 - It will then automatically get renamed.
 
 # How to use
@@ -17,7 +17,7 @@ It can be renamed per origin manually or automatic using the hash of the origin 
 
 # Automatic mode (ID: \*)
 
-It will be different emojis per origin then other users.
+It will be different emojis per origin than other users (due to a unique, locally generated salt).
 
 # Manual only (ID: \*\*)
 
