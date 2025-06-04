@@ -119,24 +119,17 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 - **Impact:** Reading sensitive data like salt or custom markers, or altering settings to disable or mislead.
 - **Mitigation by Extension Code:** OriginMarker uses a strong CSP for its pages. It does not use `chrome.runtime.onMessageExternal`. Internal use of `chrome.storage` is standard; client-side encryption (deferred) would be a code-level defense. Defensive coding practices for `options.js` can harden it against DOM manipulation to some extent.
 
-#### 4.3.2. Denial of Service via Rapid Bookmark Updates (Handled by Extension)
+#### 4.3.2. Mitigation of Denial of Service from Rapid Bookmark Updates
 
-- **Vulnerability:** Frequent changes to the designated bookmark's title by another extension or rapid manual edits could trigger numerous `onBookmarkChange` events.
-- **Impact:** Potential `chrome.storage.sync` rate limit exhaustion if not handled, preventing custom marker saves.
-- **Mitigation by Extension Code:** This is **ADDRESSED**. Debouncing logic in `onBookmarkChange` in `background.js` mitigates this by limiting processing frequency.
-
-#### 4.3.3. Internal Inter-Process Communication (IPC)
-
-- **Context:** OriginMarker's primary IPC is between `options.js` and `background.js` via `chrome.storage` (for persisting settings) and `chrome.runtime.sendMessage` (for immediate actions like reset).
-- **Vulnerability:** While Chrome provides isolation, any vulnerabilities in how the extension manages data serialization, validation, or state based on these internal messages could be theoretically probed if another part of the extension were compromised.
-- **Mitigation by Extension Code:** Data retrieved from storage by `background.js` and `options.js` undergoes type validation. Message handling logic should be kept simple and also validate inputs if complex data were passed (currently, messages are simple triggers).
+- **Scenario:** Frequent changes to the designated bookmark's title, whether by another extension or rapid manual edits, could trigger numerous `onBookmarkChange` events. If not properly managed, this could lead to `chrome.storage.sync` rate limit exhaustion, preventing custom marker saves.
+- **Implemented Mitigation:** OriginMarker has **ADDRESSED** this potential issue. Debouncing logic implemented in the `onBookmarkChange` handler in `background.js` effectively mitigates this risk by limiting the processing frequency of such events, thus preventing excessive storage operations.
 
 ### 4.4. Visual Deception and Input Handling
 
 #### 4.4.1. Invisible Character Injection in Custom Markers
 
 - **Vulnerability:** If the extension's input fields in `options.html` and the logic in `options.js` or `background.js` do not sanitize custom marker strings, a user could be tricked into saving a marker with invisible Unicode characters.
-- **Impact:** These could be used for covert data encoding or potentially to evade naive string matching if such were used (not currently an issue).
+- **Impact:** Maliciously crafted inputs with invisible characters could lead to user confusion, difficulty in managing markers (e.g., markers that appear empty or identical to others), or be part of a social engineering attempt if the visual representation of the marker is misleading. While direct exploitation for data exfiltration via this method in OriginMarker is less likely, the primary concern is user deception and data integrity.
 - **Mitigation by Extension Code:** Implementing Unicode normalization and stripping/disallowing known problematic invisible characters from custom marker strings in `options.js` before saving to storage.
 
 #### 4.4.2. Perceptual Collisions or Ambiguity in Auto-Generated Emoji Markers
@@ -159,13 +152,7 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 - **Impact:** Operations being performed with outdated assumptions, potentially leading to incorrect behavior (e.g., updating the wrong bookmark, applying a marker based on an old mode).
 - **Mitigation by Extension Code:** Atomicity of `chrome.storage` operations for single key updates helps. For multi-step processes, re-fetching or re-validating critical state variables from storage or in-memory state immediately before use, or using transactional-like patterns if state changes are complex. Ensuring in-memory state is correctly updated only after storage operations succeed.
 
-### 4.6. Information Loss in Base Conversion (Marker Encoding)
-
-- **Vulnerability:** The `base2base` function in `static.js` converts a hexadecimal hash to a sequence of emojis. If this conversion process itself is flawed (e.g., biased character selection, off-by-one errors in mapping, significant loss of entropy beyond alphabet size reduction), it could lead to a less effective distribution of markers, potentially increasing actual (not just perceptual) collisions or making the output less representative of the hash.
-- **Impact:** Reduced uniqueness or security of the visual markers if the conversion is cryptographically weak, independent of the strength of SHA-256.
-- **Mitigation by Extension Code:** The `base2base` algorithm has been reviewed and found to be a standard, logically sound implementation for its purpose (visual differentiation). The primary concern remains perceptual collisions (4.4.2) rather than a cryptographic flaw in `base2base` itself.
-
-### 4.7. Granular Denial of Service via Custom Marker Item Limits
+### 4.6. Granular Denial of Service via Custom Marker Item Limits
 
 - **Vulnerability:** If a user creates a very large number of unique custom markers (approaching `chrome.storage.sync`'s 512-item limit), the extension might fail to save new markers or critical settings (like `salt` or `mode`) if it doesn't handle storage write failures or potential item limit errors gracefully.
 - **Impact:** Inability to save new custom markers or update extension configuration.
@@ -177,7 +164,7 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 
 This section outlines existing and planned code-level mitigations in the extension, corresponding to the potential attack vectors identified in Section 4. It focuses on mitigations that are implemented through code changes within the extension itself and address retained attack vectors.
 
-### 5.1. Salt, Data Storage, and Cryptography (Addresses Retained Risks 4.1, 4.2.1, 4.6)
+### 5.1. Salt, Data Storage, and Cryptography (Addresses Retained Risks 4.1, 4.2.1)
 
 - **Secure Salt Generation:** The cryptographic `salt` is generated using `crypto.randomUUID()` in `background.js`. This ensures a strong, unique identifier per installation, crucial for preventing predictable markers.
 - **Storage Options and Validation:**
@@ -192,7 +179,7 @@ This section outlines existing and planned code-level mitigations in the extensi
 - **Emoji Alphabet Curation:** The `emoji` list in `static.js` (used by `base2base`) has been curated. This aims to improve visual distinctiveness between markers and remove symbols that might be easily misinterpreted as security icons, which helps mitigate perceptual collisions (ref: 4.4.2).
 - **Custom Marker Sanitization (Planned):** To address the risk of invisible character injection in custom markers (ref: 4.4.1), input validation logic in `options.js` (handling input from `options.html`) and `background.js` (before saving to `chrome.storage`) is planned to be updated. This will include Unicode normalization (NFC) and the stripping or disallowing of known problematic invisible characters.
 
-### 5.3. Robustness, State, and Event Management (Addresses Retained Risks 4.2.2, 4.3.2, 4.3.3, 4.5.1, 4.5.2, 4.7)
+### 5.3. Robustness, State, and Event Management (Addresses Retained Risks 4.2.2, 4.3.2, 4.5.1, 4.5.2, 4.6)
 
 - **Comprehensive Error Handling:** Asynchronous Chrome API calls in `background.js` and `options.js` use `.catch()` for Promises or `chrome.runtime.lastError` checks for direct callbacks. Errors are logged to `console.error` for diagnostic purposes. Critical initialization failures (e.g., bookmark ID issues) trigger an "ERR" badge on the extension icon (logic in `background.js`, badge set via `chrome.action.setBadgeText`).
 - **State Consistency and Integrity:**
@@ -200,9 +187,9 @@ This section outlines existing and planned code-level mitigations in the extensi
   - `initBookmark` and `onPlaceholder` functions in `background.js` use an `AbortController` to manage and prevent race conditions during setup.
   - The `onBookmarkChange` handler in `background.js` captures `active_origin` at the start of processing to ensure custom markers are associated with the correct origin.
 - **Event Debouncing and Throttling:**
-  - The `onBookmarkChange` handler in `background.js` debounces rapid bookmark title changes, mitigating DoS (ref: 4.3.2) and storage quota issues (refs: 4.2.2, 4.7).
+  - The `onBookmarkChange` handler in `background.js` debounces rapid bookmark title changes, mitigating DoS (ref: 4.3.2) and storage quota issues (refs: 4.2.2, 4.6).
   - **(Planned):** Handling of `chrome.tabs.onUpdated` events in `checkOrigin` (`background.js`) will be reviewed for improved efficiency (e.g., filtering/debouncing) against rapid tab updates, further mitigating race conditions (ref: 4.5.1).
-- **Internal IPC Data Validation:** Data passed between `options.js` and `background.js` via `chrome.storage` is subject to type validation upon retrieval by `background.js` (ref: 4.3.3).
+- **Internal IPC Data Validation:** Data passed between `options.js` and `background.js` via `chrome.storage` is subject to type validation upon retrieval by `background.js`.
 
 ### 5.4. Manifest Security (Addresses Retained Risk 4.3.1)
 
