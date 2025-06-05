@@ -13,7 +13,7 @@ This document reflects the security state of OriginMarker after an initial audit
 - **`manifest.json`:** Defines permissions, CSP, background service worker, and options UI.
 - **`background.js` (Service Worker):** Core logic for tracking active tabs, fetching origins, generating markers, and updating bookmarks. This script contains key functions like `setMarker`, `checkOrigin`, `initBookmark`, and the `base2base` encoding algorithm. It is the central processing unit of the extension.
 - **`options.html` / `options.js`:** Provides a user interface for extension settings, including a reset function and storage preference settings.
-- **`static.js`:** This file is loaded into the service worker via `importScripts('/static.js')`. It is intended to provide static data, notably the `source` (e.g., hex) and `emoji` alphabets used as input for the `base2base` encoding function in `background.js`, and the default `unknown` marker string. Its integrity is crucial. If compromised to contain malicious JavaScript, that code would execute within the service worker's context. If its *data* (alphabets, strings) were manipulated (e.g., `unknown` string replaced with a misleading message or malformed characters), it could lead to incorrect marker generation, broken encoding, or UI display issues if these strings are used directly in the extension's UI without sanitization (though bookmark titles themselves are generally rendered as plain text by the browser). See Section 4.7.
+- **`static.js`:** This file is loaded into the service worker via `importScripts('/static.js')`. It is intended to provide static data, notably the `source` (e.g., hex) and `emoji` alphabets used as input for the `base2base` encoding function in `background.js`, and the default `unknown` marker string. Its integrity is crucial. If compromised to contain malicious JavaScript, that code would execute within the service worker's context. If its _data_ (alphabets, strings) were manipulated (e.g., `unknown` string replaced with a misleading message or malformed characters), it could lead to incorrect marker generation, broken encoding, or UI display issues if these strings are used directly in the extension's UI without sanitization (though bookmark titles themselves are generally rendered as plain text by the browser). See Section 4.7.
 
 **Key Functionalities:**
 
@@ -98,9 +98,9 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 - **Vulnerability:** The cryptographic `salt` stored unencrypted (beyond OS-level) in `chrome.storage.sync` or `chrome.storage.local` could be exfiltrated by malware or via a compromised Google account (for sync).
 - **Impact:** An attacker with the salt and knowledge of the extension's logic could deanonymize auto-generated markers or spoof markers for phishing.
 - **Mitigation by Extension Code:**
-    - Offering `local` or `session` storage (with `session` clearing salt on browser close) for the salt limits exfiltration risk.
-    - Stricter validation of salt format upon retrieval.
-    - Client-side encryption of the salt is a potential future mitigation.
+  - Offering `local` or `session` storage (with `session` clearing salt on browser close) for the salt limits exfiltration risk.
+  - Stricter validation of salt format upon retrieval.
+  - Client-side encryption of the salt is a potential future mitigation.
 
 ### 4.2. Storage Exploitation
 
@@ -109,17 +109,17 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 - **Vulnerability:** Custom markers and settings stored unencrypted can be read by malware or via a compromised Google account.
 - **Impact:** Exposure of user-defined custom marker names and associated origins.
 - **Mitigation by Extension Code:**
-    - Offering `local` or `session` storage limits sync-based exfiltration.
-    - Robust type validation for all retrieved data.
-    - Client-side encryption of custom markers is a potential future mitigation.
+  - Offering `local` or `session` storage limits sync-based exfiltration.
+  - Robust type validation for all retrieved data.
+  - Client-side encryption of custom markers is a potential future mitigation.
 
 #### 4.2.2. Storage Quota Exhaustion
 
 - **Vulnerability:** Prolific use of custom markers or errors in writing data could lead to hitting `chrome.storage` quotas.
 - **Impact:** Failure to save settings, new custom markers, or the `salt`.
 - **Mitigation by Extension Code:**
-    - Error handling for storage operations.
-    - Debouncing for bookmark change events.
+  - Error handling for storage operations.
+  - Debouncing for bookmark change events.
 
 ### 4.3. Inter-Extension Communication and Internal IPC
 
@@ -128,10 +128,10 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 - **Vulnerability:** A co-installed malicious extension with `storage` permission might guess storage keys (e.g., `'_' + hash` for custom markers, where the hash uses a known salt) to access OriginMarker's data.
 - **Impact:** Reading sensitive data or altering settings.
 - **Mitigation by Extension Code:**
-    - Strong CSP for `options.html`.
-    - No use of `chrome.runtime.onMessageExternal`.
-    - Internal messages checked via `sender.origin === location.origin`.
-    - The `_` prefix for hash-based keys is a minor convention, but primary defense relies on limiting salt exposure.
+  - Strong CSP for `options.html`.
+  - No use of `chrome.runtime.onMessageExternal`.
+  - Internal messages checked via `sender.origin === location.origin`.
+  - The `_` prefix for hash-based keys is a minor convention, but primary defense relies on limiting salt exposure.
 
 ### 4.4. Visual Deception and Input Handling
 
@@ -144,12 +144,12 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 ### 4.7. Build and Supply Chain Integrity
 
 - **Vulnerability:**
-    - **`static.js` Integrity:** Compromise of `static.js` prior to packaging could lead to arbitrary code execution within the service worker via `importScripts()` if malicious JS is injected. If only its *data* (alphabets, `unknown` string) is altered, it could lead to malformed markers, broken encoding, or injection of unsafe strings (e.g., if `unknown` was `"<img src=x onerror=alert(1)>"` and the extension rendered this string as HTML in its options page without sanitization).
-    - **GitHub Actions:** The `format-on-merge.yml` workflow with `contents: write` permission is a supply chain risk point.
+  - **`static.js` Integrity:** Compromise of `static.js` prior to packaging could lead to arbitrary code execution within the service worker via `importScripts()` if malicious JS is injected. If only its _data_ (alphabets, `unknown` string) is altered, it could lead to malformed markers, broken encoding, or injection of unsafe strings (e.g., if `unknown` was `"<img src=x onerror=alert(1)>"` and the extension rendered this string as HTML in its options page without sanitization).
+  - **GitHub Actions:** The `format-on-merge.yml` workflow with `contents: write` permission is a supply chain risk point.
 - **Impact:** Full compromise of the extension, data exfiltration, or malicious actions within its permission scope.
 - **Mitigation:**
-    - **`static.js`:** Secure maintenance and verification of `static.js` content (both code and data) before packaging. Chrome's extension signing provides some post-publication protection.
-    - **GitHub Actions:** Regular review of permissions and dependencies; pinning actions to commit SHAs; branch protection rules.
+  - **`static.js`:** Secure maintenance and verification of `static.js` content (both code and data) before packaging. Chrome's extension signing provides some post-publication protection.
+  - **GitHub Actions:** Regular review of permissions and dependencies; pinning actions to commit SHAs; branch protection rules.
 
 ---
 
