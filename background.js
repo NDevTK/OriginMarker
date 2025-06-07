@@ -8,19 +8,31 @@ var encoding;
 const MIN_ALPHABET_LENGTH = 16; // For source alphabet, expecting full hex set
 const MIN_EMOJI_ALPHABET_LENGTH = 64; // For emoji alphabet
 
-let sourceAlphabetValid = Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
-let emojiAlphabetValid = Array.isArray(emoji) && emoji.length >= MIN_EMOJI_ALPHABET_LENGTH; // Uses new constant
+let sourceAlphabetValid =
+  Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
+let emojiAlphabetValid =
+  Array.isArray(emoji) && emoji.length >= MIN_EMOJI_ALPHABET_LENGTH; // Uses new constant
 
 if (sourceAlphabetValid && emojiAlphabetValid) {
   encoding = base2baseForEmojis([...source], [...emoji]); // Use base2baseForEmojis
 } else {
   areAlphabetsValid = false;
   if (!sourceAlphabetValid) {
-    console.error('OriginMarker: Source alphabet from static.js is invalid or too short. Expected array with >= ' + MIN_ALPHABET_LENGTH + ' elements. Value:', source);
+    console.error(
+      'OriginMarker: Source alphabet from static.js is invalid or too short. Expected array with >= ' +
+        MIN_ALPHABET_LENGTH +
+        ' elements. Value:',
+      source
+    );
   }
   if (!emojiAlphabetValid) {
     // Uses new constant in message:
-    console.error('OriginMarker: Emoji alphabet from static.js is invalid or too short. Expected array with >= ' + MIN_EMOJI_ALPHABET_LENGTH + ' elements. Value:', emoji);
+    console.error(
+      'OriginMarker: Emoji alphabet from static.js is invalid or too short. Expected array with >= ' +
+        MIN_EMOJI_ALPHABET_LENGTH +
+        ' elements. Value:',
+      emoji
+    );
   }
   encoding = () => unknown; // Fallback encoding function
 }
@@ -33,15 +45,15 @@ const initializationCompletePromise = new Promise((resolve) => {
 // For DoS Protection
 const EVENT_RATE_THRESHOLD_COUNT = 10; // Max events before triggering
 const EVENT_RATE_THRESHOLD_WINDOW_MS = 3000; // Time window in ms
-const DOS_INITIAL_COOLDOWN_MS = 5000;    // Cooldown after first detection
-const DOS_EXTENDED_COOLDOWN_MS = 10000;  // Cooldown if DoS persists after a check
+const DOS_INITIAL_COOLDOWN_MS = 5000; // Cooldown after first detection
+const DOS_EXTENDED_COOLDOWN_MS = 10000; // Cooldown if DoS persists after a check
 
 const DOS_STATE_NORMAL = 'NORMAL';
 const DOS_STATE_COOLDOWN = 'COOLDOWN';
 let currentDosState = DOS_STATE_NORMAL;
 
 let tabEventTimestamps = []; // Array to store timestamps of recent tab events
-let dosCooldownTimer = null;   // Timer ID for cooldown periods
+let dosCooldownTimer = null; // Timer ID for cooldown periods
 
 var auto;
 var store;
@@ -413,7 +425,9 @@ function enterDosCooldownMode() {
     return;
   }
 
-  console.warn("OriginMarker: High frequency of tab events detected. Entering cooldown mode and setting marker to default.");
+  console.warn(
+    'OriginMarker: High frequency of tab events detected. Entering cooldown mode and setting marker to default.'
+  );
 
   currentDosState = DOS_STATE_COOLDOWN;
   setMarker(null); // Set to generic/unknown marker
@@ -432,13 +446,15 @@ function checkDosRecovery() {
 
   if (checkEventRate()) {
     // Event rate is still high
-    console.warn("OriginMarker: DoS condition persists. Extending cooldown.");
+    console.warn('OriginMarker: DoS condition persists. Extending cooldown.');
     // currentDosState remains DOS_STATE_COOLDOWN
     // Restart the timer with the extended cooldown period
     dosCooldownTimer = setTimeout(checkDosRecovery, DOS_EXTENDED_COOLDOWN_MS);
   } else {
     // Event rate has returned to normal
-    console.log("OriginMarker: Event rate normal. Recovering from DoS cooldown.");
+    console.log(
+      'OriginMarker: Event rate normal. Recovering from DoS cooldown.'
+    );
     currentDosState = DOS_STATE_NORMAL;
     // Attempt to set the correct marker for the current tab immediately
     checkOrigin();
@@ -463,7 +479,10 @@ async function setMarker(origin) {
     const key = '_' + fullHash;
     let customMarkerValue = await getData(key);
 
-    if (customMarkerValue !== undefined && typeof customMarkerValue !== 'string') {
+    if (
+      customMarkerValue !== undefined &&
+      typeof customMarkerValue !== 'string'
+    ) {
       console.warn(
         `OriginMarker: Custom marker for key ${key} (origin: ${origin}) is not a string. Defaulting to auto-marker.`
       );
@@ -491,10 +510,13 @@ async function setMarker(origin) {
   }
 
   try {
-    await chrome.bookmarks.update(bookmark, { title: newMarkerTitle });
+    await chrome.bookmarks.update(bookmark, {title: newMarkerTitle});
     active_origin = original_pending_origin; // Set active_origin to the one we successfully processed
   } catch (error) {
-    console.error(`OriginMarker: Error updating bookmark for origin ${original_pending_origin}:`, error.message);
+    console.error(
+      `OriginMarker: Error updating bookmark for origin ${original_pending_origin}:`,
+      error.message
+    );
     // Do not update active_origin if the bookmark update failed, to allow retry if appropriate.
   }
 }
@@ -558,9 +580,12 @@ async function onBookmarkChange(id, e) {
     const key = '_' + (await sha256(eventOrigin));
 
     // Sanitize the eventTitle
-    const sanitizedEventTitle = eventTitle.normalize('NFC').replace(/[\u200B-\u200D\u202A-\u202E\u2066-\u2069\uFEFF]/gu, '');
+    const sanitizedEventTitle = eventTitle
+      .normalize('NFC')
+      .replace(/[\u200B-\u200D\u202A-\u202E\u2066-\u2069\uFEFF]/gu, '');
 
-    if (sanitizedEventTitle === '') { // Check if sanitization made it empty
+    if (sanitizedEventTitle === '') {
+      // Check if sanitization made it empty
       try {
         await removeData(key);
       } catch (error) {
@@ -676,9 +701,13 @@ async function sha256(data) {
 
 function base2baseForEmojis(srcAlphabetChars, dstAlphabetTokens) {
   // 1. Process srcAlphabetChars
-  const effectiveSrcAlphabet = [...new Set(
-    Array.isArray(srcAlphabetChars) ? srcAlphabetChars.join('') : String(srcAlphabetChars)
-  )];
+  const effectiveSrcAlphabet = [
+    ...new Set(
+      Array.isArray(srcAlphabetChars)
+        ? srcAlphabetChars.join('')
+        : String(srcAlphabetChars)
+    )
+  ];
   const fromBase = effectiveSrcAlphabet.length;
 
   // 2. Process dstAlphabetTokens
@@ -687,7 +716,12 @@ function base2baseForEmojis(srcAlphabetChars, dstAlphabetTokens) {
 
   // Initial error handling for alphabet sizes
   if (fromBase < 2 || toBase < 2) {
-    console.error("OriginMarker: base2baseForEmojis alphabets must have at least 2 unique tokens. fromBase:", fromBase, "toBase:", toBase);
+    console.error(
+      'OriginMarker: base2baseForEmojis alphabets must have at least 2 unique tokens. fromBase:',
+      fromBase,
+      'toBase:',
+      toBase
+    );
     return (numberStr) => String(unknown); // 'unknown' is globally available
   }
 
@@ -696,40 +730,43 @@ function base2baseForEmojis(srcAlphabetChars, dstAlphabetTokens) {
       numberStr = String(numberStr);
     }
 
-    if (numberStr === "") { // Handle empty input string
-        return "";
+    if (numberStr === '') {
+      // Handle empty input string
+      return '';
     }
 
     const numberArr = [...numberStr]; // Convert input number string to array of its characters
 
     let numberMap = {}; // Stores the numeric value of each digit in the input number
-                         // Using object for sparse array like behavior if original numberMap did that.
-                         // Let's use an array as per refined logic for numberMap.
+    // Using object for sparse array like behavior if original numberMap did that.
+    // Let's use an array as per refined logic for numberMap.
     let mappedDigits = [];
-
 
     for (let i = 0; i < numberArr.length; i++) {
       const digitValue = effectiveSrcAlphabet.indexOf(numberArr[i]);
       if (digitValue === -1) {
-        console.error(`OriginMarker: Character '${numberArr[i]}' in input '${numberStr}' not found in source alphabet.`);
+        console.error(
+          `OriginMarker: Character '${numberArr[i]}' in input '${numberStr}' not found in source alphabet.`
+        );
         return String(unknown); // Invalid input character
       }
       mappedDigits[i] = digitValue;
     }
 
-    if (mappedDigits.length === 0) { // Should be caught by numberStr === "" earlier, but as a safeguard.
-        return "";
+    if (mappedDigits.length === 0) {
+      // Should be caught by numberStr === "" earlier, but as a safeguard.
+      return '';
     }
 
     // Handle input "0" (e.g., "0", "00") explicitly to return effectiveDstAlphabet[0]
     let allZeroInput = true;
-    for(let i = 0; i < mappedDigits.length; ++i) {
-      if(mappedDigits[i] !== 0) {
+    for (let i = 0; i < mappedDigits.length; ++i) {
+      if (mappedDigits[i] !== 0) {
         allZeroInput = false;
         break;
       }
     }
-    if(allZeroInput) {
+    if (allZeroInput) {
       // Ensure toBase is not 0 before accessing effectiveDstAlphabet[0]
       // This was already checked by toBase < 2, which implies toBase can't be 0.
       return effectiveDstAlphabet[0];
@@ -760,8 +797,13 @@ function base2baseForEmojis(srcAlphabetChars, dstAlphabetTokens) {
       currentLength = newlen;
       // Ensure divide is a valid index for effectiveDstAlphabet
       if (divide < 0 || divide >= effectiveDstAlphabet.length) {
-          console.error("OriginMarker: base2baseForEmojis - 'divide' index out of bounds for destination alphabet. Divide:", divide, "DstLength:", effectiveDstAlphabet.length);
-          return String(unknown);
+        console.error(
+          "OriginMarker: base2baseForEmojis - 'divide' index out of bounds for destination alphabet. Divide:",
+          divide,
+          'DstLength:',
+          effectiveDstAlphabet.length
+        );
+        return String(unknown);
       }
       result = effectiveDstAlphabet[divide] + result;
     } while (newlen != 0);
@@ -817,7 +859,9 @@ function recordTabEvent() {
   const now = Date.now();
   tabEventTimestamps.push(now);
   // Prune timestamps older than the window to prevent the array from growing indefinitely
-  tabEventTimestamps = tabEventTimestamps.filter(timestamp => (now - timestamp) < EVENT_RATE_THRESHOLD_WINDOW_MS);
+  tabEventTimestamps = tabEventTimestamps.filter(
+    (timestamp) => now - timestamp < EVENT_RATE_THRESHOLD_WINDOW_MS
+  );
 }
 
 function checkEventRate() {
@@ -825,7 +869,9 @@ function checkEventRate() {
   // This function just checks if the current count in the window exceeds the threshold.
   // No, this needs to filter again to be sure, as recordTabEvent might not be called immediately before.
   const now = Date.now();
-  const recentEventsInWindow = tabEventTimestamps.filter(timestamp => (now - timestamp) < EVENT_RATE_THRESHOLD_WINDOW_MS);
+  const recentEventsInWindow = tabEventTimestamps.filter(
+    (timestamp) => now - timestamp < EVENT_RATE_THRESHOLD_WINDOW_MS
+  );
   return recentEventsInWindow.length >= EVENT_RATE_THRESHOLD_COUNT;
 }
 
