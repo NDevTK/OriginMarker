@@ -25,8 +25,6 @@ const emoji = [
   '👻', // Ghost
   '👽', // Alien
   '🤖', // Robot
-  '😺', // Grinning Cat
-  '😻', // Smiling Cat with Heart-Eyes
   '🙈', // See-No-Evil Monkey
   '🙉', // Hear-No-Evil Monkey
   '🙊', // Speak-No-Evil Monkey
@@ -55,6 +53,7 @@ const emoji = [
   '👉', // Backhand Index Pointing Right
   '✊', // Raised Fist
   '👏', // Clapping Hands
+  '🤞', // Crossed Fingers
   '🙌', // Raising Hands
   '✍️', // Writing Hand
   '💅', // Nail Polish
@@ -255,8 +254,10 @@ const emoji = [
   '🔻', // Red Triangle Pointed Down
   '💠', // Diamond with a Dot
   '🔳', // White Square Button
-  // '🔲', // Black Square Button - Removed
   '😮', // Face with Open Mouth
+  '🧐', // Face with Monocle
+  '🫢', // Face with Open Eyes and Hand Over Mouth
+  '🫣', // Face with Peeking Eye
   '😳', // Flushed Face
   '🥺', // Pleading Face
   '😭', // Loudly Crying Face
@@ -558,10 +559,7 @@ const emoji = [
   '🌖', // Waning Gibbous Moon
   '🌘', // Waning Crescent Moon
   '🌚', // New Moon Face
-  '🌛', // First Quarter Moon Face
-  '🌜', // Last Quarter Moon Face
   '🌡️', // Thermometer
-  '🌝', // Full Moon Face
   '🌞', // Sun with Face
   '🌟', // Glowing Star
   '🌠', // Shooting Star
@@ -931,6 +929,7 @@ const emoji = [
   '〰️', // Squiggly Dash
   '💱', // Currency Exchange
   '⚕️', // Medical Symbol
+  '❓', // Question Mark
   '⚜️', // Fleur-De-Lis
   '🔱', // Trident Emblem
   '📛', // Name Badge
@@ -958,12 +957,6 @@ const emoji = [
   '🟫', // Brown Square
   '⬛', // Black Large Square
   '⬜', // White Large Square
-  // '◼️', // Black Medium Square - Removed
-  // '◻️', // White Medium Square - Removed
-  // '▪️', // Black Small Square - Removed
-  // '▫️', // White Small Square - Removed
-  // '🔸', // Small Orange Diamond - Removed
-  // '🔹', // Small Blue Diamond - Removed
   '🔘', // Radio Button
   '🥸', // Disguised Face
   '🫠', // Melting Face
