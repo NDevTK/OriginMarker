@@ -1000,5 +1000,3 @@ const source = [
   '8',
   '9'
 ];
-
-[end of static.js]
