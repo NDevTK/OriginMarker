@@ -157,7 +157,6 @@ const emoji = [
   '🍺', // Beer Mug
   '🥢', // Chopsticks
   '🔪', // Kitchen Knife
-  '🌍', // Earth Globe Europe-Africa
   '🗺️', // World Map
   '🌋', // Volcano
   '🏠', // House
@@ -182,7 +181,6 @@ const emoji = [
   '⌛', // Hourglass Done
   '⏰', // Alarm Clock
   '🌙', // Crescent Moon
-  '☀️', // Sun
   '⭐', // Star
   '☁️', // Cloud
   '⚡', // High Voltage
@@ -261,11 +259,9 @@ const emoji = [
   '😮', // Face with Open Mouth
   '😳', // Flushed Face
   '🥺', // Pleading Face
-  '😢', // Crying Face
   '😭', // Loudly Crying Face
   '😱', // Face Screaming in Fear
   '😡', // Pouting Face
-  '😠', // Angry Face
   '🤬', // Face with Symbols on Mouth
   '🦄', // Unicorn
   '🦓', // Zebra
@@ -446,8 +442,6 @@ const emoji = [
   '🍴', // Fork and Knife
   '🥄', // Spoon
   '🏺', // Amphora
-  '🌎', // Earth Globe Americas
-  '🌏', // Earth Globe Asia-Australia
   '🌐', // Globe with Meridians
   '🗾', // Map of Japan
   '🧭', // Compass
@@ -559,13 +553,9 @@ const emoji = [
   '⏲️', // Timer Clock
   '🕰️', // Mantelpiece Clock
   '🕛', // Twelve O’Clock
-  '🌑', // New Moon
   '🌒', // Waxing Crescent Moon
-  '🌓', // First Quarter Moon
   '🌔', // Waxing Gibbous Moon
-  '🌕', // Full Moon
   '🌖', // Waning Gibbous Moon
-  '🌗', // Last Quarter Moon
   '🌘', // Waning Crescent Moon
   '🌚', // New Moon Face
   '🌛', // First Quarter Moon Face
@@ -588,9 +578,7 @@ const emoji = [
   '🌀', // Cyclone
   '🌂', // Closed Umbrella
   '☂️', // Umbrella
-  '⛱️', // Umbrella on Ground
   '☃️', // Snowman
-  '⛄', // Snowman Without Snow
   '☄️', // Comet
   '🧨', // Firecracker
   '✨', // Sparkles
@@ -651,7 +639,6 @@ const emoji = [
   '🧸', // Teddy Bear
   '🪅', // Piñata
   '🪆', // Nesting Dolls
-  '♥️', // Heart Suit
   '♦️', // Diamond Suit
   '♣️', // Club Suit
   '♟️', // Chess Pawn
@@ -709,8 +696,6 @@ const emoji = [
   '💄', // Lipstick
   '💎', // Gem Stone
   '🔇', // Muted Speaker
-  '🔈', // Speaker Low Volume
-  '🔉', // Speaker Medium Volume
   '🔊', // Speaker High Volume
   '📢', // Loudspeaker
   '📣', // Megaphone
@@ -759,15 +744,9 @@ const emoji = [
   '🔦', // Flashlight
   '🏮', // Red Paper Lantern
   '🪔', // Diya Lamp
-  '📔', // Notebook with Decorative Cover
   '📕', // Closed Book
   '📖', // Open Book
-  '📗', // Green Book
-  '📘', // Blue Book
-  '📙', // Orange Book
   '📓', // Notebook
-  '📒', // Ledger
-  '📃', // Page with Curl
   '📜', // Scroll
   '📄', // Page Facing Up
   '📰', // Newspaper
@@ -790,9 +769,7 @@ const emoji = [
   '📤', // Outbox Tray
   '📥', // Inbox Tray
   '📦', // Package
-  '📫', // Closed Mailbox with Raised Flag
   '📬', // Open Mailbox with Raised Flag
-  '📭', // Open Mailbox with Lowered Flag
   '📮', // Postbox
   '🗳️', // Ballot Box with Ballot
   '✏️', // Pencil
@@ -910,12 +887,6 @@ const emoji = [
   '↪️', // Left Arrow Curving Right
   '⤴️', // Right Arrow Curving Up
   '⤵️', // Right Arrow Curving Down
-  '🔃', // Clockwise Vertical Arrows
-  '🔙', // Back Arrow
-  '🔚', // End Arrow
-  '🔛', // On! Arrow
-  '🔜', // Soon Arrow
-  '🔝', // Top Arrow
   '🛐', // Place of Worship
   '⚛️', // Atom Symbol
   '🕉️', // Om Symbol
@@ -947,9 +918,6 @@ const emoji = [
   '⏩', // Fast-Forward Button
   '⏭️', // Next Track Button
   '⏯️', // Play or Pause Button
-  '◀️', // Reverse Button
-  '⏪', // Fast-Reverse Button
-  '⏮️', // Last Track Button
   '⏫', // Fast Up Button
   '⏬', // Fast Down Button
   '⏏️', // Eject Button
@@ -996,7 +964,22 @@ const emoji = [
   // '▫️', // White Small Square - Removed
   // '🔸', // Small Orange Diamond - Removed
   // '🔹', // Small Blue Diamond - Removed
-  '🔘' // Radio Button
+  '🔘', // Radio Button
+  '🥸', // Disguised Face
+  '🫠', // Melting Face
+  '🫡', // Saluting Face
+  '🥷', // Ninja
+  '🧑‍🌾', // Farmer
+  '🧑‍🍳', // Cook
+  '🧑‍🦯', // Person with White Cane
+  '🫘', // Beans
+  '🫙', // Jar
+  '🛞', // Wheel
+  '🪩', // Mirror Ball
+  '🪫', // Low Battery
+  '🪬', // Hamsa
+  '🫧', // Bubbles
+  '🪸' // Coral
 ];
 
 const source = [
@@ -1017,3 +1000,5 @@ const source = [
   '8',
   '9'
 ];
+
+[end of static.js]
