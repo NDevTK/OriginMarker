@@ -4,49 +4,26 @@ const unknown = 'Marker';
 const emoji = [
   '😀', // Grinning Face
   '😂', // Face with Tears of Joy
-  '🤔', // Thinking Face
   '😴', // Sleeping Face
   '😷', // Face with Medical Mask
   '🤯', // Exploding Head
   '🥶', // Cold Face
   '🥵', // Hot Face
   '🤮', // Face Vomiting
-  '🤫', // Shushing Face
   '🤗', // Hugging Face
   '🤑', // Money-Mouth Face
   '🤪', // Zany Face
-  '😇', // Smiling Face with Halo
   '😍', // Smiling Face with Heart-Eyes
   '💀', // Skull
-  '💩', // Pile of Poo
-  '🤡', // Clown Face
   '👹', // Ogre
   '👺', // Goblin
-  '👻', // Ghost
-  '👽', // Alien
-  '🤖', // Robot
-  '🙈', // See-No-Evil Monkey
-  '🙉', // Hear-No-Evil Monkey
-  '🙊', // Speak-No-Evil Monkey
-  '💋', // Kiss Mark
   '❤️', // Red Heart
   '💯', // Hundred Points Symbol
-  '💥', // Collision Symbol
-  '💫', // Dizzy Symbol
-  '💨', // Dashing Away
   '💣', // Bomb
   '💬', // Speech Balloon
-  '👁️‍🗨️', // Eye in Speech Bubble
-  '🗯️', // Right Anger Bubble
-  '💭', // Thought Balloon
-  '💤', // Zzz
   '👋', // Waving Hand
   '👍', // Thumbs Up
-  '👎', // Thumbs Down
-  '🙏', // Folded Hands
-  '💪', // Flexed Biceps
   '👌', // OK Hand
-  '✌️', // Victory Hand
   '👆', // Backhand Index Pointing Up
   '👇', // Backhand Index Pointing Down
   '👈', // Backhand Index Pointing Left
@@ -56,8 +33,6 @@ const emoji = [
   '🤞', // Crossed Fingers
   '🙌', // Raising Hands
   '✍️', // Writing Hand
-  '💅', // Nail Polish
-  '🤳', // Selfie
   '🦾', // Mechanical Arm
   '🦿', // Mechanical Leg
   '🧠', // Brain
@@ -67,7 +42,6 @@ const emoji = [
   '👅', // Tongue
   '👄', // Mouth
   '🦷', // Tooth
-  '🦴', // Bone
   '👶', // Baby
   '👦', // Boy
   '👧', // Girl
@@ -87,14 +61,10 @@ const emoji = [
   '💃', // Woman Dancing
   '🕺', // Man Dancing
   '👪', // Family
-  '🗣️', // Speaking Head
   '👤', // Bust in Silhouette
-  '👥', // Busts in Silhouette
   '🫂', // People Hugging
-  '👣', // Footprints
   '🐒', // Monkey
   '🐶', // Dog Face
-  '🐱', // Cat Face
   '🐅', // Tiger
   '🐘', // Elephant
   '🐍', // Snake
@@ -131,8 +101,6 @@ const emoji = [
   '🌻', // Sunflower
   '🌳', // Deciduous Tree
   '🌵', // Cactus
-  '🍁', // Maple Leaf
-  '🍇', // Grapes
   '🍎', // Red Apple
   '🍌', // Banana
   '🍍', // Pineapple
@@ -156,51 +124,36 @@ const emoji = [
   '🍺', // Beer Mug
   '🥢', // Chopsticks
   '🔪', // Kitchen Knife
-  '🗺️', // World Map
-  '🌋', // Volcano
   '🏠', // House
   '🏢', // Office Building
   '🏥', // Hospital
   '🏦', // Bank
   '🏰', // Castle
-  '🗼', // Tokyo Tower
-  '🗽', // Statue of Liberty
   '🚂', // Locomotive
   '🚌', // Bus
   '🚗', // Automobile
   '🏍️', // Motorcycle
   '🚲', // Bicycle
-  '⚓', // Anchor
   '⛵', // Sailboat
   '🚢', // Ship
   '✈️', // Airplane
   '🚁', // Helicopter
   '🚀', // Rocket
   '🛸', // Flying Saucer
-  '⌛', // Hourglass Done
   '⏰', // Alarm Clock
-  '🌙', // Crescent Moon
   '⭐', // Star
   '☁️', // Cloud
   '⚡', // High Voltage
-  '❄️', // Snowflake
   '🔥', // Fire
-  '💧', // Droplet
   '🌊', // Water Wave
-  '🎃', // Jack-O-Lantern
   '🎄', // Christmas Tree
-  '🎆', // Fireworks
   '🎉', // Party Popper
   '🏆', // Trophy
   '⚽', // Soccer Ball
   '🎮', // Video Game
   '🎲', // Game Die
-  '♠️', // Spade Suit
-  '👑', // Crown
-  '💍', // Ring
   '🎤', // Microphone
   '🎧', // Headphone
-  '🔋', // Battery
   '🔨', // Hammer
   '💉', // Syringe
   '🚽', // Toilet
@@ -215,14 +168,12 @@ const emoji = [
   '💻', // Laptop
   '📸', // Camera
   '📺', // Television
-  '⚖️', // Balance Scale
   '💊', // Pill
   '🚬', // Cigarette
   '🗿', // Moai
   '🏁', // Chequered Flag
   '🏳️', // White Flag
   '🏳️‍🌈', // Rainbow Flag
-  '🏳️‍⚧️', // Transgender Flag
   '🏴‍☠️', // Pirate Flag
   '⬆️', // Up Arrow
   '➡️', // Right Arrow
@@ -233,27 +184,12 @@ const emoji = [
   '⏸️', // Pause Button
   '⏹️', // Stop Button
   '⏺️', // Record Button
-  '♀️', // Female Sign
-  '♂️', // Male Sign
-  '✖️', // Multiply
-  '➕', // Plus
-  '➖', // Minus
-  '➗', // Divide
-  '♾️', // Infinity
-  '💲', // Heavy Dollar Sign
   '©️', // Copyright
   '®️', // Registered
   '™️', // Trade Mark
-  '🔠', // Input Latin Uppercase
-  '🔢', // Input Numbers
   '🔴', // Red Circle
-  '🔵', // Blue Circle
   '🔶', // Large Orange Diamond
-  '🔷', // Large Blue Diamond
   '🔺', // Red Triangle Pointed Up
-  '🔻', // Red Triangle Pointed Down
-  '💠', // Diamond with a Dot
-  '🔳', // White Square Button
   '😮', // Face with Open Mouth
   '🧐', // Face with Monocle
   '🫢', // Face with Open Eyes and Hand Over Mouth
@@ -328,7 +264,6 @@ const emoji = [
   '🪰', // Fly
   '🪱', // Worm
   '🌸', // Cherry Blossom
-  '💮', // White Flower
   '🏵️', // Rosette
   '🥀', // Wilted Flower
   '🌺', // Hibiscus
@@ -336,14 +271,10 @@ const emoji = [
   '🌷', // Tulip
   '🌱', // Seedling
   '🪴', // Potted Plant
-  '🌲', // Evergreen Tree
-  '🌴', // Palm Tree
   '🌾', // Sheaf of Rice
   '🌿', // Herb
   '☘️', // Shamrock
   '🍀', // Four Leaf Clover
-  '🍂', // Fallen Leaf
-  '🍃', // Leaf Fluttering in Wind
   '🍈', // Melon
   '🍉', // Watermelon
   '🍊', // Tangerine
@@ -506,15 +437,12 @@ const emoji = [
   '🚝', // Monorail
   '🚞', // Mountain Railway
   '🚋', // Tram Car
-  '🚍', // Oncoming Bus
   '🚎', // Trolleybus
   '🚐', // Minibus
   '🚑', // Ambulance
   '🚒', // Fire Engine
   '🚔', // Oncoming Police Car
   '🚕', // Taxi
-  '🚖', // Oncoming Taxi
-  '🚘', // Oncoming Automobile
   '🚙', // Sport Utility Vehicle
   '🛻', // Pickup Truck
   '🚚', // Delivery Truck
@@ -548,20 +476,12 @@ const emoji = [
   '🛰️', // Satellite
   '🛎️', // Bellhop Bell
   '🧳', // Luggage
-  '⏳', // Hourglass Not Done
-  '⌚', // Watch
   '⏱️', // Stopwatch
   '⏲️', // Timer Clock
   '🕰️', // Mantelpiece Clock
   '🕛', // Twelve O’Clock
-  '🌒', // Waxing Crescent Moon
-  '🌔', // Waxing Gibbous Moon
-  '🌖', // Waning Gibbous Moon
-  '🌘', // Waning Crescent Moon
-  '🌚', // New Moon Face
   '🌡️', // Thermometer
   '🌞', // Sun with Face
-  '🌟', // Glowing Star
   '🌠', // Shooting Star
   '🌌', // Milky Way
   '⛅', // Sun Behind Cloud
@@ -637,8 +557,6 @@ const emoji = [
   '🧸', // Teddy Bear
   '🪅', // Piñata
   '🪆', // Nesting Dolls
-  '♦️', // Diamond Suit
-  '♣️', // Club Suit
   '♟️', // Chess Pawn
   '🃏', // Joker
   '🀄', // Mahjong Red Dragon
@@ -692,12 +610,8 @@ const emoji = [
   '⛑️', // Rescue Worker’s Helmet
   '📿', // Prayer Beads
   '💄', // Lipstick
-  '💎', // Gem Stone
   '🔇', // Muted Speaker
   '🔊', // Speaker High Volume
-  '📢', // Loudspeaker
-  '📣', // Megaphone
-  '📯', // Postal Horn
   '🔔', // Bell
   '🔕', // Bell with Slash
   '🎼', // Musical Score
@@ -716,9 +630,6 @@ const emoji = [
   '🪕', // Banjo
   '🥁', // Drum
   '🪘', // Long Drum
-  '📲', // Mobile Phone with Arrow
-  '☎️', // Telephone
-  '📞', // Telephone Receiver
   '📟', // Pager
   '📠', // Fax Machine
   '🔌', // Electric Plug
@@ -742,8 +653,6 @@ const emoji = [
   '🔦', // Flashlight
   '🏮', // Red Paper Lantern
   '🪔', // Diya Lamp
-  '📕', // Closed Book
-  '📖', // Open Book
   '📓', // Notebook
   '📜', // Scroll
   '📄', // Page Facing Up
@@ -753,17 +662,10 @@ const emoji = [
   '🔖', // Bookmark
   '🏷️', // Label
   '🪙', // Coin
-  '💴', // Yen Banknote
-  '💵', // Dollar Banknote
-  '💶', // Euro Banknote
-  '💷', // Pound Banknote
   '💸', // Money with Wings
   '💳', // Credit Card
   '🧾', // Receipt
   '💹', // Chart Increasing with Yen
-  '📧', // E-Mail
-  '📨', // Incoming Envelope
-  '📩', // Envelope with Arrow
   '📤', // Outbox Tray
   '📥', // Inbox Tray
   '📦', // Package
@@ -783,28 +685,21 @@ const emoji = [
   '🗒️', // Spiral Notepad
   '📇', // Card Index
   '📈', // Chart Increasing
-  '📉', // Chart Decreasing
   '📊', // Bar Chart
   '📋', // Clipboard
   '📌', // Pushpin
   '📍', // Round Pushpin
   '📎', // Paperclip
-  '🖇️', // Linked Paperclips
   '📏', // Straight Ruler
   '📐', // Triangular Ruler
   '✂️', // Scissors
   '🗃️', // Card File Box
   '🗄️', // File Cabinet
   '🗑️', // Wastebasket
-  '🔏', // Locked with Pen
-  '🔐', // Locked with Key
   '🗝️', // Old Key
   '🪓', // Axe
   '⛏️', // Pick
   '⚒️', // Hammer and Pick
-  '🛠️', // Hammer and Wrench
-  '🗡️', // Dagger
-  '⚔️', // Crossed Swords
   '🔫', // Pistol
   '🪃', // Boomerang
   '🏹', // Bow and Arrow
@@ -814,7 +709,6 @@ const emoji = [
   '🔩', // Nut and Bolt
   '⚙️', // Gear
   '🗜️', // Clamp
-  '🦯', // White Cane
   '⛓️', // Chains
   '🪝', // Hook
   '🧰', // Toolbox
@@ -856,15 +750,6 @@ const emoji = [
   '🚮', // Litter in Bin Sign
   '🚰', // Potable Water
   '♿', // Wheelchair Symbol
-  '🚹', // Men’s Room
-  '🚺', // Women’s Room
-  '🚻', // Restroom
-  '🚼', // Baby Symbol
-  '🚾', // Water Closet
-  '🛂', // Passport Control
-  '🛃', // Customs
-  '🛄', // Baggage Claim
-  '🛅', // Left Luggage
   '🚸', // Children Crossing
   '🚳', // No Bicycles
   '🚭', // No Smoking
@@ -873,98 +758,18 @@ const emoji = [
   '🚷', // No Pedestrians
   '📵', // No Mobile Phones
   '🔞', // No One Under Eighteen
-  '☢️', // Radioactive
-  '☣️', // Biohazard
-  '↗️', // Up-Right Arrow
-  '↘️', // Down-Right Arrow
-  '↙️', // Down-Left Arrow
-  '↖️', // Up-Left Arrow
-  '↕️', // Up-Down Arrow
-  '↔️', // Left-Right Arrow
-  '↩️', // Right Arrow Curving Left
-  '↪️', // Left Arrow Curving Right
-  '⤴️', // Right Arrow Curving Up
-  '⤵️', // Right Arrow Curving Down
-  '🛐', // Place of Worship
-  '⚛️', // Atom Symbol
-  '🕉️', // Om Symbol
-  '✡️', // Star of David
-  '☸️', // Wheel of Dharma
-  '☯️', // Yin Yang
-  '✝️', // Latin Cross
-  '☦️', // Orthodox Cross
-  '☪️', // Star and Crescent
-  '☮️', // Peace Symbol
-  '🕎', // Menorah
-  '🔯', // Dotted Six-Pointed Star
-  '♈', // Aries
-  '♉', // Taurus
-  '♊', // Gemini
-  '♋', // Cancer
-  '♌', // Leo
-  '♍', // Virgo
-  '♎', // Libra
-  '♏', // Scorpio
-  '♐', // Sagittarius
-  '♑', // Capricorn
-  '♒', // Aquarius
-  '♓', // Pisces
-  '⛎', // Ophiuchus
-  '🔀', // Shuffle Tracks Button
-  '🔁', // Repeat Button
-  '🔂', // Repeat Single Button
-  '⏩', // Fast-Forward Button
-  '⏭️', // Next Track Button
-  '⏯️', // Play or Pause Button
-  '⏫', // Fast Up Button
-  '⏬', // Fast Down Button
-  '⏏️', // Eject Button
   '🎦', // Cinema
-  '🔅', // Dim Button
-  '🔆', // Bright Button
   '📶', // Antenna Bars
-  '📳', // Vibration Mode
-  '📴', // Mobile Phone Off
-  '⚧️', // Transgender Symbol
-  '〰️', // Squiggly Dash
   '💱', // Currency Exchange
-  '⚕️', // Medical Symbol
   '❓', // Question Mark
-  '⚜️', // Fleur-De-Lis
-  '🔱', // Trident Emblem
   '📛', // Name Badge
-  '🔰', // Japanese Symbol for Beginner
-  '⭕', // Heavy Large Circle
-  '➰', // Curly Loop
-  '➿', // Double Curly Loop
-  '〽️', // Part Alternation Mark
-  '✳️', // Eight-Spoked Asterisk
-  '✴️', // Eight-Pointed Star
-  '❇️', // Sparkle
-  '🟠', // Orange Circle
-  '🟡', // Yellow Circle
-  '🟢', // Green Circle
-  '🟣', // Purple Circle
-  '🟤', // Brown Circle
-  '⚫', // Black Circle
-  '⚪', // White Circle
   '🟥', // Red Square
-  '🟧', // Orange Square
-  '🟨', // Yellow Square
-  '🟩', // Green Square
-  '🟦', // Blue Square
-  '🟪', // Purple Square
-  '🟫', // Brown Square
-  '⬛', // Black Large Square
-  '⬜', // White Large Square
-  '🔘', // Radio Button
   '🥸', // Disguised Face
   '🫠', // Melting Face
   '🫡', // Saluting Face
   '🥷', // Ninja
   '🧑‍🌾', // Farmer
   '🧑‍🍳', // Cook
-  '🧑‍🦯', // Person with White Cane
   '🫘', // Beans
   '🫙', // Jar
   '🛞', // Wheel
