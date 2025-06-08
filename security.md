@@ -176,7 +176,7 @@ This section details potential attack vectors relevant to OriginMarker's code, l
   - **GitHub Actions:**
     - Regular review of workflow permissions and any third-party actions used.
 - Pinning actions to specific commit SHAs rather than branches or tags to prevent unexpected updates from introducing vulnerabilities. (This is confirmed to be in place for the `actions/checkout` and `actions/setup-node` actions within the `format-on-merge.yml` workflow.)
-    - Implementing strong branch protection rules for `main`, requiring reviews before merging, even for workflow-generated commits if feasible.
+  - Implementing strong branch protection rules for `main`, requiring reviews before merging, even for workflow-generated commits if feasible.
 
 ### 4.8. Robustness Against Malformed Data from `static.js`
 
