@@ -175,8 +175,12 @@ This section details potential attack vectors relevant to OriginMarker's code, l
     - Chrome Web Store signing: Once packaged and uploaded, the extension is signed by the Chrome Web Store, which helps ensure that the version installed by users hasn't been tampered with post-publication.
   - **GitHub Actions:**
     - Regular review of workflow permissions and any third-party actions used.
-- Pinning actions to specific commit SHAs rather than branches or tags to prevent unexpected updates from introducing vulnerabilities. (This is confirmed to be in place for the `actions/checkout` and `actions/setup-node` actions within the `format-on-merge.yml` workflow.)
+- Pinning actions to specific commit SHAs rather than branches or tags to prevent unexpected updates from introducing vulnerabilities. This practice is applied to actions used in the project's workflows:
+  - In `format-on-merge.yml`: `actions/checkout` and `actions/setup-node` are pinned.
+  - In `build.yml`: `actions/checkout` and `actions/upload-artifact` are pinned.
+  - In `codeql.yml`: `actions/checkout`, `github/codeql-action/init`, and `github/codeql-action/analyze` are pinned.
   - Implementing strong branch protection rules for `main`, requiring reviews before merging, even for workflow-generated commits if feasible.
+- *Review (2024-07-29)*: Verified and updated action pinning in all workflow files (`build.yml`, `codeql.yml`, `format-on-merge.yml`) to use specific commit SHAs for enhanced supply chain security.
 
 ### 4.8. Robustness Against Malformed Data from `static.js`
 
