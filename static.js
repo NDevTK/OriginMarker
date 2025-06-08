@@ -15,7 +15,9 @@ const emoji = [
   '😍', // Smiling Face with Heart-Eyes
   '💀', // Skull
   '👹', // Ogre
-  '👺', // Goblin
+  '👻', // Ghost
+  '👽', // Alien
+  '🤖', // Robot Face
   '❤️', // Red Heart
   '💯', // Hundred Points Symbol
   '💣', // Bomb
@@ -59,14 +61,12 @@ const emoji = [
   '🐢', // Turtle
   '🐙', // Octopus
   '🦀', // Crab
-  '🦐', // Shrimp
   '🦞', // Lobster
   '🐎', // Horse
   '🐄', // Cow
   '🐖', // Pig
   '🐑', // Ewe
   '🐪', // Dromedary Camel
-  '🦙', // Llama
   '🐺', // Wolf
   '🦊', // Fox
   '🐻', // Bear
@@ -89,7 +89,6 @@ const emoji = [
   '🦡', // Badger
   '🐾', // Paw Prints
   '🐔', // Chicken
-  '🕊️', // Dove
   '🦅', // Eagle
   '🦆', // Duck
   '🦢', // Swan
@@ -126,7 +125,6 @@ const emoji = [
   '🍿', // Popcorn
   '🍦', // Soft Ice Cream
   '🎂', // Birthday Cake
-  '🧁', // Cupcake
   '🍫', // Chocolate Bar
   '🍬', // Candy
   '🍯', // Honey Pot
@@ -134,7 +132,6 @@ const emoji = [
   '🍷', // Wine Glass
   '🍺', // Beer Mug
   '🥛', // Glass of Milk
-  '🍵', // Teacup Without Handle
   '🍾', // Bottle with Popping Cork
   '🍸', // Cocktail Glass
   '🥤', // Cup with Straw
@@ -143,7 +140,6 @@ const emoji = [
   '🔪', // Kitchen Knife
   '🍴', // Fork and Knife
   '🍖', // Meat on Bone
-  '🍗', // Poultry Leg
   '🥓', // Bacon
   '🌭', // Hot Dog
   '🥪', // Sandwich
@@ -153,7 +149,6 @@ const emoji = [
   '🍙', // Rice Ball
   '🍜', // Steaming Bowl
   '🍣', // Sushi
-  '🍤', // Fried Shrimp
   '🏠', // House
   '🏢', // Office Building
   '🏥', // Hospital
@@ -165,17 +160,19 @@ const emoji = [
   '🏭', // Factory
   '⛪', // Church
   '⛺', // Tent
+  '🌉', // Bridge at Night
+  '🌋', // Volcano
   '🚂', // Locomotive
   '🚌', // Bus
   '🚗', // Automobile
-  '🚔', // Oncoming Police Car
-  '🚕', // Taxi
   '🏍️', // Motorcycle
   '🚲', // Bicycle
   '⛵', // Sailboat
   '🚁', // Helicopter
   '🚀', // Rocket
   '🛸', // Flying Saucer
+  '🪐', // Ringed Planet
+  '☄️', // Comet
   '🕛', // Twelve O’Clock
   '⭐', // Star
   '☁️', // Cloud
@@ -184,11 +181,11 @@ const emoji = [
   '🌊', // Water Wave
   '🎄', // Christmas Tree
   '🎉', // Party Popper
+  '🎁', // Wrapped Gift
+  '🎈', // Balloon
   '🏆', // Trophy
   '⚽', // Soccer Ball
   '🏀', // Basketball
-  '🏈', // American Football
-  '🎾', // Tennis
   '🎳', // Bowling
   '🥊', // Boxing Glove
   '⛳', // Flag in Hole
@@ -204,9 +201,7 @@ const emoji = [
   '🪁', // Kite
   '🎱', // Pool 8 Ball
   '🔮', // Crystal Ball
-  '🧵', // Thread
   '🪡', // Sewing Needle
-  '🧶', // Yarn
   '🪢', // Knot
   '👕', // T-Shirt
   '👖', // Jeans
@@ -215,6 +210,7 @@ const emoji = [
   '👠', // High-Heeled Shoe
   '👒', // Woman’s Hat
   '🎩', // Top Hat
+  '👑', // Crown
   '🎓', // Graduation Cap
   '👓', // Glasses
   '👔', // Necktie
@@ -224,7 +220,6 @@ const emoji = [
   '✉️', // Envelope
   '✏️', // Pencil
   '🖌️', // Paintbrush
-  '📝', // Memo
   '📓', // Notebook
   '📰', // Newspaper
   '💼', // Briefcase
@@ -232,7 +227,6 @@ const emoji = [
   '📅', // Calendar
   '📈', // Chart Increasing
   '📊', // Bar Chart
-  '📋', // Clipboard
   '📌', // Pushpin
   '📎', // Paperclip
   '✂️', // Scissors
@@ -261,6 +255,7 @@ const emoji = [
   '🩺', // Stethoscope
   '💊', // Pill
   '🚬', // Cigarette
+  '⚰️', // Coffin
   '🗿', // Moai
   '🚽', // Toilet
   '🚿', // Shower
@@ -269,6 +264,13 @@ const emoji = [
   '🪑', // Chair
   '🛏️', // Bed
   '🛒', // Shopping Cart
+  '💎', // Gem Stone
+  '🔔', // Bell
+  '☂️', // Umbrella
+  '⛓️', // Chains
+  '🔦', // Flashlight
+  '🧭', // Compass
+  '🧯', // Fire Extinguisher
   '♻️', // Recycling Symbol
   '🅿️', // P Button
   '♿', // Wheelchair Symbol
@@ -287,8 +289,6 @@ const emoji = [
   '🔄', // Counterclockwise Arrows Button
   '▶️', // Play Button
   '©️', // Copyright
-  '®️', // Registered
-  '™️', // Trade Mark
   '🔴', // Red Circle
   '🔶', // Large Orange Diamond
   '🔺', // Red Triangle Pointed Up
