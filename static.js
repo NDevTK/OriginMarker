@@ -34,7 +34,6 @@ const emoji = [
   '🦸', // Superhero
   '🧟', // Zombie
   '🚶', // Person Walking
-  '💃', // Woman Dancing
   '👤', // Bust in Silhouette
   '🐒', // Monkey
   '🐶', // Dog Face
@@ -54,12 +53,9 @@ const emoji = [
   '🦀', // Crab
   '🐎', // Horse
   '🐄', // Cow
-  '🐖', // Pig
   '🐑', // Ewe
-  '🐪', // Dromedary Camel
   '🐺', // Wolf
   '🐻', // Bear
-  '🐼', // Panda
   '🐨', // Koala
   '🐸', // Frog
   '🐊', // Crocodile
@@ -114,7 +110,6 @@ const emoji = [
   '🍺', // Beer Mug
   '🥛', // Glass of Milk
   '🍾', // Bottle with Popping Cork
-  '🍸', // Cocktail Glass
   '🥤', // Cup with Straw
   '🧊', // Ice
   '🥢', // Chopsticks
@@ -186,7 +181,6 @@ const emoji = [
   '🪢', // Knot
   '👕', // T-Shirt
   '👖', // Jeans
-  '👗', // Dress
   '👟', // Running Shoe
   '👠', // High-Heeled Shoe
   '👒', // Woman’s Hat
@@ -200,7 +194,6 @@ const emoji = [
   '💰', // Money Bag
   '✉️', // Envelope
   '✏️', // Pencil
-  '📓', // Notebook
   '📰', // Newspaper
   '💼', // Briefcase
   '📅', // Calendar
@@ -210,7 +203,6 @@ const emoji = [
   '✂️', // Scissors
   '🗑️', // Wastebasket
   '🔨', // Hammer
-  '⛏️', // Pick
   '🔫', // Pistol
   '🏹', // Bow and Arrow
   '🔧', // Wrench
@@ -283,7 +275,17 @@ const emoji = [
   '⏳', // Hourglass Done
   '🔒', // Locked
   '🔑', // Key
-  '⚫' // Black Circle
+  '⚫', // Black Circle
+  '🌪️', // Tornado
+  '⛰️', // Mountain
+  '🌕', // Full Moon
+  '🍁', // Maple Leaf
+  '🪓', // Axe
+  '🍞', // Bread
+  '☯️', // Yin Yang
+  '☮️', // Peace Symbol
+  '☣️', // Biohazard
+  '☢️', // Radiation
 ];
 
 const source = [
@@ -302,5 +304,5 @@ const source = [
   'c',
   'd',
   'e',
-  'f'
+  'f',
 ];
