@@ -136,111 +136,150 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
+// Initializes or re-initializes the extension's designated bookmark.
+// This function handles clearing old bookmark data, waiting for user interaction
+// to select a new bookmark (via `onPlaceholder`), and persisting the new bookmark ID.
+// It also manages an AbortController to ensure that only one initialization process
+// is active at a time.
 async function initBookmark() {
-  // bookmark = undefined; // Initialize/clear in-memory bookmark at the start of the process.
-  // This will be set only if new ID is persisted.
+  // The global `bookmark` variable will hold the ID of the designated bookmark.
+  // It's crucial to ensure this is managed carefully:
+  // 1. Clear any existing bookmark ID from local storage to prevent using stale data
+  //    if this is a re-initialization (e.g., after user deletes the old marker bookmark).
+  // 2. Set the in-memory `bookmark` variable to undefined to reflect that we are in
+  //    an initialization phase. It will only be set to a new ID if `onPlaceholder`
+  //    is successful AND that ID is successfully persisted to local storage.
 
   try {
-    // Clear any old bookmark ID from storage first.
-    // This ensures that if the user is re-initializing, we don't leave stale data.
+    // Clear the previously stored bookmark ID. This is important for a clean slate,
+    // ensuring `onPlaceholder` doesn't operate with potentially stale context if `initBookmark`
+    // is called multiple times or if the user is trying to reset the extension.
     await setDataLocal('bookmark', undefined);
     console.log('OriginMarker: Cleared previous bookmark ID from storage.');
-    // Explicitly set in-memory bookmark to undefined after successful clear.
-    bookmark = undefined;
-  } catch (error) {
+  } catch (error)
+    // Log error if clearing fails, but proceed. `onPlaceholder` will attempt to get a new ID.
+    // The main risk of failure here is if a very old, invalid ID somehow remains and causes issues,
+    // but `onPlaceholder` and subsequent checks should ideally handle getting a valid new one.
     console.error(
       'Error clearing previous bookmark ID from storage (non-critical for new setup):',
       error
     );
-    // If clearing fails, the old bookmark ID might still be in storage.
-    // `onPlaceholder` will proceed to get a new one.
-    // The main concern is persisting the *new* ID correctly later.
-    // For the purpose of this function, `bookmark` should ideally be undefined now,
-    // as we are trying to initialize a *new* or *reset* setup.
-    // If `start()` previously loaded a value into `bookmark`, and clearing fails,
-    // that old value would persist in-memory until a new one is successfully set.
-    // To ensure `initBookmark` attempts a fresh setup, we set `bookmark` to undefined here
-    // regardless of clearing success, as `onPlaceholder` is meant to find/set a new one.
-    bookmark = undefined;
   }
+  // Ensure in-memory `bookmark` is undefined at the start of the initialization process.
+  // This prevents `checkOrigin` or other functions from using a stale ID from a previous session
+  // before the new one is fully established and persisted.
+  bookmark = undefined;
 
-  // `onPlaceholder` waits for user to designate a bookmark by naming it '*' or '**'.
-  // `setMode` (called within `onPlaceholder`) is now robust and handles its own state/storage.
-  // `onPlaceholder` will only return a bookmark ID if `setMode` was successful for that bookmark.
+  // `onPlaceholder` is an async function that waits for the user to designate a new bookmark
+  // by naming it '*' (auto mode) or '**' (manual mode).
+  // It internally calls `setMode` to validate and persist the mode and salt (if applicable).
+  // `onPlaceholder` only returns a bookmark ID if `setMode` was successful for that bookmark.
+  // This ensures that `initBookmark` only proceeds with a bookmark ID that corresponds to a valid mode.
 
+  // If `initBookmark` is called while an `onPlaceholder` process is already running (e.g., user rapidly
+  // creating/deleting special bookmarks, or a programmatic refresh), abort the previous one.
   if (currentPlaceholderAbortController) {
     currentPlaceholderAbortController.abort(); // Abort any ongoing placeholder process
+    console.log(
+      'OriginMarker: Aborted previous initBookmark/onPlaceholder call.'
+    );
   }
+  // Create a new AbortController for the current `onPlaceholder` call.
+  // This allows the current call to be aborted if `initBookmark` is called again.
   const localAbortController = new AbortController();
-  currentPlaceholderAbortController = localAbortController;
-  let newBookmarkId;
-  let aborted = false;
+  currentPlaceholderAbortController = localAbortController; // Store globally so it can be aborted by subsequent calls
+
+  let newBookmarkId; // Will store the ID returned by onPlaceholder
+  let aborted = false; // Flag to track if this specific initBookmark instance was aborted
 
   try {
+    // Wait for the user to select a bookmark and for its mode to be set.
+    // `onPlaceholder` will throw an AbortError if `localAbortController.signal` is aborted.
     newBookmarkId = await onPlaceholder(localAbortController.signal);
 
+    // Check if the `onPlaceholder` call was aborted by a newer `initBookmark` call.
     if (localAbortController.signal.aborted) {
       aborted = true;
-      console.log('OriginMarker: initBookmark aborted by new call.');
-      // newBookmarkId will be undefined, skip persistence
+      console.log(
+        'OriginMarker: Current initBookmark/onPlaceholder call was aborted by a new call.'
+      );
+      // If aborted, `newBookmarkId` might be undefined or an intermediate value.
+      // Do not proceed with persistence.
     } else if (newBookmarkId !== undefined) {
+      // `onPlaceholder` returned a valid bookmark ID (and `setMode` was successful).
+      // Persist this new bookmark ID to local storage.
       await setDataLocal('bookmark', newBookmarkId);
-      // Only update in-memory `bookmark` if persistence is successful.
+      // Only update the global in-memory `bookmark` variable if persistence is successful.
       bookmark = newBookmarkId;
-      chrome.action.setBadgeText({text: ''});
+      chrome.action.setBadgeText({text: ''}); // Clear any "ERR" badge
       console.log('OriginMarker: New bookmark ID persisted:', bookmark);
-      active_origin = undefined; // Reset active_origin before check
-      checkOrigin(); // Update marker immediately after setup for the new bookmark
+
+      // Reset `active_origin` as the context has changed with the new bookmark.
+      active_origin = undefined;
+      // Trigger `checkOrigin` to update the marker for the current tab with the new bookmark.
+      checkOrigin();
     }
-    // No specific action if newBookmarkId is undefined and not aborted,
-    // as onPlaceholder returning undefined means it couldn't get a bookmark.
-    // The 'ERR' badge for persistence failure is handled below.
+    // If `newBookmarkId` is undefined and not aborted, it means `onPlaceholder` completed
+    // but failed to return an ID (e.g., `setMode` failed repeatedly). This case is handled
+    // by the `if (!aborted && newBookmarkId === undefined)` block after `finally`.
   } catch (error) {
     if (error.name === 'AbortError') {
+      // This catch block handles an AbortError thrown directly by `await onPlaceholder(...)`
+      // if its signal was aborted *during* its execution.
       aborted = true;
       console.log(
-        'OriginMarker: onPlaceholder operation was aborted.',
+        'OriginMarker: onPlaceholder operation was aborted during its execution.',
         error.message
       );
-      // newBookmarkId remains undefined, no 'ERR' badge for abort.
+      // `newBookmarkId` will likely be undefined. No 'ERR' badge for abort.
     } else {
+      // Handle other errors, such as failure to persist `newBookmarkId` (setDataLocal error)
+      // or any unexpected error from `onPlaceholder` not caught by its internal try/catch.
       console.error(
-        'CRITICAL: Failed to persist new bookmark ID or unexpected error in initBookmark:',
-        newBookmarkId, // could be undefined if onPlaceholder failed before persistence
+        'CRITICAL: Failed to persist new bookmark ID or unexpected error in initBookmark process:',
+        newBookmarkId, // This could be undefined if onPlaceholder failed before returning an ID.
         'Error:',
         error
       );
-      // Set error badge only if not aborted and there was a critical error
-      // (e.g. setDataLocal failed, or onPlaceholder threw other than AbortError)
+      // Set error badge only if not aborted and there was a critical error.
       chrome.action.setBadgeText({text: 'ERR'});
       chrome.action.setBadgeBackgroundColor({color: '#FF0000'}); // Red
     }
   } finally {
+    // Clean up the global AbortController reference if this `initBookmark` instance's
+    // controller is still the active one. This prevents aborting a *newer* `initBookmark` call's
+    // controller if this one was already superseded.
     if (currentPlaceholderAbortController === localAbortController) {
       currentPlaceholderAbortController = null;
     }
   }
 
+  // After `onPlaceholder` has completed (or been aborted/errored out):
+  // Check if the process was *not* aborted, but `onPlaceholder` still failed to return a valid bookmark ID.
+  // This indicates a failure within `onPlaceholder`'s logic (e.g., `setMode` consistently failing)
+  // rather than an external abort or a direct persistence error for `newBookmarkId`.
   if (!aborted && newBookmarkId === undefined) {
-    // This case means onPlaceholder completed (was not aborted) but failed to return a bookmark ID.
-    // This could be due to setMode failing repeatedly or some other logic flaw in onPlaceholder.
-    // It's a failure state for initialization distinct from an abort or setDataLocal failure.
     console.error(
-      'OriginMarker: initBookmark completed without a valid bookmark ID and was not aborted. Extension may not function.'
+      'OriginMarker: initBookmark completed, but onPlaceholder did not return a bookmark ID (and was not aborted). Extension may not function.'
     );
-    // Setting ERR badge here because the process finished without success and wasn't aborted.
-    // If onPlaceholder itself was supposed to set an error state or retry, that's internal to it.
-    // From initBookmark's perspective, it just didn't get an ID.
+    // Setting ERR badge because the initialization process finished without a successful outcome.
     chrome.action.setBadgeText({text: 'ERR'});
     chrome.action.setBadgeBackgroundColor({color: '#FF0000'}); // Red
   }
 }
 
+// Waits for the user to create or rename a bookmark to '*' (auto mode) or '**' (manual mode).
+// It listens for bookmark creation and change events. Once a potential marker bookmark is identified,
+// it calls `setMode` to validate and persist the mode and associated salt (if needed).
+// If `setMode` is successful, this function resolves with the bookmark's ID.
+// This function is designed to be cancellable via the passed `signal` (AbortSignal).
 async function onPlaceholder(signal) {
+  // Immediately throw if the signal is already aborted when the function is called.
   if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
   let onBookmarkCreatedListener, onBookmarkChangedListener, promiseReject;
 
+  // Helper to remove bookmark event listeners.
   const cleanupListeners = () => {
     if (onBookmarkCreatedListener) {
       chrome.bookmarks.onCreated.removeListener(onBookmarkCreatedListener);
@@ -252,46 +291,57 @@ async function onPlaceholder(signal) {
     }
   };
 
+  // Handler for when the AbortSignal is triggered.
+  // It cleans up listeners and rejects the main promise of `onPlaceholder`.
   const abortListener = () => {
     cleanupListeners();
     if (promiseReject) {
       promiseReject(new DOMException('Aborted', 'AbortError'));
-      promiseReject = null; // Ensure it's not called again
+      promiseReject = null; // Ensure reject is not called again if abort is signaled multiple times.
     }
   };
 
+  // Register the abort listener for the provided signal.
   signal.addEventListener('abort', abortListener, {once: true});
 
   try {
+    // Loop indefinitely, waiting for a valid bookmark event that successfully sets the mode.
+    // The loop is broken by returning a bookmark ID or by an AbortError.
     while (true) {
+      // Check for abort signal at the beginning of each loop iteration.
       if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
+      // Create a new promise that resolves when a relevant bookmark event occurs.
+      // This promise can also be rejected by the abortListener.
       const result = await new Promise((resolve, reject) => {
-        promiseReject = reject; // Assign reject for the abort listener
+        promiseReject = reject; // Store reject for the abortListener.
+        // Double-check signal state, as it might have been aborted between the loop check and now.
         if (signal.aborted) {
-          // Check again, as abort could happen before listeners are set
           return reject(new DOMException('Aborted', 'AbortError'));
         }
 
         onBookmarkCreatedListener = (id, bookmarkNode) => {
           if (signal.aborted) {
-            // Check before resolving
-            resolve(undefined); // Or reject, but resolving undefined signals abort to caller loop
+            // If aborted, resolve with undefined. The outer logic will throw AbortError.
+            // This ensures the promise itself doesn't reject here, letting the main abort path handle it.
+            resolve(undefined);
             return;
           }
           cleanupListeners();
-          signal.removeEventListener('abort', abortListener); // Crucial: remove abort listener on normal completion path for this promise
+          // Crucial: Remove the signal's abort listener once this promise path completes successfully.
+          // This prevents the abortListener from trying to reject an already settled promise if the
+          // signal is aborted later for unrelated reasons *after* a valid bookmark event was processed.
+          signal.removeEventListener('abort', abortListener);
           resolve([id, bookmarkNode.title]);
         };
 
         onBookmarkChangedListener = (id, changeInfo) => {
           if (signal.aborted) {
-            // Check before resolving
-            resolve(undefined);
+            resolve(undefined); // Similar to onBookmarkCreatedListener, signal abort to the caller.
             return;
           }
           cleanupListeners();
-          signal.removeEventListener('abort', abortListener); // Crucial: remove abort listener
+          signal.removeEventListener('abort', abortListener); // Crucial: remove abort listener.
           resolve([id, changeInfo.title]);
         };
 
@@ -299,94 +349,128 @@ async function onPlaceholder(signal) {
         chrome.bookmarks.onChanged.addListener(onBookmarkChangedListener);
       });
 
-      promiseReject = null; // Clear promiseReject after promise settles
+      promiseReject = null; // Clear stored reject reference once the promise is settled.
 
+      // If the promise resolved with `undefined` (due to an abort check within event handlers)
+      // or if the signal was aborted while `await new Promise` was pending.
       if (signal.aborted || result === undefined) {
-        // result undefined if promise resolved due to abort check
         throw new DOMException('Aborted', 'AbortError');
       }
 
-      if (await setMode(result[1])) {
-        // Successfully set mode with a valid bookmark
-        return result[0]; // Resolve with the bookmark ID
+      // `result` is an array: [bookmarkId, bookmarkTitle]
+      // Attempt to set the mode based on the bookmark title.
+      // `setMode` will handle salt generation/validation if title is '*'.
+      if (await setMode(result[1] /* bookmark title */)) {
+        // If `setMode` returns true, the mode and salt (if applicable) were successfully set.
+        // Return the bookmark ID, resolving the `onPlaceholder` promise.
+        return result[0]; // Bookmark ID
       }
-      // If setMode returns false, the loop continues, re-waiting for bookmark events.
-      // Ensure signal.aborted is checked at the start of the loop.
+      // If `setMode` returns false (e.g., title is not '*' or '**', or salt handling failed),
+      // the loop continues, and `onPlaceholder` will keep waiting for another bookmark event.
     }
   } finally {
-    cleanupListeners(); // Ensure listeners are cleaned up on any exit (normal, error, abort)
-    signal.removeEventListener('abort', abortListener); // Clean up the main abort listener for onPlaceholder
+    // Ensure all listeners and the main abort listener are cleaned up when `onPlaceholder` exits,
+    // regardless of whether it's due to successful completion, error, or abort.
+    cleanupListeners();
+    signal.removeEventListener('abort', abortListener);
   }
 }
 
-async function setMode(data) {
-  let saltSuccessfullyHandled = false; // Flag to track salt operations
+// Sets the extension's operational mode ('auto' or 'manual') based on the provided data (bookmark title).
+// For 'auto' mode ('*'), it also handles loading or generating the cryptographic salt.
+// Persists the mode to local storage if it changes.
+// Returns `true` if the mode was successfully determined and (if necessary) salt handled.
+// Returns `false` if the data is not a valid mode string ('*' or '**') or if salt handling fails for auto mode.
+async function setMode(data /* bookmark title */) {
+  let saltSuccessfullyHandled = false; // Tracks if salt is successfully loaded or generated for auto mode.
 
   if (data === '*') {
+    // Auto mode: requires a salt.
     try {
-      const fetchedSalt = await getData('salt');
+      const fetchedSalt = await getData('salt'); // Attempt to load salt from configured storage (sync/local/session).
       if (typeof fetchedSalt === 'string' && fetchedSalt.length > 0) {
+        // Valid salt found in storage.
         salt = fetchedSalt;
         saltSuccessfullyHandled = true;
       } else {
-        // Salt is not a valid non-empty string. Determine why.
+        // No valid salt found in storage; determine reason and generate a new one.
         if (fetchedSalt === undefined) {
-          // Salt not found, no specific warning before generation.
+          // Salt not found: This is expected on first run or after a reset. No specific warning needed.
+          console.log(
+            'OriginMarker: Salt not found in storage. Generating new salt for auto mode.'
+          );
         } else if (typeof fetchedSalt !== 'string') {
-          // Salt is defined but not a string
+          // Salt is defined but not a string: Data corruption or unexpected type.
           console.warn(
-            `OriginMarker: Salt from storage is not a string (type: ${typeof fetchedSalt}). Will attempt to generate new salt.`
+            `OriginMarker: Salt from storage is not a string (type: ${typeof fetchedSalt}). Will generate new salt.`
           );
         } else {
-          // Salt is an empty string
+          // Salt is an empty string: Invalid state.
           console.warn(
-            `OriginMarker: Invalid salt found in storage (type: ${typeof fetchedSalt}, value: '${fetchedSalt}'). Generating new salt.`
+            `OriginMarker: Invalid salt (empty string) found in storage. Generating new salt.`
           );
         }
 
-        // Common path for generating new salt
+        // Generate a new salt.
         const newSalt = crypto.randomUUID();
         try {
-          await setData('salt', newSalt);
-          salt = newSalt;
+          await setData('salt', newSalt); // Persist new salt to configured storage.
+          salt = newSalt; // Update in-memory salt.
           saltSuccessfullyHandled = true;
+          console.log('OriginMarker: New salt generated and saved for auto mode.');
         } catch (error) {
-          console.error('OriginMarker: Failed to set new salt:', error);
-          saltSuccessfullyHandled = false;
+          console.error(
+            'OriginMarker: Failed to save newly generated salt:',
+            error
+          );
+          saltSuccessfullyHandled = false; // Salt generation/persistence failed.
         }
       }
     } catch (error) {
-      console.error('OriginMarker: Failed to get or set salt:', error);
+      // Catch errors from getData('salt') or setData('salt') if not caught by inner try/catch.
+      console.error(
+        'OriginMarker: Error during salt retrieval or saving process:',
+        error
+      );
       saltSuccessfullyHandled = false;
     }
+    // Auto mode is only truly 'auto' if salt is handled AND encoding alphabets are valid.
+    // `areAlphabetsValid` is a global flag set during initial script load.
     auto = saltSuccessfullyHandled && areAlphabetsValid;
   } else if (data === '**') {
+    // Manual mode: no salt needed.
     auto = false;
-    saltSuccessfullyHandled = true; // No salt operation needed, so considered successful for mode setting
+    saltSuccessfullyHandled = true; // Considered successful as no salt operation is required for this mode.
   } else {
-    // Not a valid mode string
+    // The provided data (bookmark title) is not a valid mode indicator.
+    // `onPlaceholder` will continue listening for a valid bookmark title.
     return false;
   }
 
-  // If salt handling failed for auto mode (data === '*'), we cannot proceed reliably.
-  // 'auto' would already be false from 'auto = saltSuccessfullyHandled;' earlier in the function.
-  // Simply return false to indicate failure.
+  // If attempting to set to auto mode ('*') but salt handling failed,
+  // then `setMode` has failed. `auto` would be false due to `saltSuccessfullyHandled` being false.
+  // Return false to `onPlaceholder` so it continues waiting.
   if (data === '*' && !saltSuccessfullyHandled) {
-    // Do not change persisted mode if we intended to go to auto but couldn't.
-    // Caller might need to know this failed.
+    console.warn(
+      "OriginMarker: Failed to initialize 'auto' mode due to salt handling issues. Mode not set."
+    );
     return false;
   }
 
+  // If the determined mode (based on 'data' and salt handling) is different from the current in-memory `mode`,
+  // persist the new mode to local storage.
   if (mode !== data) {
+    // Note: 'data' here is the raw input ('*' or '**'), which becomes the new `mode`.
     try {
       await setDataLocal('mode', data);
-      mode = data; // Update in-memory mode
+      mode = data; // Update in-memory mode.
+      console.log(`OriginMarker: Mode successfully set to '${mode}'.`);
     } catch (error) {
-      console.error('Failed to set mode locally:', error);
-      return false; // Failed to persist mode change
+      console.error('OriginMarker: Failed to save mode to local storage:', error);
+      return false; // Failed to persist mode change.
     }
   }
-  return true;
+  return true; // Mode successfully determined and persisted (if changed).
 }
 
 function handleTabEventThrottled() {
@@ -806,49 +890,6 @@ function base2baseForEmojis(srcAlphabetChars, dstAlphabetTokens) {
         return String(unknown);
       }
       result = effectiveDstAlphabet[divide] + result;
-    } while (newlen != 0);
-
-    return result;
-  };
-}
-
-function base2base(srcAlphabet, dstAlphabet) {
-  /* modification of github.com/HarasimowiczKamil/any-base to:
-   * support multibyte
-   * enforce unique alphabets
-   */
-  var noDifference = srcAlphabet === dstAlphabet,
-    srcAlphabet = [...new Set([...srcAlphabet].join(''))],
-    dstAlphabet = [...new Set([...dstAlphabet].join(''))],
-    fromBase = srcAlphabet.length,
-    toBase = dstAlphabet.length;
-
-  return (number) => {
-    if (noDifference) return number;
-
-    number = [...number];
-
-    var i,
-      divide,
-      newlen,
-      length = number.length,
-      result = '',
-      numberMap = {};
-
-    for (i = 0; i < length; i++) numberMap[i] = srcAlphabet.indexOf(number[i]);
-
-    do {
-      divide = 0;
-      newlen = 0;
-      for (i = 0; i < length; i++) {
-        divide = divide * fromBase + numberMap[i];
-        if (divide >= toBase) {
-          numberMap[newlen++] = parseInt(divide / toBase, 10);
-          divide = divide % toBase;
-        } else if (newlen) numberMap[newlen++] = 0;
-      }
-      length = newlen;
-      result = dstAlphabet[divide] + result;
     } while (newlen != 0);
 
     return result;

@@ -50,7 +50,7 @@ The `codeql.yml` workflow performs static code analysis with `security-events: w
 
 - **Permissions (`tabs`, `bookmarks`, `storage`):** Appropriate and necessary for core functionality, adhering to the Principle of Least Privilege.
 - **Content Security Policy (CSP):** A strong CSP (`"extension_pages": "default-src 'none'; script-src 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests; block-all-mixed-content"`) is enforced for extension pages (`options.html`), significantly mitigating XSS, clickjacking, and data exfiltration risks from these pages.
-- **Other Security Headers:** `cross_origin_embedder_policy` (`require-corp`) and `cross_origin_opener_policy` (`same-origin`) are well-configured, enhancing protection against cross-origin and side-channel attacks for extension pages.
+- **Other Security Headers:** The `cross_origin_embedder_policy` is set to `require-corp` and `cross_origin_opener_policy` is set to `same-origin` in `manifest.json`, enhancing protection against cross-origin and side-channel attacks for extension pages.
 
 ### Salt Management and Storage
 
