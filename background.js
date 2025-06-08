@@ -156,7 +156,7 @@ async function initBookmark() {
     // is called multiple times or if the user is trying to reset the extension.
     await setDataLocal('bookmark', undefined);
     console.log('OriginMarker: Cleared previous bookmark ID from storage.');
-  } catch (error)
+  } catch (error) {
     // Log error if clearing fails, but proceed. `onPlaceholder` will attempt to get a new ID.
     // The main risk of failure here is if a very old, invalid ID somehow remains and causes issues,
     // but `onPlaceholder` and subsequent checks should ideally handle getting a valid new one.
