@@ -283,7 +283,7 @@ const emoji = [
   '⏳', // Hourglass Done
   '🔒', // Locked
   '🔑', // Key
-  '⚫' // Black Circle
+  '⚫', // Black Circle
 ];
 
 const source = [
@@ -302,5 +302,5 @@ const source = [
   'c',
   'd',
   'e',
-  'f'
+  'f',
 ];
