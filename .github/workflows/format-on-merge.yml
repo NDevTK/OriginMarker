@@ -13,7 +13,7 @@ jobs:
       contents: write # Required to push changes
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           # The token is automatically provided by GitHub Actions.
           # Using a token with write permissions to allow push.
@@ -21,7 +21,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610
         with:
           node-version: '18'
 
