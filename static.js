@@ -149,7 +149,7 @@ const emoji = [
   '⬇️', // Down Arrow
   '⬅️', // Left Arrow
   '➡️', // Right Arrow
-  '🔄', // Counterclockwise Arrows Button
+  '🔄' // Counterclockwise Arrows Button
 ];
 
 const source = [
@@ -168,5 +168,5 @@ const source = [
   'c',
   'd',
   'e',
-  'f',
+  'f'
 ];
