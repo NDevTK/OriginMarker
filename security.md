@@ -224,16 +224,17 @@ This section outlines existing and planned code-level mitigations in the extensi
 - **Concern:** Malicious web pages could potentially attempt to trigger a denial-of-service (DoS) by rapidly firing tab update events, or (less directly) other events that cause frequent marker recalculations. This could lead to high CPU usage, extension slowdowns, unresponsiveness, or missed marker updates.
 - **Mitigation Strategy:** The extension implements a rate-limiting and dynamic cooldown mechanism for tab-related events (`tabs.onUpdated`, `tabs.onActivated`, `windows.onFocusChanged`):
   - **Rate Limiting:** Event handlers track the timestamps of recent incoming events. If the number of events exceeds a defined threshold within a short time window (e.g., more than 10 events in 3 seconds), a potential DoS attack is flagged.
-  - **Cooldown Activation:** Upon detection of excessive event rates:
+  - **Cooldown Activation & User Feedback:** Upon detection of excessive event rates:
     - The system immediately sets the bookmark marker to the generic `unknown` value (e.g., "Marker\*") to provide a safe, consistent state.
-    - A console warning is logged.
+    - A console warning is logged, detailing the activation of the cooldown.
+    - The extension's action badge temporarily displays "BUSY" with an orange background to visually inform the user.
     - The extension enters a `DOS_STATE_COOLDOWN` period, during which most new tab events that would trigger `checkOrigin` are ignored to conserve resources.
   - **Dynamic Recovery:**
     - After an initial cooldown (e.g., 5 seconds), a recovery check (`checkDosRecovery`) assesses if the event rate has returned to normal. Event timestamps continue to be recorded during cooldown to inform this check.
     - If the rate is still high, the cooldown is extended (e.g., for another 10 seconds), and another recovery check is scheduled. This prevents the system from being overwhelmed by persistent event floods.
     - If the event rate has normalized, the system transitions back to `DOS_STATE_NORMAL`, and `checkOrigin()` is called immediately to attempt to restore the correct marker for the current page.
   - **Robustness:** Core functions like `checkOrigin()` also include guards to prevent execution if the system is in a cooldown state.
-- **Impact:** This mechanism helps ensure the extension remains responsive and provides a safe, albeit generic, marker during periods of unusually high event frequency, recovering to normal operation once the event storm subsides. It prioritizes stability and clear user feedback (the generic marker) over attempting to process an overwhelming number of updates.
+- **Impact:** This mechanism helps ensure the extension remains responsive during periods of unusually high event frequency. The combination of setting a generic marker, logging a console warning, and temporarily displaying a "BUSY" status on the extension's action badge provides layered user feedback. This approach prioritizes stability and user awareness, allowing the extension to recover to normal operation once the event storm subsides. The "BUSY" badge is cleared upon recovery.
 - **Internal IPC Validation:** Messages between extension components (e.g., options page to background script) are validated using `sender.origin === location.origin`.
 
 ### 5.5. Build and Supply Chain
