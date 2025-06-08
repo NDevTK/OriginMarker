@@ -14,7 +14,7 @@ jobs:
       run: |
         mkdir -p chrome
         cp -R -t chrome *.{js,json,png,jpg,html,css} LICENSE
-        rm -f chrome/Chrome.png
+        rm -f chrome/Chrome.png chrome/package-lock.json chrome/package.json
 
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
