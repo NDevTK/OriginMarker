@@ -520,6 +520,8 @@ function enterDosCooldownMode() {
 
   currentDosState = DOS_STATE_COOLDOWN;
   setMarker(null); // Set to generic/unknown marker
+  chrome.action.setBadgeText({text: 'BUSY'});
+  chrome.action.setBadgeBackgroundColor({color: '#FFA500'}); // Orange
 
   // Clear any existing timer to ensure only one recovery path is active
   if (dosCooldownTimer) {
@@ -545,6 +547,7 @@ function checkDosRecovery() {
       'OriginMarker: Event rate normal. Recovering from DoS cooldown.'
     );
     currentDosState = DOS_STATE_NORMAL;
+    chrome.action.setBadgeText({text: ''}); // Clear the badge
     // Attempt to set the correct marker for the current tab immediately
     checkOrigin();
   }
