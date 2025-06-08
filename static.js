@@ -44,10 +44,7 @@ const emoji = [
   '🐠', // Tropical Fish
   '🐡', // Blowfish
   '🦈', // Shark
-  '🐝', // Honeybee
   '🦋', // Butterfly
-  '🕷️', // Spider
-  '🐜', // Ant
   '🐌', // Snail
   '🦖', // T-Rex
   '🐧', // Penguin
@@ -55,7 +52,6 @@ const emoji = [
   '🐢', // Turtle
   '🐙', // Octopus
   '🦀', // Crab
-  '🦞', // Lobster
   '🐎', // Horse
   '🐄', // Cow
   '🐖', // Pig
@@ -77,7 +73,6 @@ const emoji = [
   '🦦', // Otter
   '🦨', // Skunk
   '🦘', // Kangaroo
-  '🦡', // Badger
   '🐾', // Paw Prints
   '🐔', // Chicken
   '🦅', // Eagle
@@ -97,7 +92,6 @@ const emoji = [
   '🌵', // Cactus
   '🌸', // Cherry Blossom
   '🌱', // Seedling
-  '🍀', // Four Leaf Clover
   '🍎', // Red Apple
   '🍌', // Banana
   '🍍', // Pineapple
@@ -211,14 +205,11 @@ const emoji = [
   '💼', // Briefcase
   '📅', // Calendar
   '📈', // Chart Increasing
-  '📊', // Bar Chart
   '📌', // Pushpin
   '📎', // Paperclip
   '✂️', // Scissors
   '🗑️', // Wastebasket
-  '🗝️', // Old Key
   '🔨', // Hammer
-  '🪓', // Axe
   '⛏️', // Pick
   '🔫', // Pistol
   '🏹', // Bow and Arrow
@@ -252,7 +243,6 @@ const emoji = [
   '🔔', // Bell
   '☂️', // Umbrella
   '⛓️', // Chains
-  '🔦', // Flashlight
   '🧭', // Compass
   '🧯', // Fire Extinguisher
   '♻️', // Recycling Symbol
@@ -274,9 +264,6 @@ const emoji = [
   '▶️', // Play Button
   '©️', // Copyright
   '🔴', // Red Circle
-  '🔶', // Large Orange Diamond
-  '🔺', // Red Triangle Pointed Up
-  '🟥', // Red Square
   '🥸', // Disguised Face
   '🫠', // Melting Face
   '🫡', // Saluting Face
@@ -297,22 +284,23 @@ const emoji = [
   '🔒', // Locked
   '🔑', // Key
   '⚫', // Black Circle
-  '🔵', // Blue Circle
-  '🟢', // Green Circle
-  '🟡', // Yellow Circle
-  '🟣', // Purple Circle
-  '🟤', // Brown Circle
 ];
 
 const source = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
   'a',
   'b',
   'c',
   'd',
   'e',
   'f',
-  '0',
-  '1',
-  '2',
-  '3',
-  '4',
+];
