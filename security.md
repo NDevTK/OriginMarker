@@ -12,19 +12,19 @@ This document reflects the security state of OriginMarker after an initial audit
 
 **Main Components:**
 
--   **`manifest.json`:** Defines permissions, CSP, background service worker, and options UI.
--   **`background.js` (Service Worker):** Core logic for tracking active tabs, fetching origins, generating markers, and updating bookmarks. This script contains key functions like `setMarker`, `checkOrigin`, `initBookmark`, and the `base2base` encoding algorithm. It is the central processing unit of the extension.
--   **`options.html` / `options.js`:** Provides a user interface for extension settings, including a reset function and storage preference settings.
--   **`static.js`:** This file is loaded into the service worker via `importScripts('/static.js')`. It is intended to provide static data, notably the `source` (e.g., hex) and `emoji` alphabets used as input for the `base2base` encoding function in `background.js`, and the default `unknown` marker string. Its integrity is crucial. If the content of `static.js` (either its code structure if it were to contain more than data, or its data arrays/strings) were compromised within the developer's environment _prior to packaging_, it could lead to vulnerabilities. Malicious JavaScript could execute within the service worker's context. Manipulated data (e.g., `unknown` string, alphabets) could lead to incorrect marker generation, broken encoding, or UI display issues if these strings are used directly in the extension's UI without sanitization (though bookmark titles themselves are generally rendered as plain text by the browser). See Section 4.7 and 4.8.
+- **`manifest.json`:** Defines permissions, CSP, background service worker, and options UI.
+- **`background.js` (Service Worker):** Core logic for tracking active tabs, fetching origins, generating markers, and updating bookmarks. This script contains key functions like `setMarker`, `checkOrigin`, `initBookmark`, and the `base2base` encoding algorithm. It is the central processing unit of the extension.
+- **`options.html` / `options.js`:** Provides a user interface for extension settings, including a reset function and storage preference settings.
+- **`static.js`:** This file is loaded into the service worker via `importScripts('/static.js')`. It is intended to provide static data, notably the `source` (e.g., hex) and `emoji` alphabets used as input for the `base2base` encoding function in `background.js`, and the default `unknown` marker string. Its integrity is crucial. If the content of `static.js` (either its code structure if it were to contain more than data, or its data arrays/strings) were compromised within the developer's environment _prior to packaging_, it could lead to vulnerabilities. Malicious JavaScript could execute within the service worker's context. Manipulated data (e.g., `unknown` string, alphabets) could lead to incorrect marker generation, broken encoding, or UI display issues if these strings are used directly in the extension's UI without sanitization (though bookmark titles themselves are generally rendered as plain text by the browser). See Section 4.7 and 4.8.
 
 **Key Functionalities:**
 
--   Dynamically updates a specific bookmark's title based on the current tab's URL origin.
--   Uses SHA-256 hashing with a unique, randomly generated `salt` (`crypto.randomUUID()`) to create a hash of the origin string concatenated with the salt.
--   Employs a `base2base` conversion function, defined within `background.js`, which transforms the hexadecimal hash output into a more visually distinct emoji-based string using alphabets provided by `static.js`.
--   Allows users to set custom string markers for specific origins by renaming the designated bookmark.
--   Operates in an "auto" mode (emoji markers, title `*`) or "manual" mode (generic marker unless customized, title `**`).
--   Supports `http:` and `https:` protocols for origin tracking, as defined in `allowedProtocols`. Other URL protocols (e.g., `file:`, `ftp:`, `chrome-extension:`) are intentionally ignored to limit the extension's scope and potential for unexpected behavior.
+- Dynamically updates a specific bookmark's title based on the current tab's URL origin.
+- Uses SHA-256 hashing with a unique, randomly generated `salt` (`crypto.randomUUID()`) to create a hash of the origin string concatenated with the salt.
+- Employs a `base2base` conversion function, defined within `background.js`, which transforms the hexadecimal hash output into a more visually distinct emoji-based string using alphabets provided by `static.js`.
+- Allows users to set custom string markers for specific origins by renaming the designated bookmark.
+- Operates in an "auto" mode (emoji markers, title `*`) or "manual" mode (generic marker unless customized, title `**`).
+- Supports `http:` and `https:` protocols for origin tracking, as defined in `allowedProtocols`. Other URL protocols (e.g., `file:`, `ftp:`, `chrome-extension:`) are intentionally ignored to limit the extension's scope and potential for unexpected behavior.
 
 ### GitHub Actions CI/CD Security
 
@@ -48,39 +48,39 @@ The `codeql.yml` workflow performs static code analysis with `security-events: w
 
 ### Manifest Configuration
 
--   **Permissions (`tabs`, `bookmarks`, `storage`):** Appropriate and necessary for core functionality, adhering to the Principle of Least Privilege.
--   **Content Security Policy (CSP):** A strong CSP (`"extension_pages": "default-src 'none'; script-src 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests; block-all-mixed-content"`) is enforced for extension pages (`options.html`), significantly mitigating XSS, clickjacking, and data exfiltration risks from these pages.
--   **Other Security Headers:** The `cross_origin_embedder_policy` is set to `require-corp` and `cross_origin_opener_policy` is set to `same-origin` in `manifest.json`, enhancing protection against cross-origin and side-channel attacks for extension pages.
+- **Permissions (`tabs`, `bookmarks`, `storage`):** Appropriate and necessary for core functionality, adhering to the Principle of Least Privilege.
+- **Content Security Policy (CSP):** A strong CSP (`"extension_pages": "default-src 'none'; script-src 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests; block-all-mixed-content"`) is enforced for extension pages (`options.html`), significantly mitigating XSS, clickjacking, and data exfiltration risks from these pages.
+- **Other Security Headers:** The `cross_origin_embedder_policy` is set to `require-corp` and `cross_origin_opener_policy` is set to `same-origin` in `manifest.json`, enhancing protection against cross-origin and side-channel attacks for extension pages.
 
 ### Salt Management and Storage
 
 The cryptographic `salt` (a `crypto.randomUUID()`) is fundamental to marker generation. It's stored in user-configurable `chrome.storage.sync` (default), `chrome.storage.local`, or `chrome.storage.session` based on the `store` preference. However, the `bookmark` ID, the `mode` (`*` or `**`), and the `store` preference itself are always stored in `chrome.storage.local`. This segregation is important: even if a user opts to sync their `salt` and custom markers, these three core operational settings remain local to the specific browser profile, reducing their exposure to compromise via synced storage.
 
--   **Storage Security:** While `chrome.storage.sync` and `chrome.storage.local` are not encrypted by Chrome at rest (beyond OS-level user profile encryption), the extension provides storage options and warnings to the user. The risks of salt/marker exfiltration and deanonymization are primarily detailed in Section 4.1 and 4.2.1. Choosing `chrome.storage.session` for the `store` preference means the `salt` (and custom markers) will be cleared when the browser closes, causing auto-generated markers to change with each new browser session; this offers the strongest protection against persistent threats at the cost of marker persistence.
--   **Data Validation:** Logic in `background.js` (e.g., in `start()`, `setMode()`) and `options.js` validates the loaded `salt` (ensuring it's a non-empty string, regenerating if invalid or not found) and the storage type preference itself (defaulting to 'sync' if corrupted). Other critical data retrieved from storage (bookmark ID, mode, custom markers) also undergoes strict type validation.
+- **Storage Security:** While `chrome.storage.sync` and `chrome.storage.local` are not encrypted by Chrome at rest (beyond OS-level user profile encryption), the extension provides storage options and warnings to the user. The risks of salt/marker exfiltration and deanonymization are primarily detailed in Section 4.1 and 4.2.1. Choosing `chrome.storage.session` for the `store` preference means the `salt` (and custom markers) will be cleared when the browser closes, causing auto-generated markers to change with each new browser session; this offers the strongest protection against persistent threats at the cost of marker persistence.
+- **Data Validation:** Logic in `background.js` (e.g., in `start()`, `setMode()`) and `options.js` validates the loaded `salt` (ensuring it's a non-empty string, regenerating if invalid or not found) and the storage type preference itself (defaulting to 'sync' if corrupted). Other critical data retrieved from storage (bookmark ID, mode, custom markers) also undergoes strict type validation.
 
 ### General Error Handling
 
--   Asynchronous Chrome API calls in `background.js` and `options.js` consistently include `.catch()` handlers for Promises or check `chrome.runtime.lastError` in callbacks, logging errors to `console.error`.
--   If the extension fails to initialize its primary bookmark ID (a critical failure during `initBookmark`, such as `onPlaceholder` completing without a valid ID and not being aborted), an "ERR" badge is displayed on the extension icon via `chrome.action.setBadgeText`.
--   **Initialization Loop Consideration:** If `setMode` (called within the `onPlaceholder` loop during initialization) consistently fails (e.g., due to persistent storage errors preventing salt/mode saving), `onPlaceholder` may loop indefinitely, as it awaits a successful `setMode` call before returning a bookmark ID. In this state, `initBookmark` would not "complete" in a way that triggers the "ERR" badge condition related to `newBookmarkId === undefined` (as `newBookmarkId` would not yet be determined). The extension might remain non-functional, attempting to initialize, until an event like a browser restart or a new call to `start()` (which aborts the previous `initBookmark` attempt via `currentPlaceholderAbortController`) allows the process to terminate or be retried.
+- Asynchronous Chrome API calls in `background.js` and `options.js` consistently include `.catch()` handlers for Promises or check `chrome.runtime.lastError` in callbacks, logging errors to `console.error`.
+- If the extension fails to initialize its primary bookmark ID (a critical failure during `initBookmark`, such as `onPlaceholder` completing without a valid ID and not being aborted), an "ERR" badge is displayed on the extension icon via `chrome.action.setBadgeText`.
+- **Initialization Loop Consideration:** If `setMode` (called within the `onPlaceholder` loop during initialization) consistently fails (e.g., due to persistent storage errors preventing salt/mode saving), `onPlaceholder` may loop indefinitely, as it awaits a successful `setMode` call before returning a bookmark ID. In this state, `initBookmark` would not "complete" in a way that triggers the "ERR" badge condition related to `newBookmarkId === undefined` (as `newBookmarkId` would not yet be determined). The extension might remain non-functional, attempting to initialize, until an event like a browser restart or a new call to `start()` (which aborts the previous `initBookmark` attempt via `currentPlaceholderAbortController`) allows the process to terminate or be retried.
 
 ### Detailed `background.js` Logic
 
--   **State Consistency & Asynchronous Operations:**
-    -   In-memory state variables are updated carefully. The `initBookmark` process uses an `AbortController` (`currentPlaceholderAbortController`) to manage its asynchronous bookmark setup phase (`onPlaceholder`). This controller is specifically used to gracefully cancel an ongoing `onPlaceholder` operation (which may be waiting for user interaction or specific bookmark events) if `initBookmark` is called again (e.g., due to user rapidly creating/deleting special bookmarks or a manual refresh message). This enhances robustness by preventing multiple setup listeners or conflicting flows.
-    -   The `setMarker` function uses a `pending_origin` variable to track the origin for which a marker update is in progress. A check `if (pending_origin !== original_pending_origin)` is performed after asynchronous operations within `setMarker`. This ensures that if the active tab's origin changes while these operations are pending, the function will not incorrectly update the bookmark with a marker for a now-stale origin, thus preventing race conditions.
-    -   `active_origin` stores the last successfully set origin for the marker.
-    -   If the designated marker bookmark is deleted, `onBookmarkRemove` calls `initBookmark()` to attempt re-initialization, demonstrating robust state recovery.
--   **`onBookmarkChange` Handling:** The `active_origin` is captured as `eventOrigin` at the start of event processing for the debounce timeout. Bookmark titles ending with `*` are ignored for custom markers (this prevents manually set markers from being mistaken for or interfering with the logic for automatic markers). Clearing custom markers is handled, and a debounce mechanism (`bookmarkChangeDebounceTimer`) is used to manage rapid changes.
--   **Internal Message Validation:** Messages received by `chrome.runtime.onMessage` in `background.js` are validated using `sender.origin !== location.origin` to ensure they originate from the extension itself.
+- **State Consistency & Asynchronous Operations:**
+  - In-memory state variables are updated carefully. The `initBookmark` process uses an `AbortController` (`currentPlaceholderAbortController`) to manage its asynchronous bookmark setup phase (`onPlaceholder`). This controller is specifically used to gracefully cancel an ongoing `onPlaceholder` operation (which may be waiting for user interaction or specific bookmark events) if `initBookmark` is called again (e.g., due to user rapidly creating/deleting special bookmarks or a manual refresh message). This enhances robustness by preventing multiple setup listeners or conflicting flows.
+  - The `setMarker` function uses a `pending_origin` variable to track the origin for which a marker update is in progress. A check `if (pending_origin !== original_pending_origin)` is performed after asynchronous operations within `setMarker`. This ensures that if the active tab's origin changes while these operations are pending, the function will not incorrectly update the bookmark with a marker for a now-stale origin, thus preventing race conditions.
+  - `active_origin` stores the last successfully set origin for the marker.
+  - If the designated marker bookmark is deleted, `onBookmarkRemove` calls `initBookmark()` to attempt re-initialization, demonstrating robust state recovery.
+- **`onBookmarkChange` Handling:** The `active_origin` is captured as `eventOrigin` at the start of event processing for the debounce timeout. Bookmark titles ending with `*` are ignored for custom markers (this prevents manually set markers from being mistaken for or interfering with the logic for automatic markers). Clearing custom markers is handled, and a debounce mechanism (`bookmarkChangeDebounceTimer`) is used to manage rapid changes.
+- **Internal Message Validation:** Messages received by `chrome.runtime.onMessage` in `background.js` are validated using `sender.origin !== location.origin` to ensure they originate from the extension itself.
 
 ### Marker Encoding (`base2baseForEmojis`)
 
--   The active marker encoding function is `base2baseForEmojis`, defined in `background.js`. It converts the full 256-bit hexadecimal SHA-256 hash (derived from `origin + salt`) into a sequence of emoji tokens.
--   `base2baseForEmojis` is instantiated with the `source` (hexadecimal) alphabet and the `emoji` array from `static.js`. It treats each string in the `emoji` array as a single, indivisible token for the destination base. This results in a marker composed of approximately 26 emoji tokens, representing the full hash.
--   This approach ensures that each listed emoji in `static.js` is handled as a distinct visual symbol. The switch to this encoding method from previous versions will cause existing markers to change, a decision made to improve the long-term clarity and correctness of tokenization. Potential impacts of malformed alphabets from `static.js` (e.g., if they are empty or too short, preventing proper base conversion) are discussed in Section 4.8.
--   To further enhance visual distinctiveness of the generated markers, the `emoji` array in `static.js` has undergone a review to remove items that could be easily confused (lookalikes). This pruning aims to improve the user's ability to quickly differentiate markers, though the primary defense against lookalikes remains the cryptographic hash and salt. The list size remains substantial (over 300 emojis), ensuring a large vocabulary for marker generation.
+- The active marker encoding function is `base2baseForEmojis`, defined in `background.js`. It converts the full 256-bit hexadecimal SHA-256 hash (derived from `origin + salt`) into a sequence of emoji tokens.
+- `base2baseForEmojis` is instantiated with the `source` (hexadecimal) alphabet and the `emoji` array from `static.js`. It treats each string in the `emoji` array as a single, indivisible token for the destination base. This results in a marker composed of approximately 26 emoji tokens, representing the full hash.
+- This approach ensures that each listed emoji in `static.js` is handled as a distinct visual symbol. The switch to this encoding method from previous versions will cause existing markers to change, a decision made to improve the long-term clarity and correctness of tokenization. Potential impacts of malformed alphabets from `static.js` (e.g., if they are empty or too short, preventing proper base conversion) are discussed in Section 4.8.
+- To further enhance visual distinctiveness of the generated markers, the `emoji` array in `static.js` has undergone a review to remove items that could be easily confused (lookalikes). This pruning aims to improve the user's ability to quickly differentiate markers, though the primary defense against lookalikes remains the cryptographic hash and salt. The list size remains substantial (over 300 emojis), ensuring a large vocabulary for marker generation.
 
 ---
 
@@ -88,16 +88,16 @@ The cryptographic `salt` (a `crypto.randomUUID()`) is fundamental to marker gene
 
 This section describes UI/UX aspects that could have security implications or lead to user misunderstanding.
 
--   **Clarity of Reset Function (`options.html`):**
-    -   Addressed by updating button text and warning dialogs to clearly communicate the extent of the reset, including salt and marker regeneration.
--   **User Awareness of Markers on HTTP Sites:**
-    -   **Observation:** The extension generates markers for origins from both `http:` and `https:` protocols.
-    -   **Potential Misunderstanding:** Users might see a familiar marker on an HTTP site and incorrectly perceive the site as secure due to the familiar origin marker.
-    -   **Recommendation:** User education should emphasize that OriginMarker indicates domain authenticity/familiarity (i.e., "is this the domain I expect?") but does _not_ guarantee connection security (HTTPS status), website content trustworthiness, or protection against active network attacks on HTTP sessions. As noted in Section 1, other URL protocols are intentionally ignored by the extension.
--   **Visual Truncation of Markers in UI:**
-    -   **Observation:** While the full marker string generated by the extension (and stored in the bookmark title) represents the entire 256-bit hash (composed of ~26 emoji tokens), browser UIs (e.g., bookmark bars, bookmark menus) often have limited space and will typically truncate the display of long emoji sequences.
-    -   **User Impact:** Users will primarily see and interact with a prefix of the full emoji marker (commonly the first ~6 visual emojis).
-    -   **Consideration:** The security reliance for quick visual checks by the user is primarily on this visible prefix. The consistency of this prefix is tied to the consistency of the full underlying marker. Users should be aware that the visible portion is a shortened representation.
+- **Clarity of Reset Function (`options.html`):**
+  - Addressed by updating button text and warning dialogs to clearly communicate the extent of the reset, including salt and marker regeneration.
+- **User Awareness of Markers on HTTP Sites:**
+  - **Observation:** The extension generates markers for origins from both `http:` and `https:` protocols.
+  - **Potential Misunderstanding:** Users might see a familiar marker on an HTTP site and incorrectly perceive the site as secure due to the familiar origin marker.
+  - **Recommendation:** User education should emphasize that OriginMarker indicates domain authenticity/familiarity (i.e., "is this the domain I expect?") but does _not_ guarantee connection security (HTTPS status), website content trustworthiness, or protection against active network attacks on HTTP sessions. As noted in Section 1, other URL protocols are intentionally ignored by the extension.
+- **Visual Truncation of Markers in UI:**
+  - **Observation:** While the full marker string generated by the extension (and stored in the bookmark title) represents the entire 256-bit hash (composed of ~26 emoji tokens), browser UIs (e.g., bookmark bars, bookmark menus) often have limited space and will typically truncate the display of long emoji sequences.
+  - **User Impact:** Users will primarily see and interact with a prefix of the full emoji marker (commonly the first ~6 visual emojis).
+  - **Consideration:** The security reliance for quick visual checks by the user is primarily on this visible prefix. The consistency of this prefix is tied to the consistency of the full underlying marker. Users should be aware that the visible portion is a shortened representation.
 
 ---
 
@@ -107,100 +107,100 @@ This section details potential attack vectors relevant to OriginMarker's code, l
 
 ### 4.1. Salt Exfiltration and Marker Deanonymization / Spoofing
 
--   **Vulnerability:** The cryptographic `salt` stored unencrypted (beyond OS-level user profile encryption) in `chrome.storage.sync` or `chrome.storage.local` could be exfiltrated by malware with sufficient privileges on the user's machine, or via a compromised Google account (if `chrome.storage.sync` is used for the `store` preference). This is a form of client-side secret leakage.
--   **Impact:** An attacker with the salt and knowledge of the extension's hashing and `base2base` encoding logic (which is open-source) could:
-    1.  Deanonymize previously observed auto-generated emoji markers to determine the underlying origins the user visited.
-    2.  Pre-compute and spoof the correct auto-generated emoji marker for a phishing domain they control, making their phishing site appear more legitimate to that specific user.
--   **Mitigation by Extension Code:**
-    -   Offering `chrome.storage.local` or `chrome.storage.session` as storage options for the `store` preference for `salt` and custom markers. `chrome.storage.session` significantly mitigates this risk by ensuring the `salt` (and custom markers) are cleared when the browser closes, causing auto-generated markers to change with each new browser session, thus invalidating any previously exfiltrated salt for future spoofing. This comes at the cost of marker persistence.
-    -   As noted in Section 2.2, the core `bookmark` ID, `mode`, and `store` preference are always in `chrome.storage.local`, limiting their exposure via `sync` storage compromise.
-    -   Stricter validation of the `salt`'s format upon retrieval from storage; if invalid, it is regenerated.
-    -   **Future Consideration:** Client-side encryption of the `salt` before storing it could be explored, though key management for this encryption would introduce new complexities.
+- **Vulnerability:** The cryptographic `salt` stored unencrypted (beyond OS-level user profile encryption) in `chrome.storage.sync` or `chrome.storage.local` could be exfiltrated by malware with sufficient privileges on the user's machine, or via a compromised Google account (if `chrome.storage.sync` is used for the `store` preference). This is a form of client-side secret leakage.
+- **Impact:** An attacker with the salt and knowledge of the extension's hashing and `base2base` encoding logic (which is open-source) could:
+  1.  Deanonymize previously observed auto-generated emoji markers to determine the underlying origins the user visited.
+  2.  Pre-compute and spoof the correct auto-generated emoji marker for a phishing domain they control, making their phishing site appear more legitimate to that specific user.
+- **Mitigation by Extension Code:**
+  - Offering `chrome.storage.local` or `chrome.storage.session` as storage options for the `store` preference for `salt` and custom markers. `chrome.storage.session` significantly mitigates this risk by ensuring the `salt` (and custom markers) are cleared when the browser closes, causing auto-generated markers to change with each new browser session, thus invalidating any previously exfiltrated salt for future spoofing. This comes at the cost of marker persistence.
+  - As noted in Section 2.2, the core `bookmark` ID, `mode`, and `store` preference are always in `chrome.storage.local`, limiting their exposure via `sync` storage compromise.
+  - Stricter validation of the `salt`'s format upon retrieval from storage; if invalid, it is regenerated.
+  - **Future Consideration:** Client-side encryption of the `salt` before storing it could be explored, though key management for this encryption would introduce new complexities.
 
 ### 4.2. Storage Exploitation
 
 #### 4.2.1. Unauthorized Data Access from Storage
 
--   **Vulnerability:** Custom markers (user-defined bookmark titles for specific origins) and settings stored unencrypted can be read by malware with sufficient privileges or via a compromised Google account (if the `store` is set to `sync` for these items).
--   **Impact:** Exposure of user-defined custom marker names and the associated origins (derived from the hashed key if the salt is also known). This could reveal Browse habits or trusted sites.
--   **Mitigation by Extension Code:**
-    -   Offering `local` or `session` storage options limits sync-based exfiltration vectors for `salt` and custom markers.
-    -   Core settings (`bookmark` ID, `mode`, `store` preference) are always in `chrome.storage.local`.
-    -   Robust type validation for all critical data retrieved from storage.
-    -   **Future Consideration:** Client-side encryption of custom markers.
+- **Vulnerability:** Custom markers (user-defined bookmark titles for specific origins) and settings stored unencrypted can be read by malware with sufficient privileges or via a compromised Google account (if the `store` is set to `sync` for these items).
+- **Impact:** Exposure of user-defined custom marker names and the associated origins (derived from the hashed key if the salt is also known). This could reveal Browse habits or trusted sites.
+- **Mitigation by Extension Code:**
+  - Offering `local` or `session` storage options limits sync-based exfiltration vectors for `salt` and custom markers.
+  - Core settings (`bookmark` ID, `mode`, `store` preference) are always in `chrome.storage.local`.
+  - Robust type validation for all critical data retrieved from storage.
+  - **Future Consideration:** Client-side encryption of custom markers.
 
 #### 4.2.2. Storage Quota Exhaustion
 
--   **Vulnerability:** Prolific use of custom markers or, less likely, errors in writing data could theoretically lead to hitting `chrome.storage` quotas. The extension stores custom markers keyed by `'_' + hash`.
--   **Impact:** Potential failure to save new settings, new custom markers, or the `salt` if storage quotas are exceeded. The extension's error handling for storage operations would log these failures.
--   **Mitigation by Extension Code:**
-    -   Consistent error handling for all `chrome.storage` operations (e.g., `setDataLocal`, `setData`, `removeData` check `chrome.runtime.lastError`).
-    -   Debouncing mechanism for bookmark change events (`onBookmarkChange`) helps prevent excessive writes from rapid, successive manual bookmark title changes.
+- **Vulnerability:** Prolific use of custom markers or, less likely, errors in writing data could theoretically lead to hitting `chrome.storage` quotas. The extension stores custom markers keyed by `'_' + hash`.
+- **Impact:** Potential failure to save new settings, new custom markers, or the `salt` if storage quotas are exceeded. The extension's error handling for storage operations would log these failures.
+- **Mitigation by Extension Code:**
+  - Consistent error handling for all `chrome.storage` operations (e.g., `setDataLocal`, `setData`, `removeData` check `chrome.runtime.lastError`).
+  - Debouncing mechanism for bookmark change events (`onBookmarkChange`) helps prevent excessive writes from rapid, successive manual bookmark title changes.
 
 ### 4.3. Inter-Extension Communication and Internal IPC
 
 #### 4.3.1. Data Access/Manipulation by Malicious Co-installed Extension
 
--   **Vulnerability:** A co-installed malicious extension with the generic `storage` permission might attempt to read or modify OriginMarker's data if it can guess or discover the storage keys (e.g., `'bookmark'`, `'mode'`, `'store'`, `'salt'`, or custom marker keys like `'_' + hash`).
--   **Impact:** Reading sensitive data (salt, custom markers, settings) or maliciously altering settings (e.g., changing the `mode` or `store` location, overwriting the `salt`, or modifying custom markers).
--   **Mitigation by Extension Code:**
-    -   A strong Content Security Policy is in place for `options.html`, reducing attack surface there.
-    -   The extension does not use `chrome.runtime.onMessageExternal`, limiting external communication vectors.
-    -   Internal messages (e.g., from `options.js` to `background.js`) are validated using `sender.origin === location.origin` in `background.js`.
-    -   The `_` prefix for hash-based keys is a minor convention; primary defense relies on limiting salt exposure (which makes predicting custom marker keys harder without it) and the general difficulty for other extensions to arbitrarily access another's storage without specific vulnerabilities.
+- **Vulnerability:** A co-installed malicious extension with the generic `storage` permission might attempt to read or modify OriginMarker's data if it can guess or discover the storage keys (e.g., `'bookmark'`, `'mode'`, `'store'`, `'salt'`, or custom marker keys like `'_' + hash`).
+- **Impact:** Reading sensitive data (salt, custom markers, settings) or maliciously altering settings (e.g., changing the `mode` or `store` location, overwriting the `salt`, or modifying custom markers).
+- **Mitigation by Extension Code:**
+  - A strong Content Security Policy is in place for `options.html`, reducing attack surface there.
+  - The extension does not use `chrome.runtime.onMessageExternal`, limiting external communication vectors.
+  - Internal messages (e.g., from `options.js` to `background.js`) are validated using `sender.origin === location.origin` in `background.js`.
+  - The `_` prefix for hash-based keys is a minor convention; primary defense relies on limiting salt exposure (which makes predicting custom marker keys harder without it) and the general difficulty for other extensions to arbitrarily access another's storage without specific vulnerabilities.
 
 ### 4.4. Visual Deception and Input Handling
 
 #### 4.4.1. Invisible Character Injection or Homograph Attacks in Custom Markers (Input)
 
--   **Vulnerability:** When a user renames the marker bookmark, the new title becomes a custom marker. If this title includes non-standard Unicode characters (e.g., invisible characters, characters that look like others from different scripts for homograph attacks), it could be used to create misleading or confusing markers.
--   **Impact:** User confusion, or in a sophisticated attack, a custom marker could be crafted to subtly mimic another site's marker or appear as an official-looking status. However, the impact is limited as bookmark titles are generally rendered as plain text by the browser, preventing direct script injection.
--   **Mitigation by Extension Code:**
-    -   **Implemented:** Unicode normalization (NFC) and stripping of specific problematic/invisible Unicode characters are performed on bookmark titles within the `onBookmarkChange` listener before they are saved as custom markers. This is done using `normalize('NFC')` and a regular expression to replace characters in ranges U+200B to U+200D, U+202A to U+202E, U+2066 to U+2069, and U+FEFF.
-    -   The `onBookmarkChange` listener ignores titles ending with `*`, which prevents users from manually creating custom markers that look identical to automatically generated ones, reducing a potential vector for confusion or spoofing.
+- **Vulnerability:** When a user renames the marker bookmark, the new title becomes a custom marker. If this title includes non-standard Unicode characters (e.g., invisible characters, characters that look like others from different scripts for homograph attacks), it could be used to create misleading or confusing markers.
+- **Impact:** User confusion, or in a sophisticated attack, a custom marker could be crafted to subtly mimic another site's marker or appear as an official-looking status. However, the impact is limited as bookmark titles are generally rendered as plain text by the browser, preventing direct script injection.
+- **Mitigation by Extension Code:**
+  - **Implemented:** Unicode normalization (NFC) and stripping of specific problematic/invisible Unicode characters are performed on bookmark titles within the `onBookmarkChange` listener before they are saved as custom markers. This is done using `normalize('NFC')` and a regular expression to replace characters in ranges U+200B to U+200D, U+202A to U+202E, U+2066 to U+2069, and U+FEFF.
+  - The `onBookmarkChange` listener ignores titles ending with `*`, which prevents users from manually creating custom markers that look identical to automatically generated ones, reducing a potential vector for confusion or spoofing.
 
 ### 4.7. Build and Supply Chain Integrity
 
--   **Vulnerability:**
-    -   **`static.js` Integrity (Code Injection):** If the `static.js` file's content were compromised within the developer's environment or build process _before being packaged into the extension_ to include malicious JavaScript, this code would be imported via `importScripts('/static.js')` and execute within the service worker's (`background.js`) high-privilege context.
-    -   **`static.js` Integrity (Data Manipulation):** If only the _data_ within `static.js` (e.g., `source` alphabet, `emoji` alphabet, `unknown` string) were maliciously altered pre-packaging. Impacts are detailed in Section 4.8.
-    -   **GitHub Actions:** The `format-on-merge.yml` workflow uses `contents: write` permission to commit formatting changes directly to the `main` branch. If this workflow or the actions it uses (e.g., the formatting tool or checkout action) were compromised, malicious code could be injected into the repository.
--   **Impact:**
-    -   Code injection in `static.js`: Full compromise of the extension, allowing theft of stored data (salt, custom markers), unauthorized bookmark manipulation, and abuse of tab interaction permissions.
-    -   Data manipulation in `static.js`: Malformed or misleading markers, potential denial of service for marker generation, or injection of unsafe strings (if the `unknown` string was manipulated and then rendered as HTML in UI, though it's primarily used for bookmark titles).
-    -   Compromised GitHub Action: Could lead to stealthy injection of malicious code into the codebase, forming a supply chain attack.
--   **Mitigation:**
-    -   **`static.js`:**
-        -   Secure development practices: The developer is responsible for ensuring the `static.js` file's content (both any potential code and its critical data structures) is accurate, secure, and verified within their development and build environment before each packaging and release.
-        -   Chrome Web Store signing: Once packaged and uploaded, the extension is signed by the Chrome Web Store, which helps ensure that the version installed by users hasn't been tampered with post-publication.
-    -   **GitHub Actions:**
-        -   Regular review of workflow permissions and any third-party actions used.
-        -   Pinning actions to specific commit SHAs rather than branches or tags to prevent unexpected updates from introducing vulnerabilities. This practice is applied to actions used in the project's workflows:
-            -   In `format-on-merge.yml`: `actions/checkout` and `actions/setup-node` are pinned.
-            -   In `build.yml`: `actions/checkout` and `actions/upload-artifact` are pinned.
-            -   In `codeql.yml`: `actions/checkout`, `github/codeql-action/init`, and `github/codeql-action/analyze` are pinned.
-        -   Implementing strong branch protection rules for `main`, requiring reviews before merging, even for workflow-generated commits if feasible.
-    -   _Review (2025)_: Verified and updated action pinning in all workflow files (`build.yml`, `codeql.yml`, `format-on-merge.yml`) to use specific commit SHAs for enhanced supply chain security.
+- **Vulnerability:**
+  - **`static.js` Integrity (Code Injection):** If the `static.js` file's content were compromised within the developer's environment or build process _before being packaged into the extension_ to include malicious JavaScript, this code would be imported via `importScripts('/static.js')` and execute within the service worker's (`background.js`) high-privilege context.
+  - **`static.js` Integrity (Data Manipulation):** If only the _data_ within `static.js` (e.g., `source` alphabet, `emoji` alphabet, `unknown` string) were maliciously altered pre-packaging. Impacts are detailed in Section 4.8.
+  - **GitHub Actions:** The `format-on-merge.yml` workflow uses `contents: write` permission to commit formatting changes directly to the `main` branch. If this workflow or the actions it uses (e.g., the formatting tool or checkout action) were compromised, malicious code could be injected into the repository.
+- **Impact:**
+  - Code injection in `static.js`: Full compromise of the extension, allowing theft of stored data (salt, custom markers), unauthorized bookmark manipulation, and abuse of tab interaction permissions.
+  - Data manipulation in `static.js`: Malformed or misleading markers, potential denial of service for marker generation, or injection of unsafe strings (if the `unknown` string was manipulated and then rendered as HTML in UI, though it's primarily used for bookmark titles).
+  - Compromised GitHub Action: Could lead to stealthy injection of malicious code into the codebase, forming a supply chain attack.
+- **Mitigation:**
+  - **`static.js`:**
+    - Secure development practices: The developer is responsible for ensuring the `static.js` file's content (both any potential code and its critical data structures) is accurate, secure, and verified within their development and build environment before each packaging and release.
+    - Chrome Web Store signing: Once packaged and uploaded, the extension is signed by the Chrome Web Store, which helps ensure that the version installed by users hasn't been tampered with post-publication.
+  - **GitHub Actions:**
+    - Regular review of workflow permissions and any third-party actions used.
+    - Pinning actions to specific commit SHAs rather than branches or tags to prevent unexpected updates from introducing vulnerabilities. This practice is applied to actions used in the project's workflows:
+      - In `format-on-merge.yml`: `actions/checkout` and `actions/setup-node` are pinned.
+      - In `build.yml`: `actions/checkout` and `actions/upload-artifact` are pinned.
+      - In `codeql.yml`: `actions/checkout`, `github/codeql-action/init`, and `github/codeql-action/analyze` are pinned.
+    - Implementing strong branch protection rules for `main`, requiring reviews before merging, even for workflow-generated commits if feasible.
+  - _Review (2025)_: Verified and updated action pinning in all workflow files (`build.yml`, `codeql.yml`, `format-on-merge.yml`) to use specific commit SHAs for enhanced supply chain security.
 
 ### 4.8. Robustness Against Malformed Data from `static.js`
 
--   **Vulnerability:** The `background.js` relies on data structures (alphabets `source` and `emoji`, and the `unknown` string) imported from `static.js`. If `static.js` is compromised or its data corrupted by the developer pre-packaging, this data could be malformed.
--   **Impact:**
-    -   **Malformed Alphabets for `base2base`:**
-        -   If `source` or `emoji` alphabets are empty or contain only non-unique characters, the `base2base` function's internal logic (`[...new Set([...alphabet].join(''))]`) would result in very small or zero-length alphabets (`fromBase` or `toBase` becoming 0 or 1).
-        -   This could lead to:
-            -   JavaScript errors (e.g., division by zero if `toBase` is 0, or errors during array access if alphabets are empty).
-            -   Empty or garbled marker strings being generated.
-            -   A functional denial of service for the automatic marker generation feature.
-    -   **Malformed `unknown` String:**
-        -   If the `unknown` string from `static.js` is excessively long, contains unrenderable characters, or includes misleading information (e.g., "Website Verified Secure!" or a phishing link snippet), it would be displayed as the bookmark title in manual mode or when an automatic marker cannot be generated. While bookmark titles are typically plain text, this could confuse users or, in extreme cases, cause minor rendering issues in the bookmarks bar. Direct XSS is unlikely here as bookmark titles don't render HTML.
--   **Mitigation by Extension Code:**
-    -   `background.js` performs explicit checks after importing data from `static.js` to validate the `source` (hexadecimal) and `emoji` alphabets:
-        -   The `source` alphabet must provide at least 16 unique characters (`MIN_ALPHABET_LENGTH = 16`), ensuring a complete hex set.
-        -   The `emoji` alphabet (array of emoji strings/tokens) must contain at least 64 distinct emoji strings (`MIN_EMOJI_ALPHABET_LENGTH = 64`). This threshold ensures a baseline level of visual distinctiveness for generated markers.
-    -   If either alphabet validation fails, automatic marker generation is disabled (`areAlphabetsValid` becomes `false`), and the extension defaults to using the `unknown` text marker. An error detailing the specific failure is logged to the console.
-    -   The active encoding function, `base2baseForEmojis`, also includes internal checks to ensure its effective `fromBase` and `toBase` are at least 2. If not, it defaults to returning the `unknown` marker, providing an additional layer of defense.
-    -   For the `unknown` string itself, if it were ever used in a context that renders HTML (it currently is not), sanitization would be advisable.
+- **Vulnerability:** The `background.js` relies on data structures (alphabets `source` and `emoji`, and the `unknown` string) imported from `static.js`. If `static.js` is compromised or its data corrupted by the developer pre-packaging, this data could be malformed.
+- **Impact:**
+  - **Malformed Alphabets for `base2base`:**
+    - If `source` or `emoji` alphabets are empty or contain only non-unique characters, the `base2base` function's internal logic (`[...new Set([...alphabet].join(''))]`) would result in very small or zero-length alphabets (`fromBase` or `toBase` becoming 0 or 1).
+    - This could lead to:
+      - JavaScript errors (e.g., division by zero if `toBase` is 0, or errors during array access if alphabets are empty).
+      - Empty or garbled marker strings being generated.
+      - A functional denial of service for the automatic marker generation feature.
+  - **Malformed `unknown` String:**
+    - If the `unknown` string from `static.js` is excessively long, contains unrenderable characters, or includes misleading information (e.g., "Website Verified Secure!" or a phishing link snippet), it would be displayed as the bookmark title in manual mode or when an automatic marker cannot be generated. While bookmark titles are typically plain text, this could confuse users or, in extreme cases, cause minor rendering issues in the bookmarks bar. Direct XSS is unlikely here as bookmark titles don't render HTML.
+- **Mitigation by Extension Code:**
+  - `background.js` performs explicit checks after importing data from `static.js` to validate the `source` (hexadecimal) and `emoji` alphabets:
+    - The `source` alphabet must provide at least 16 unique characters (`MIN_ALPHABET_LENGTH = 16`), ensuring a complete hex set.
+    - The `emoji` alphabet (array of emoji strings/tokens) must contain at least 64 distinct emoji strings (`MIN_EMOJI_ALPHABET_LENGTH = 64`). This threshold ensures a baseline level of visual distinctiveness for generated markers.
+  - If either alphabet validation fails, automatic marker generation is disabled (`areAlphabetsValid` becomes `false`), and the extension defaults to using the `unknown` text marker. An error detailing the specific failure is logged to the console.
+  - The active encoding function, `base2baseForEmojis`, also includes internal checks to ensure its effective `fromBase` and `toBase` are at least 2. If not, it defaults to returning the `unknown` marker, providing an additional layer of defense.
+  - For the `unknown` string itself, if it were ever used in a context that renders HTML (it currently is not), sanitization would be advisable.
 
 ---
 
@@ -210,64 +210,64 @@ This section outlines existing and planned code-level mitigations in the extensi
 
 ### 5.1. Salt, Data Storage, and Cryptography
 
--   **Secure Salt Generation:** `crypto.randomUUID()` is used for `salt` generation, providing a cryptographically strong random value.
--   **Storage Options and Validation:** Users are given a choice of `chrome.storage.local`, `chrome.storage.session`, or `chrome.storage.sync` for storing `salt` and custom markers. As detailed in Sec 2.2 and 4.1, core operational settings are always in `chrome.storage.local`. Strict type validation is performed on all critical data retrieved from storage.
--   **Reset Functionality:** The options page provides a reset function that clears all stored data, including the `salt`, effectively allowing user-initiated salt rotation.
--   **Marker Encoding (`base2base`):** The security of automatic markers relies on the strength of the SHA-256 hash of `origin + salt`. The `base2base` function is for visual representation and its internal logic for handling alphabets is robust against duplicate characters.
+- **Secure Salt Generation:** `crypto.randomUUID()` is used for `salt` generation, providing a cryptographically strong random value.
+- **Storage Options and Validation:** Users are given a choice of `chrome.storage.local`, `chrome.storage.session`, or `chrome.storage.sync` for storing `salt` and custom markers. As detailed in Sec 2.2 and 4.1, core operational settings are always in `chrome.storage.local`. Strict type validation is performed on all critical data retrieved from storage.
+- **Reset Functionality:** The options page provides a reset function that clears all stored data, including the `salt`, effectively allowing user-initiated salt rotation.
+- **Marker Encoding (`base2base`):** The security of automatic markers relies on the strength of the SHA-256 hash of `origin + salt`. The `base2base` function is for visual representation and its internal logic for handling alphabets is robust against duplicate characters.
 
 ### 5.3. Robustness, State, and Event Management
 
--   **Comprehensive Error Handling:** Asynchronous Chrome API calls generally handle errors through Promise `.catch()` blocks or by checking `chrome.runtime.lastError`. Critical initialization failures result in an "ERR" badge on the extension icon.
--   **State Consistency and Integrity:** Careful management of in-memory state. The `initializationCompletePromise` ensures operations like `checkOrigin` wait until setup is done. The `AbortController` (`currentPlaceholderAbortController`) in `initBookmark` gracefully handles re-entrant calls. Variables like `pending_origin` and `active_origin` prevent stale updates. If the marker bookmark is deleted, `onBookmarkRemove` triggers `initBookmark` to re-establish a marker, contributing to state recovery.
--   **Event Debouncing and Throttling:**
-    -   The `onBookmarkChange` listener uses a debounce timer (`BOOKMARK_CHANGE_DEBOUNCE_DELAY`) to prevent rapid, successive updates to custom markers.
-    -   The efficiency, reduction of redundant processing, and rate-limit mitigation for tab events are addressed by the event-based DoS attack mitigation strategy detailed below.
+- **Comprehensive Error Handling:** Asynchronous Chrome API calls generally handle errors through Promise `.catch()` blocks or by checking `chrome.runtime.lastError`. Critical initialization failures result in an "ERR" badge on the extension icon.
+- **State Consistency and Integrity:** Careful management of in-memory state. The `initializationCompletePromise` ensures operations like `checkOrigin` wait until setup is done. The `AbortController` (`currentPlaceholderAbortController`) in `initBookmark` gracefully handles re-entrant calls. Variables like `pending_origin` and `active_origin` prevent stale updates. If the marker bookmark is deleted, `onBookmarkRemove` triggers `initBookmark` to re-establish a marker, contributing to state recovery.
+- **Event Debouncing and Throttling:**
+  - The `onBookmarkChange` listener uses a debounce timer (`BOOKMARK_CHANGE_DEBOUNCE_DELAY`) to prevent rapid, successive updates to custom markers.
+  - The efficiency, reduction of redundant processing, and rate-limit mitigation for tab events are addressed by the event-based DoS attack mitigation strategy detailed below.
 
 #### Event-Based DoS Attack Mitigation
 
--   **Concern:** Malicious web pages could attempt to trigger a denial-of-service (DoS) by rapidly firing tab update events, causing high CPU usage and extension unresponsiveness.
--   **Mitigation Strategy:** The extension implements a rate-limiting and dynamic cooldown mechanism for tab-related events (`tabs.onUpdated`, `tabs.onActivated`, `windows.onFocusChanged`):
-    -   **Rate Limiting:** Event handlers track the timestamps of recent incoming events (`recordTabEvent`). If the number of events exceeds `EVENT_RATE_THRESHOLD_COUNT` within `EVENT_RATE_THRESHOLD_WINDOW_MS`, a potential DoS attack is flagged.
-    -   **Cooldown Activation & User Feedback:** Upon detection of excessive event rates (`enterDosCooldownMode`):
-        -   The system immediately sets the bookmark marker to a generic value.
-        -   A console warning is logged.
-        -   The extension's action badge displays "BUSY" with an orange background.
-        -   The extension enters a `DOS_STATE_COOLDOWN` period, during which new tab events that would trigger `checkOrigin` are ignored.
-    -   **Dynamic Recovery:**
-        -   After an initial cooldown (`DOS_INITIAL_COOLDOWN_MS`), `checkDosRecovery` assesses if the event rate has returned to normal.
-        -   If the rate is still high, the cooldown is extended (`DOS_EXTENDED_COOLDOWN_MS`).
-        -   If the event rate has normalized, the system transitions back to `DOS_STATE_NORMAL`, the badge is cleared, and `checkOrigin()` is called to restore the correct marker.
--   **Impact:** This mechanism ensures the extension remains responsive during periods of unusually high event frequency, prioritizing stability and user awareness.
+- **Concern:** Malicious web pages could attempt to trigger a denial-of-service (DoS) by rapidly firing tab update events, causing high CPU usage and extension unresponsiveness.
+- **Mitigation Strategy:** The extension implements a rate-limiting and dynamic cooldown mechanism for tab-related events (`tabs.onUpdated`, `tabs.onActivated`, `windows.onFocusChanged`):
+  - **Rate Limiting:** Event handlers track the timestamps of recent incoming events (`recordTabEvent`). If the number of events exceeds `EVENT_RATE_THRESHOLD_COUNT` within `EVENT_RATE_THRESHOLD_WINDOW_MS`, a potential DoS attack is flagged.
+  - **Cooldown Activation & User Feedback:** Upon detection of excessive event rates (`enterDosCooldownMode`):
+    - The system immediately sets the bookmark marker to a generic value.
+    - A console warning is logged.
+    - The extension's action badge displays "BUSY" with an orange background.
+    - The extension enters a `DOS_STATE_COOLDOWN` period, during which new tab events that would trigger `checkOrigin` are ignored.
+  - **Dynamic Recovery:**
+    - After an initial cooldown (`DOS_INITIAL_COOLDOWN_MS`), `checkDosRecovery` assesses if the event rate has returned to normal.
+    - If the rate is still high, the cooldown is extended (`DOS_EXTENDED_COOLDOWN_MS`).
+    - If the event rate has normalized, the system transitions back to `DOS_STATE_NORMAL`, the badge is cleared, and `checkOrigin()` is called to restore the correct marker.
+- **Impact:** This mechanism ensures the extension remains responsive during periods of unusually high event frequency, prioritizing stability and user awareness.
 
 ### 5.5. Build and Supply Chain
 
--   **Code Integrity:** Ensuring the integrity of all packaged JavaScript files, especially `static.js` (which provides data critical to marker generation) and `background.js` (the core logic), is vital. The developer is responsible for the integrity of these files within their development environment at the time of packaging.
--   **Dependency Management:** `static.js` is a local, first-party file, not a third-party library. Its data inputs are critical and their integrity must be maintained by the developer pre-packaging. See Section 4.7 and 4.8.
+- **Code Integrity:** Ensuring the integrity of all packaged JavaScript files, especially `static.js` (which provides data critical to marker generation) and `background.js` (the core logic), is vital. The developer is responsible for the integrity of these files within their development environment at the time of packaging.
+- **Dependency Management:** `static.js` is a local, first-party file, not a third-party library. Its data inputs are critical and their integrity must be maintained by the developer pre-packaging. See Section 4.7 and 4.8.
 
 ---
 
 ## 6. Permissions Justification
 
--   **`tabs`:** Required to access the URL of the active tab for origin determination (`checkOrigin`) and to listen to tab events like `onUpdated` and `onActivated`.
--   **`bookmarks`:** Required to:
-    -   Get existing bookmarks during initialization (`chrome.bookmarks.get`).
-    -   Listen for bookmark creation (`chrome.bookmarks.onCreated`) and changes (`chrome.bookmarks.onChanged`) to identify the designated marker bookmark.
-    -   Update the title of the designated marker bookmark (`chrome.bookmarks.update`).
-    -   Listen for bookmark removal (`chrome.bookmarks.onRemoved`) to detect if the marker bookmark is deleted.
--   **`storage`**: Required to store all extension settings (`bookmark` ID, `mode`, `store` preference), the cryptographic `salt`, and user-defined custom markers.
+- **`tabs`:** Required to access the URL of the active tab for origin determination (`checkOrigin`) and to listen to tab events like `onUpdated` and `onActivated`.
+- **`bookmarks`:** Required to:
+  - Get existing bookmarks during initialization (`chrome.bookmarks.get`).
+  - Listen for bookmark creation (`chrome.bookmarks.onCreated`) and changes (`chrome.bookmarks.onChanged`) to identify the designated marker bookmark.
+  - Update the title of the designated marker bookmark (`chrome.bookmarks.update`).
+  - Listen for bookmark removal (`chrome.bookmarks.onRemoved`) to detect if the marker bookmark is deleted.
+- **`storage`**: Required to store all extension settings (`bookmark` ID, `mode`, `store` preference), the cryptographic `salt`, and user-defined custom markers.
 
 ---
 
 ## 7. Ethical Considerations and Data Handling
 
--   **Data Handling:**
-    -   The extension stores data (settings, salt, custom markers) either locally (`chrome.storage.local`, `chrome.storage.session`) or allows synchronization via the user's Google account (`chrome.storage.sync`), based on user preference. Core settings are always stored in `chrome.storage.local`.
-    -   The extension does not transmit any of this data to any external servers or third parties.
-    -   A "Reset" function is provided, which clears all data stored by the extension.
--   **Marker Purpose and Limitations:**
-    -   The markers are a supplementary visual cue to help users differentiate website origins.
-    -   An OriginMarker is **not** a guarantee of a website's security, connection integrity (HTTPS), or content trustworthiness.
-    -   The extension helps verify "Am I on the domain I think I am on?" but not "Is this domain inherently safe?".
--   **Transparency:**
-    -   The project is open-source, allowing for public review.
-    -   Documentation aims to be clear about how the extension works and its limitations.
+- **Data Handling:**
+  - The extension stores data (settings, salt, custom markers) either locally (`chrome.storage.local`, `chrome.storage.session`) or allows synchronization via the user's Google account (`chrome.storage.sync`), based on user preference. Core settings are always stored in `chrome.storage.local`.
+  - The extension does not transmit any of this data to any external servers or third parties.
+  - A "Reset" function is provided, which clears all data stored by the extension.
+- **Marker Purpose and Limitations:**
+  - The markers are a supplementary visual cue to help users differentiate website origins.
+  - An OriginMarker is **not** a guarantee of a website's security, connection integrity (HTTPS), or content trustworthiness.
+  - The extension helps verify "Am I on the domain I think I am on?" but not "Is this domain inherently safe?".
+- **Transparency:**
+  - The project is open-source, allowing for public review.
+  - Documentation aims to be clear about how the extension works and its limitations.
