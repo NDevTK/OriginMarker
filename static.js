@@ -651,7 +651,6 @@ const emoji = [
   '🧸', // Teddy Bear
   '🪅', // Piñata
   '🪆', // Nesting Dolls
-  '♥️', // Heart Suit
   '♦️', // Diamond Suit
   '♣️', // Club Suit
   '♟️', // Chess Pawn
