@@ -86,6 +86,10 @@ The extension demonstrates robust handling of asynchronous operations to prevent
 - **Alphabet Integrity:** At startup, the code validates that the alphabets imported from `static.js` meet minimum length requirements (`MIN_ALPHABET_LENGTH`, `MIN_EMOJI_ALPHABET_LENGTH`). If not, auto-mode is disabled, preventing errors in the encoding function.
 - **URL Parsing:** The `checkOrigin` function wraps URL parsing in a `try/catch` block and validates the protocol is in `allowedProtocols` (`https:`, `http:`), preventing errors from invalid URLs and ignoring potentially unsafe schemes.
 
+### 4.4. Internal Message Validation
+
+Messages passed between the extension's own components (e.g., from the options page `options.js` to the service worker `background.js`) are validated to ensure they originate from the extension itself. This is achieved by the service worker verifying that the `sender.origin` of an incoming message is identical to its own `self.origin` (or `location.origin`). This check effectively prevents the service worker from processing messages sent by content scripts (which would have the origin of the web page they are injected into) or other extensions, ensuring that handlers for internal messages are not improperly triggered.
+
 ---
 
 ## 5. Future Hardening & Recommendations
