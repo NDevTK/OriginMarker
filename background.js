@@ -43,7 +43,7 @@ const initializationCompletePromise = new Promise((resolve) => {
 });
 
 // For DoS Protection
-const EVENT_RATE_THRESHOLD_COUNT = 10; // Max events before triggering
+const EVENT_RATE_THRESHOLD_COUNT = 20; // Max events before triggering
 const EVENT_RATE_THRESHOLD_WINDOW_MS = 3000; // Time window in ms
 const DOS_INITIAL_COOLDOWN_MS = 5000; // Cooldown after first detection
 const DOS_EXTENDED_COOLDOWN_MS = 10000; // Cooldown if DoS persists after a check
