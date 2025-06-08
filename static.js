@@ -9,7 +9,6 @@ const emoji = [
   '🥶', // Cold Face
   '🥵', // Hot Face
   '🤮', // Face Vomiting
-  '🤗', // Hugging Face
   '🤑', // Money-Mouth Face
   '🤪', // Zany Face
   '😍', // Smiling Face with Heart-Eyes
@@ -31,17 +30,12 @@ const emoji = [
   '👅', // Tongue
   '👄', // Mouth
   '🦷', // Tooth
-  '👮', // Police Officer
-  '🤴', // Prince
   '🎅', // Santa Claus
   '🦸', // Superhero
   '🧟', // Zombie
   '🚶', // Person Walking
   '💃', // Woman Dancing
-  '🕺', // Man Dancing
-  '👪', // Family
   '👤', // Bust in Silhouette
-  '🫂', // People Hugging
   '🐒', // Monkey
   '🐶', // Dog Face
   '🐅', // Tiger
@@ -68,7 +62,6 @@ const emoji = [
   '🐑', // Ewe
   '🐪', // Dromedary Camel
   '🐺', // Wolf
-  '🦊', // Fox
   '🐻', // Bear
   '🐼', // Panda
   '🐨', // Koala
@@ -78,8 +71,6 @@ const emoji = [
   '🦒', // Giraffe
   '🦛', // Hippopotamus
   '🐭', // Mouse Face
-  '🐇', // Rabbit
-  '🐿️', // Chipmunk
   '🦔', // Hedgehog
   '🦇', // Bat
   '🦥', // Sloth
@@ -90,7 +81,6 @@ const emoji = [
   '🐾', // Paw Prints
   '🐔', // Chicken
   '🦅', // Eagle
-  '🦆', // Duck
   '🦢', // Swan
   '🦩', // Flamingo
   '🦚', // Peacock
@@ -100,7 +90,6 @@ const emoji = [
   '🐳', // Spouting Whale
   '🐬', // Dolphin
   '🦭', // Seal
-  '🦑', // Squid
   '🦪', // Oyster
   '🌹', // Rose
   '🌻', // Sunflower
@@ -116,8 +105,6 @@ const emoji = [
   '🥑', // Avocado
   '🌶️', // Hot Pepper
   '🍄', // Mushroom
-  '🍞', // Bread
-  '🥐', // Croissant
   '🥨', // Pretzel
   '🧀', // Cheese Wedge
   '🍕', // Pizza
@@ -219,11 +206,9 @@ const emoji = [
   '💰', // Money Bag
   '✉️', // Envelope
   '✏️', // Pencil
-  '🖌️', // Paintbrush
   '📓', // Notebook
   '📰', // Newspaper
   '💼', // Briefcase
-  '📁', // File Folder
   '📅', // Calendar
   '📈', // Chart Increasing
   '📊', // Bar Chart
@@ -260,7 +245,6 @@ const emoji = [
   '🚽', // Toilet
   '🚿', // Shower
   '🚪', // Door
-  '🛋️', // Couch and Lamp
   '🪑', // Chair
   '🛏️', // Bed
   '🛒', // Shopping Cart
@@ -297,8 +281,6 @@ const emoji = [
   '🫠', // Melting Face
   '🫡', // Saluting Face
   '🥷', // Ninja
-  '🧑‍🌾', // Farmer
-  '🧑‍🍳', // Cook
   '🫘', // Beans
   '🛞', // Wheel
   '🪩', // Mirror Ball
@@ -308,7 +290,18 @@ const emoji = [
   '☀️', // Sun
   '✔️', // Check Mark
   '❌', // Cross Mark
-  '❗' // Exclamation Mark
+  '❗', // Exclamation Mark
+  '❄️', // Snowflake
+  '⚓', // Anchor
+  '⏳', // Hourglass Done
+  '🔒', // Locked
+  '🔑', // Key
+  '⚫', // Black Circle
+  '🔵', // Blue Circle
+  '🟢', // Green Circle
+  '🟡', // Yellow Circle
+  '🟣', // Purple Circle
+  '🟤', // Brown Circle
 ];
 
 const source = [
@@ -323,9 +316,3 @@ const source = [
   '2',
   '3',
   '4',
-  '5',
-  '6',
-  '7',
-  '8',
-  '9'
-];
