@@ -97,6 +97,8 @@ async function proceedWithReset() {
         resolve();
       });
     });
+    chrome.runtime.sendMessage('refresh');
+    main();
     reset.innerText =
       'All data for the ' + store.value + ' storage area has been cleared.';
   } catch (error) {
