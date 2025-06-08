@@ -30,14 +30,12 @@ const emoji = [
   '👄', // Mouth
   '🦷', // Tooth
   '👮', // Police Officer
-  '👷', // Construction Worker
   '🤴', // Prince
   '👸', // Princess
   '🎅', // Santa Claus
   '🦸', // Superhero
   '🧟', // Zombie
   '🚶', // Person Walking
-  '🏃', // Person Running
   '💃', // Woman Dancing
   '🕺', // Man Dancing
   '👪', // Family
@@ -77,10 +75,8 @@ const emoji = [
   '🐨', // Koala
   '🐸', // Frog
   '🐊', // Crocodile
-  '🦓', // Zebra
   '🦌', // Deer
   '🦒', // Giraffe
-  '🦏', // Rhinoceros
   '🦛', // Hippopotamus
   '🐭', // Mouse Face
   '🐇', // Rabbit
@@ -179,11 +175,9 @@ const emoji = [
   '🏍️', // Motorcycle
   '🚲', // Bicycle
   '⛵', // Sailboat
-  '🚢', // Ship
   '🚁', // Helicopter
   '🚀', // Rocket
   '🛸', // Flying Saucer
-  '⏰', // Alarm Clock
   '🕛', // Twelve O’Clock
   '⭐', // Star
   '☁️', // Cloud
@@ -293,14 +287,8 @@ const emoji = [
   '🏳️‍🌈', // Rainbow Flag
   '🏴‍☠️', // Pirate Flag
   '⬆️', // Up Arrow
-  '➡️', // Right Arrow
-  '⬇️', // Down Arrow
-  '⬅️', // Left Arrow
   '🔄', // Counterclockwise Arrows Button
   '▶️', // Play Button
-  '⏸️', // Pause Button
-  '⏹️', // Stop Button
-  '⏺️', // Record Button
   '©️', // Copyright
   '®️', // Registered
   '™️', // Trade Mark
@@ -320,7 +308,6 @@ const emoji = [
   '🪫', // Low Battery
   '🫧', // Bubbles
   '🪸', // Coral
-  '🤔', // Thinking Face
   '☀️', // Sun
   '✔️', // Check Mark
   '❌', // Cross Mark
