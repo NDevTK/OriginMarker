@@ -417,7 +417,9 @@ async function setMode(data /* bookmark title */) {
           await setData('salt', newSalt); // Persist new salt to configured storage.
           salt = newSalt; // Update in-memory salt.
           saltSuccessfullyHandled = true;
-          console.log('OriginMarker: New salt generated and saved for auto mode.');
+          console.log(
+            'OriginMarker: New salt generated and saved for auto mode.'
+          );
         } catch (error) {
           console.error(
             'OriginMarker: Failed to save newly generated salt:',
@@ -466,7 +468,10 @@ async function setMode(data /* bookmark title */) {
       mode = data; // Update in-memory mode.
       console.log(`OriginMarker: Mode successfully set to '${mode}'.`);
     } catch (error) {
-      console.error('OriginMarker: Failed to save mode to local storage:', error);
+      console.error(
+        'OriginMarker: Failed to save mode to local storage:',
+        error
+      );
       return false; // Failed to persist mode change.
     }
   }
