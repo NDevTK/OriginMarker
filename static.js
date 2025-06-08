@@ -3,7 +3,6 @@ const unknown = 'Marker';
 
 const emoji = [
   '😀', // Grinning Face
-  '😂', // Face with Tears of Joy
   '😴', // Sleeping Face
   '😷', // Face with Medical Mask
   '🤯', // Exploding Head
@@ -181,7 +180,6 @@ const emoji = [
   '🚲', // Bicycle
   '⛵', // Sailboat
   '🚢', // Ship
-  '✈️', // Airplane
   '🚁', // Helicopter
   '🚀', // Rocket
   '🛸', // Flying Saucer
@@ -234,7 +232,6 @@ const emoji = [
   '💰', // Money Bag
   '✉️', // Envelope
   '✏️', // Pencil
-  '✒️', // Black Nib
   '🖌️', // Paintbrush
   '📝', // Memo
   '📓', // Notebook
@@ -324,7 +321,6 @@ const emoji = [
   '🫧', // Bubbles
   '🪸', // Coral
   '🤔', // Thinking Face
-  '🤫', // Shushing Face
   '☀️', // Sun
   '✔️', // Check Mark
   '❌', // Cross Mark
