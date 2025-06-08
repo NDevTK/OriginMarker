@@ -2,290 +2,154 @@
 const unknown = 'Marker';
 
 const emoji = [
-  '😀', // Grinning Face
-  '😴', // Sleeping Face
-  '😷', // Face with Medical Mask
+  // Faces & Fantasy (Distinct)
   '🤯', // Exploding Head
-  '🥶', // Cold Face
-  '🥵', // Hot Face
-  '🤮', // Face Vomiting
-  '🤑', // Money-Mouth Face
-  '🤪', // Zany Face
-  '😍', // Smiling Face with Heart-Eyes
+  '🥸', // Disguised Face
   '💀', // Skull
-  '👹', // Ogre
   '👻', // Ghost
   '👽', // Alien
   '🤖', // Robot Face
+  '👹', // Ogre
+  '🤡', // Clown Face
+  '😈', // Smiling Face with Horns
+  '🎃', // Jack-O-Lantern
+
+  // Body & Symbols (Distinct)
   '❤️', // Red Heart
-  '💯', // Hundred Points Symbol
-  '💣', // Bomb
-  '💬', // Speech Balloon
-  '👋', // Waving Hand
-  '👍', // Thumbs Up
+  '💔', // Broken Heart
   '🧠', // Brain
   '👀', // Eyes
-  '👂', // Ear
-  '👃', // Nose
-  '👅', // Tongue
-  '👄', // Mouth
   '🦷', // Tooth
-  '🎅', // Santa Claus
-  '🦸', // Superhero
-  '🧟', // Zombie
-  '🚶', // Person Walking
-  '👤', // Bust in Silhouette
-  '🐒', // Monkey
-  '🐶', // Dog Face
-  '🐅', // Tiger
-  '🐘', // Elephant
-  '🐍', // Snake
-  '🐠', // Tropical Fish
-  '🐡', // Blowfish
-  '🦈', // Shark
+  '👑', // Crown
+  '💎', // Gem Stone
+  '💯', // Hundred Points
+  '💣', // Bomb
+
+  // Animals & Nature (Visually Diverse)
+  '🙈', // See-No-Evil Monkey
   '🦋', // Butterfly
   '🐌', // Snail
-  '🦖', // T-Rex
-  '🐧', // Penguin
-  '🦉', // Owl
+  '🐍', // Snake
   '🐢', // Turtle
   '🐙', // Octopus
   '🦀', // Crab
-  '🐎', // Horse
-  '🐄', // Cow
-  '🐑', // Ewe
-  '🐺', // Wolf
-  '🐻', // Bear
-  '🐨', // Koala
-  '🐸', // Frog
-  '🐊', // Crocodile
-  '🦌', // Deer
-  '🦒', // Giraffe
-  '🦛', // Hippopotamus
-  '🐭', // Mouse Face
-  '🦔', // Hedgehog
-  '🦇', // Bat
-  '🦥', // Sloth
-  '🦦', // Otter
-  '🦨', // Skunk
-  '🦘', // Kangaroo
-  '🐾', // Paw Prints
-  '🐔', // Chicken
-  '🦅', // Eagle
-  '🦢', // Swan
-  '🦩', // Flamingo
-  '🦚', // Peacock
-  '🦜', // Parrot
-  '🪶', // Feather
-  '🐉', // Dragon
+  '🦈', // Shark
+  '🐠', // Tropical Fish
   '🐳', // Spouting Whale
-  '🐬', // Dolphin
-  '🦭', // Seal
-  '🦪', // Oyster
-  '🌹', // Rose
-  '🌻', // Sunflower
+  '🦖', // T-Rex
+  '🐉', // Dragon
+  '🦂', // Scorpion
+  '🕷️', // Spider
   '🌳', // Deciduous Tree
   '🌵', // Cactus
+  '🍄', // Mushroom
+  '🌹', // Rose
+  '🌻', // Sunflower
   '🌸', // Cherry Blossom
+  '🍁', // Maple Leaf
+  '🍀', // Shamrock
   '🌱', // Seedling
+
+  // Food & Drink (Iconic Shapes)
+  '🍕', // Pizza
+  '🍔', // Hamburger
+  '🍟', // French Fries
+  '🍩', // Doughnut
+  '🎂', // Birthday Cake
+  '🍫', // Chocolate Bar
+  '🍿', // Popcorn
+  '🍭', // Lollipop
   '🍎', // Red Apple
-  '🍌', // Banana
-  '🍍', // Pineapple
   '🍓', // Strawberry
   '🥑', // Avocado
   '🌶️', // Hot Pepper
-  '🍄', // Mushroom
-  '🥨', // Pretzel
-  '🧀', // Cheese Wedge
-  '🍕', // Pizza
-  '🥚', // Egg
-  '🍿', // Popcorn
-  '🍦', // Soft Ice Cream
-  '🎂', // Birthday Cake
-  '🍫', // Chocolate Bar
-  '🍬', // Candy
-  '🍯', // Honey Pot
   '☕', // Hot Beverage
-  '🍷', // Wine Glass
   '🍺', // Beer Mug
-  '🥛', // Glass of Milk
-  '🍾', // Bottle with Popping Cork
-  '🥤', // Cup with Straw
-  '🧊', // Ice
-  '🥢', // Chopsticks
-  '🔪', // Kitchen Knife
-  '🍴', // Fork and Knife
-  '🍖', // Meat on Bone
-  '🥓', // Bacon
-  '🌭', // Hot Dog
-  '🥪', // Sandwich
-  '🌮', // Taco
-  '🥗', // Green Salad
-  '🍚', // Cooked Rice
-  '🍙', // Rice Ball
-  '🍜', // Steaming Bowl
-  '🍣', // Sushi
+
+  // Places & Transport (Distinct Shapes)
   '🏠', // House
-  '🏢', // Office Building
-  '🏥', // Hospital
-  '🏦', // Bank
   '🏰', // Castle
-  '🏨', // Hotel
-  '🏪', // Convenience Store
-  '🏫', // School
-  '🏭', // Factory
-  '⛪', // Church
   '⛺', // Tent
-  '🌉', // Bridge at Night
   '🌋', // Volcano
-  '🚂', // Locomotive
-  '🚌', // Bus
-  '🚗', // Automobile
-  '🏍️', // Motorcycle
-  '🚲', // Bicycle
-  '⛵', // Sailboat
-  '🚁', // Helicopter
   '🚀', // Rocket
   '🛸', // Flying Saucer
-  '🪐', // Ringed Planet
-  '☄️', // Comet
-  '🕛', // Twelve O’Clock
-  '⭐', // Star
-  '☁️', // Cloud
-  '⚡', // High Voltage
-  '🔥', // Fire
-  '🌊', // Water Wave
-  '🎄', // Christmas Tree
-  '🎉', // Party Popper
+  '🚁', // Helicopter
+  '⛵', // Sailboat
+  '⚓', // Anchor
+
+  // Objects (Unique & Recognizable)
+  '🔑', // Key
+  '🔔', // Bell
+  '💡', // Light Bulb
   '🎁', // Wrapped Gift
   '🎈', // Balloon
-  '🏆', // Trophy
-  '⚽', // Soccer Ball
-  '🏀', // Basketball
-  '🎳', // Bowling
-  '🥊', // Boxing Glove
-  '⛳', // Flag in Hole
-  '🎣', // Fishing Rod
-  '🎿', // Skis
-  '🎮', // Video Game
+  '☂️', // Umbrella
+  '🎨', // Artist Palette
+  '🎯', // Bullseye
   '🎲', // Game Die
   '🧩', // Puzzle Piece
-  '🧸', // Teddy Bear
   '♟️', // Chess Pawn
-  '🎯', // Bullseye
-  '🪀', // Yo-Yo
-  '🪁', // Kite
-  '🎱', // Pool 8 Ball
-  '🔮', // Crystal Ball
-  '🪡', // Sewing Needle
-  '🪢', // Knot
-  '👕', // T-Shirt
-  '👖', // Jeans
-  '👟', // Running Shoe
-  '👠', // High-Heeled Shoe
-  '👒', // Woman’s Hat
-  '🎩', // Top Hat
-  '👑', // Crown
-  '🎓', // Graduation Cap
-  '👓', // Glasses
-  '👔', // Necktie
-  '💡', // Light Bulb
-  '📚', // Books
-  '💰', // Money Bag
-  '✉️', // Envelope
-  '✏️', // Pencil
-  '📰', // Newspaper
-  '💼', // Briefcase
-  '📅', // Calendar
-  '📈', // Chart Increasing
-  '📌', // Pushpin
-  '📎', // Paperclip
-  '✂️', // Scissors
-  '🗑️', // Wastebasket
-  '🔨', // Hammer
-  '🔫', // Pistol
-  '🏹', // Bow and Arrow
-  '🔧', // Wrench
-  '🔩', // Nut and Bolt
-  '⚙️', // Gear
-  '🧰', // Toolbox
-  '🧲', // Magnet
-  '🪜', // Ladder
-  '⚗️', // Alembic
-  '🧪', // Test Tube
-  '🧫', // Petri Dish
-  '🧬', // Dna
-  '🔬', // Microscope
+  '🎸', // Guitar
+  '🎻', // Violin
   '🔭', // Telescope
-  '💉', // Syringe
-  '🩸', // Drop of Blood
-  '🩹', // Adhesive Bandage
-  '🩺', // Stethoscope
-  '💊', // Pill
-  '🚬', // Cigarette
-  '⚰️', // Coffin
-  '🗿', // Moai
-  '🚽', // Toilet
-  '🚿', // Shower
-  '🚪', // Door
-  '🪑', // Chair
-  '🛏️', // Bed
-  '🛒', // Shopping Cart
-  '💎', // Gem Stone
-  '🔔', // Bell
-  '☂️', // Umbrella
-  '⛓️', // Chains
+  '🔬', // Microscope
+  '🧬', // DNA
+  '⚙️', // Gear
+  '🔨', // Hammer
+  '⚔️', // Crossed Swords
+  '🛡️', // Shield
+  '💰', // Money Bag
   '🧭', // Compass
-  '🧯', // Fire Extinguisher
-  '♻️', // Recycling Symbol
-  '🅿️', // P Button
-  '♿', // Wheelchair Symbol
-  '🚸', // Children Crossing
-  '🚭', // No Smoking
-  '🔞', // No One Under Eighteen
-  '🎦', // Cinema
-  '📶', // Antenna Bars
-  '❓', // Question Mark
-  '📛', // Name Badge
-  '🏁', // Chequered Flag
-  '🏳️', // White Flag
-  '🏳️‍🌈', // Rainbow Flag
-  '🏴‍☠️', // Pirate Flag
-  '⬆️', // Up Arrow
-  '🔄', // Counterclockwise Arrows Button
-  '▶️', // Play Button
-  '©️', // Copyright
-  '🔴', // Red Circle
-  '🥸', // Disguised Face
-  '🫠', // Melting Face
-  '🫡', // Saluting Face
-  '🥷', // Ninja
-  '🫘', // Beans
-  '🛞', // Wheel
-  '🪩', // Mirror Ball
-  '🪫', // Low Battery
-  '🫧', // Bubbles
-  '🪸', // Coral
+  '🗿', // Moai
+
+  // Abstract & Geometric Symbols
+  '⭐', // Star
+  '🔥', // Fire
+  '⚡', // High Voltage
+  '❄️', // Snowflake
   '☀️', // Sun
+  '🌙', // Crescent Moon
+  '🌊', // Water Wave
+  '☄️', // Comet
+  '🪐', // Ringed Planet
+  '☮️', // Peace Symbol
+  '☯️', // Yin Yang
+  '☢️', // Radioactive
+  '☣️', // Biohazard
+  '♻️', // Recycling Symbol
+  '♾️', // Infinity
+  '♠️', // Spade Suit
+  '♣️', // Club Suit
+  '♥️', // Heart Suit
+  '♦️', // Diamond Suit
+  '🚩', // Triangular Flag
+  '🏁', // Chequered Flag
+  '🏴‍☠️', // Pirate Flag
+
+  // Simple Shapes & Arrows
+  '🔴', // Red Circle
+  '🟠', // Orange Circle
+  '🟡', // Yellow Circle
+  '🟢', // Green Circle
+  '🔵', // Blue Circle
+  '🟣', // Purple Circle
+  '⚫', // Black Circle
+  '⚪', // White Circle
+  '🟤', // Brown Circle
+  '🔺', // Red Triangle Pointed Up
+  '🔻', // Red Triangle Pointed Down
+  '🔶', // Large Orange Diamond
+  '🔷', // Large Blue Diamond
+  '✅', // Check Mark Button
   '✔️', // Check Mark
   '❌', // Cross Mark
+  '❓', // Question Mark
   '❗', // Exclamation Mark
-  '❄️', // Snowflake
-  '⚓', // Anchor
-  '⏳', // Hourglass Done
-  '🔒', // Locked
-  '🔑', // Key
-  '⚫', // Black Circle
-  '🌪️', // Tornado
-  '⛰️', // Mountain
-  '🌕', // Full Moon
-  '🍁', // Maple Leaf
-  '🪓', // Axe
-  '🍞', // Bread
-  '☯️', // Yin Yang
-  '☮️', // Peace Symbol
-  '☣️', // Biohazard
-  '☢️' // Radiation
+  '⬆️', // Up Arrow
+  '⬇️', // Down Arrow
+  '⬅️', // Left Arrow
+  '➡️', // Right Arrow
+  '🔄', // Counterclockwise Arrows Button
 ];
 
 const source = [
@@ -304,5 +168,5 @@ const source = [
   'c',
   'd',
   'e',
-  'f'
+  'f',
 ];
