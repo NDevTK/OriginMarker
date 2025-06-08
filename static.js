@@ -31,7 +31,6 @@ const emoji = [
   '🦷', // Tooth
   '👮', // Police Officer
   '🤴', // Prince
-  '👸', // Princess
   '🎅', // Santa Claus
   '🦸', // Superhero
   '🧟', // Zombie
@@ -122,7 +121,6 @@ const emoji = [
   '🥐', // Croissant
   '🥨', // Pretzel
   '🧀', // Cheese Wedge
-  '🍔', // Hamburger
   '🍕', // Pizza
   '🥚', // Egg
   '🍿', // Popcorn
@@ -187,7 +185,6 @@ const emoji = [
   '🎄', // Christmas Tree
   '🎉', // Party Popper
   '🏆', // Trophy
-  '🥇', // 1st Place Medal
   '⚽', // Soccer Ball
   '🏀', // Basketball
   '🏈', // American Football
