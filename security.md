@@ -180,7 +180,7 @@ This section details potential attack vectors relevant to OriginMarker's code, l
   - In `build.yml`: `actions/checkout` and `actions/upload-artifact` are pinned.
   - In `codeql.yml`: `actions/checkout`, `github/codeql-action/init`, and `github/codeql-action/analyze` are pinned.
   - Implementing strong branch protection rules for `main`, requiring reviews before merging, even for workflow-generated commits if feasible.
-- *Review (2024-07-29)*: Verified and updated action pinning in all workflow files (`build.yml`, `codeql.yml`, `format-on-merge.yml`) to use specific commit SHAs for enhanced supply chain security.
+- *Review (2025)*: Verified and updated action pinning in all workflow files (`build.yml`, `codeql.yml`, `format-on-merge.yml`) to use specific commit SHAs for enhanced supply chain security.
 
 ### 4.8. Robustness Against Malformed Data from `static.js`
 
