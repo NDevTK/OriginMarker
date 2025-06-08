@@ -285,7 +285,7 @@ const emoji = [
   '☯️', // Yin Yang
   '☮️', // Peace Symbol
   '☣️', // Biohazard
-  '☢️', // Radiation
+  '☢️' // Radiation
 ];
 
 const source = [
@@ -304,5 +304,5 @@ const source = [
   'c',
   'd',
   'e',
-  'f',
+  'f'
 ];
