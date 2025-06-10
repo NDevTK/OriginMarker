@@ -43,7 +43,7 @@ const initializationCompletePromise = new Promise((resolve) => {
 });
 
 // For DoS Protection
-const EVENT_RATE_THRESHOLD_COUNT = 20; // Max events before triggering
+const EVENT_RATE_THRESHOLD_COUNT = 30; // Max events before triggering
 const EVENT_RATE_THRESHOLD_WINDOW_MS = 3000; // Time window in ms
 const DOS_INITIAL_COOLDOWN_MS = 5000; // Cooldown after first detection
 const DOS_EXTENDED_COOLDOWN_MS = 10000; // Cooldown if DoS persists after a check
@@ -635,6 +635,7 @@ async function checkOrigin() {
         );
         return setMarker(null); // Exit early if tabs query failed
       }
+      if (currentDosState === DOS_STATE_COOLDOWN) return; // Exit early if DoS
       if (tab.length !== 1) return setMarker(null);
       if (tab[0].active === false) return;
       try {
