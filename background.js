@@ -33,7 +33,7 @@ presetMarkers.set('https://accounts.spotify.com', 'Spotify Login');
 presetMarkers.set('https://accounts.fastly.com', 'Fastly Login');
 presetMarkers.set('https://dash.applovin.com', 'Applovin');
 presetMarkers.set('https://login.criteo.com', 'Criteo Login');
-presetMarkers.set('https://account.ui.com', 'Ubiquiti Login';
+presetMarkers.set('https://account.ui.com', 'Ubiquiti Login');
 presetMarkers.set('https://account.samsung.com', 'Samsung Login')
 presetMarkers.set('https://login.unity.com', 'Unity Login');
 presetMarkers.set('https://account.one.com', 'one.com Login');
