@@ -577,7 +577,7 @@ async function setMarker(origin) {
   let newMarkerTitle;
 
   if (origin === null) {
-    newMarkerTitle = unknown + '*'; // Default case for null origin
+    newMarkerTitle = unknown; // Default case for null origin
   } else {
     const fullHash = await sha256(origin); // Hashing is done only for non-null origins
     const key = '_' + fullHash;
@@ -599,14 +599,17 @@ async function setMarker(origin) {
       // No valid custom marker found, generate one
       if (auto === true) {
         newMarkerTitle = presetMarkers.has(origin)
-          ? presetMarkers.get(origin) + '*'
-          : encoding(fullHash) + '*'; // Auto-generated gets '*'
+          ? presetMarkers.get(origin)
+          : encoding(fullHash); // Auto-generated
       } else {
-        newMarkerTitle = unknown + '*'; // Manual mode default (or other fallback) gets '*'
+        newMarkerTitle = unknown; // Manual mode default
       }
     }
   }
-
+  
+  // Always prefix marker we rename, no exceptions.
+  newMarkerTitle += '*';
+  
   // If the global pending_origin has changed since we started this async function,
   // it means another call to setMarker for a newer origin has started.
   // We should abort this current, possibly stale, update.
