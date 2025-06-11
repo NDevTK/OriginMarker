@@ -1,5 +1,5 @@
 'use strict';
-const unknown = 'Marker';
+const unknown = 'Unknown';
 
 const emoji = [
   '😀', // Grinning Face
