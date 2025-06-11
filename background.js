@@ -51,6 +51,7 @@ presetMarkers.set('https://auth.services.adobe.com', 'Adobe Login');
 presetMarkers.set('https://www.dropbox.com', 'Dropbox');
 presetMarkers.set('https://www.zoom.us', 'Zoom');
 presetMarkers.set('https://www.reddit.com', 'Reddit');
+presetMarkers.set('https://slack.com', 'Slack');
 
 let sourceAlphabetValid =
   Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
