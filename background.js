@@ -55,6 +55,7 @@ presetMarkers.set('https://slack.com', 'Slack');
 presetMarkers.set('https://www.tiktok.com', 'TikTok');
 presetMarkers.set('https://www.grammarly.com', 'Grammarly');
 presetMarkers.set('https://www.canva.com', 'Canva');
+presetMarkers.set('https://www.access.service.gov.uk', 'GOV.UK Login');
 
 let sourceAlphabetValid =
   Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
