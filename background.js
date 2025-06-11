@@ -53,6 +53,8 @@ presetMarkers.set('https://www.zoom.us', 'Zoom');
 presetMarkers.set('https://www.reddit.com', 'Reddit');
 presetMarkers.set('https://slack.com', 'Slack');
 presetMarkers.set('https://www.tiktok.com', 'TikTok');
+presetMarkers.set('https://www.grammarly.com', 'Grammarly');
+presetMarkers.set('https://www.canva.com', 'Canva');
 
 let sourceAlphabetValid =
   Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
