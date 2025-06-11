@@ -10,7 +10,7 @@ const MIN_EMOJI_ALPHABET_LENGTH = 64; // For emoji alphabet
 
 let presetMarkers = new Map();
 // If I get this wrong I will look so stupid.
-// Listed origins MUST be well-known and contain a login page for common places see https://radar.cloudflare.com/domains/#top-100-domains
+// Listed origins MUST be well-known and contain a HTTPS login page for common places see https://radar.cloudflare.com/domains/#top-100-domains its not site since https://sites.google.com could be anyone.
 presetMarkers.set('https://accounts.google.com', 'Google Login'); // https://github.com/google/bughunters/blob/main/domain-tiers/external_domains_google.asciipb
 presetMarkers.set('https://login.live.com', 'Microsoft Login'); // https://www.microsoft.com/en-us/msrc/bounty-microsoft-identity
 presetMarkers.set('https://login.microsoftonline.com', 'Microsoft Login 2'); // https://www.microsoft.com/en-us/msrc/bounty-microsoft-identity
