@@ -23,6 +23,7 @@ presetMarkers.set('https://store.steampowered.com', 'Steam');
 presetMarkers.set('https://www.amazon.com', 'Amazon');
 presetMarkers.set('https://github.com', 'Github');
 presetMarkers.set('https://identity.bugcrowd.com', 'Bugcrowd Login');
+presetMarkers.set('https://hackerone.com', 'HackerOne');
 presetMarkers.set('https://x.com', 'Twitter');
 presetMarkers.set('https://dash.cloudflare.com', 'Cloudflare');
 presetMarkers.set('https://web.whatsapp.com', 'Whatsapp');
