@@ -19,6 +19,9 @@ presetMarkers.set('https://www.facebook.com', 'Facebook');
 presetMarkers.set('https://www.netflix.com', 'Netflix');
 presetMarkers.set('https://store.steampowered.com', 'Steam');
 presetMarkers.set('https://www.amazon.com', 'Amazon');
+presetMarkers.set('https://github.com', 'Github');
+presetMarkers.set('https://identity.bugcrowd.com', 'Bugcrowd Login');
+presetMarkers.set('https://x.com', 'Twitter');
 
 let sourceAlphabetValid =
   Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
