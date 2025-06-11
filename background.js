@@ -598,7 +598,9 @@ async function setMarker(origin) {
     } else {
       // No valid custom marker found, generate one
       if (auto === true) {
-        newMarkerTitle = (presetMarkers.has(origin)) ? presetMarkers.get(origin) + '*' : encoding(fullHash) + '*'; // Auto-generated gets '*'
+        newMarkerTitle = presetMarkers.has(origin)
+          ? presetMarkers.get(origin) + '*'
+          : encoding(fullHash) + '*'; // Auto-generated gets '*'
       } else {
         newMarkerTitle = unknown + '*'; // Manual mode default (or other fallback) gets '*'
       }
