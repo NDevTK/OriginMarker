@@ -644,7 +644,7 @@ async function setMarker(origin) {
     }
   }
 
-  // Always prefix marker we rename, no exceptions.
+  // Always suffix marker we rename, no exceptions.
   newMarkerTitle += '*';
 
   // If the global pending_origin has changed since we started this async function,
