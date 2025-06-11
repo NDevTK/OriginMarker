@@ -8,6 +8,18 @@ var encoding;
 const MIN_ALPHABET_LENGTH = 16; // For source alphabet, expecting full hex set
 const MIN_EMOJI_ALPHABET_LENGTH = 64; // For emoji alphabet
 
+let presetMarkers = new Map();
+// If I get this wrong I will look so stupid.
+presetMarkers.set('https://accounts.google.com', 'Google Login'); // https://github.com/google/bughunters/blob/main/domain-tiers/external_domains_google.asciipb
+presetMarkers.set('https://login.live.com', 'Microsoft Login'); // https://www.microsoft.com/en-us/msrc/bounty-microsoft-identity
+presetMarkers.set('https://account.proton.me', 'Proton Login'); // https://proton.me/security/vulnerability-disclosure
+presetMarkers.set('https://account.apple.com', 'Apple Login');
+presetMarkers.set('https://www.icloud.com', 'iCloud Login');
+presetMarkers.set('https://www.facebook.com', 'Facebook');
+presetMarkers.set('https://www.netflix.com', 'Netflix');
+presetMarkers.set('https://store.steampowered.com', 'Steam');
+presetMarkers.set('https://www.amazon.com', 'Amazon');
+
 let sourceAlphabetValid =
   Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
 let emojiAlphabetValid =
@@ -586,7 +598,7 @@ async function setMarker(origin) {
     } else {
       // No valid custom marker found, generate one
       if (auto === true) {
-        newMarkerTitle = encoding(fullHash) + '*'; // Auto-generated gets '*'
+        newMarkerTitle = (presetMarkers.has(origin)) ? presetMarkers.get(origin) + '*' : encoding(fullHash) + '*'; // Auto-generated gets '*'
       } else {
         newMarkerTitle = unknown + '*'; // Manual mode default (or other fallback) gets '*'
       }
