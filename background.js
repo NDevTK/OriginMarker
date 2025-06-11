@@ -10,8 +10,10 @@ const MIN_EMOJI_ALPHABET_LENGTH = 64; // For emoji alphabet
 
 let presetMarkers = new Map();
 // If I get this wrong I will look so stupid.
+// Listed origins MUST be well-known and contain a login page for common places see https://radar.cloudflare.com/domains/#top-100-domains
 presetMarkers.set('https://accounts.google.com', 'Google Login'); // https://github.com/google/bughunters/blob/main/domain-tiers/external_domains_google.asciipb
 presetMarkers.set('https://login.live.com', 'Microsoft Login'); // https://www.microsoft.com/en-us/msrc/bounty-microsoft-identity
+presetMarkers.set('https://login.microsoftonline.com', 'Microsoft Login 2'); // https://www.microsoft.com/en-us/msrc/bounty-microsoft-identity
 presetMarkers.set('https://account.proton.me', 'Proton Login'); // https://proton.me/security/vulnerability-disclosure
 presetMarkers.set('https://account.apple.com', 'Apple Login');
 presetMarkers.set('https://www.icloud.com', 'iCloud Login');
@@ -22,6 +24,32 @@ presetMarkers.set('https://www.amazon.com', 'Amazon');
 presetMarkers.set('https://github.com', 'Github');
 presetMarkers.set('https://identity.bugcrowd.com', 'Bugcrowd Login');
 presetMarkers.set('https://x.com', 'Twitter');
+presetMarkers.set('https://dash.cloudflare.com', 'Cloudflare');
+presetMarkers.set('https://web.whatsapp.com', 'Whatsapp');
+presetMarkers.set('https://www.instagram.com','Instagram');
+presetMarkers.set('https://www.snapchat.com', 'Snapchat');
+presetMarkers.set('https://login.yahoo.com', 'Yahoo Login');
+presetMarkers.set('https://accounts.spotify.com', 'Spotify Login');
+presetMarkers.set('https://accounts.fastly.com', 'Fastly Login');
+presetMarkers.set('https://dash.applovin.com', 'Applovin');
+presetMarkers.set('https://login.criteo.com', 'Criteo Login');
+presetMarkers.set('https://account.ui.com', 'Ubiquiti Login';
+presetMarkers.set('https://account.samsung.com', 'Samsung Login')
+presetMarkers.set('https://login.unity.com', 'Unity Login');
+presetMarkers.set('https://account.one.com', 'one.com Login');
+presetMarkers.set('https://sentry.io', 'Sentry');
+presetMarkers.set('https://auth.wikimedia.org', 'Wikipedia Login');
+presetMarkers.set('https://www.roblox.com', 'Roblox');
+presetMarkers.set('https://www.linkedin.com', 'Linkedin');
+presetMarkers.set('https://www.baidu.com', 'Baidu');
+presetMarkers.set('https://authentication.taboola.com', 'Taboola Login');
+presetMarkers.set('https://www.digicert.com', 'DigiCert');
+presetMarkers.set('https://apps.pubmatic.com', 'Pubmatic');
+presetMarkers.set('https://auth.openai.com', 'OpenAI Login');
+presetMarkers.set('https://auth.services.adobe.com', 'Adobe Login');
+presetMarkers.set('https://www.dropbox.com', 'Dropbox');
+presetMarkers.set('https://www.zoom.us', 'Zoom');
+presetMarkers.set('https://www.reddit.com', 'Reddit');
 
 let sourceAlphabetValid =
   Array.isArray(source) && source.length >= MIN_ALPHABET_LENGTH;
