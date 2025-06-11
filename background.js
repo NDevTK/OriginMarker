@@ -606,10 +606,10 @@ async function setMarker(origin) {
       }
     }
   }
-  
+
   // Always prefix marker we rename, no exceptions.
   newMarkerTitle += '*';
-  
+
   // If the global pending_origin has changed since we started this async function,
   // it means another call to setMarker for a newer origin has started.
   // We should abort this current, possibly stale, update.
