@@ -67,32 +67,32 @@ OriginMarker is a Manifest V3 Chrome extension designed to provide users with an
 #### 3.2.1. `manifest.json` (Manifest V3)
 
 Defines the extension's core properties, including:
-_ Permissions: `tabs`, `bookmarks`, `storage`.
-_ Background execution: Service worker `background.js`.
-_ Security policies: Content Security Policy (CSP), Cross-Origin Embedder Policy (COEP), Cross-Origin Opener Policy (COOP).
-_ User interface: Options page (`options.html`). \* Manifest Version: 3.
+- Permissions: `tabs`, `bookmarks`, `storage`.
+- Background execution: Service worker `background.js`.
+- Security policies: Content Security Policy (CSP), Cross-Origin Embedder Policy (COEP), Cross-Origin Opener Policy (COOP).
+- User interface: Options page (`options.html`). \* Manifest Version: 3.
 
 #### 3.2.2. `background.js` (Service Worker)
 
 The central component responsible for:
-_ Tracking tab navigation and activation.
-_ Fetching the origin of the active tab.
-_ Generating a salted hash of the origin.
-_ Encoding the hash into a user-visible emoji sequence or using preset/custom markers.
-_ Updating the designated bookmark's title.
-_ Managing user settings, cryptographic salt, and custom markers. \* Implementing DoS protection.
+- Tracking tab navigation and activation.
+- Fetching the origin of the active tab.
+- Generating a salted hash of the origin.
+- Encoding the hash into a user-visible emoji sequence or using preset/custom markers.
+- Updating the designated bookmark's title.
+- Managing user settings, cryptographic salt, and custom markers. \* Implementing DoS protection.
 
 #### 3.2.3. `options.js` & `options.html` (Configuration UI)
 
 Provides the user interface for:
-_ Setting up the extension (instructions).
-_ Choosing the storage area for sensitive data (`sync`, `local`, `session`). \* Resetting extension data (clearing markers and salt).
+- Setting up the extension (instructions).
+- Choosing the storage area for sensitive data (`sync`, `local`, `session`). \* Resetting extension data (clearing markers and salt).
 
 #### 3.2.4. `static.js` (Data Module)
 
 A simple JavaScript file imported via `importScripts()` into `background.js`. It provides:
-_ `source` alphabet (hexadecimal characters).
-_ `emoji` alphabet (a list of emoji characters). \* `unknown` string (default marker text).
+- `source` alphabet (hexadecimal characters).
+- `emoji` alphabet (a list of emoji characters). \* `unknown` string (default marker text).
 Its integrity is critical as it's directly loaded into the service worker.
 
 ### 3.3. Data Flow Summary
