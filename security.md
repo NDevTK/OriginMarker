@@ -67,6 +67,7 @@ OriginMarker is a Manifest V3 Chrome extension designed to provide users with an
 #### 3.2.1. `manifest.json` (Manifest V3)
 
 Defines the extension's core properties, including:
+
 - Permissions: `tabs`, `bookmarks`, `storage`.
 - Background execution: Service worker `background.js`.
 - Security policies: Content Security Policy (CSP), Cross-Origin Embedder Policy (COEP), Cross-Origin Opener Policy (COOP).
@@ -75,6 +76,7 @@ Defines the extension's core properties, including:
 #### 3.2.2. `background.js` (Service Worker)
 
 The central component responsible for:
+
 - Tracking tab navigation and activation.
 - Fetching the origin of the active tab.
 - Generating a salted hash of the origin.
@@ -85,15 +87,17 @@ The central component responsible for:
 #### 3.2.3. `options.js` & `options.html` (Configuration UI)
 
 Provides the user interface for:
+
 - Setting up the extension (instructions).
 - Choosing the storage area for sensitive data (`sync`, `local`, `session`). \* Resetting extension data (clearing markers and salt).
 
 #### 3.2.4. `static.js` (Data Module)
 
 A simple JavaScript file imported via `importScripts()` into `background.js`. It provides:
+
 - `source` alphabet (hexadecimal characters).
 - `emoji` alphabet (a list of emoji characters). \* `unknown` string (default marker text).
-Its integrity is critical as it's directly loaded into the service worker.
+  Its integrity is critical as it's directly loaded into the service worker.
 
 ### 3.3. Data Flow Summary
 
