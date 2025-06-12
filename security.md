@@ -92,6 +92,4 @@ Messages passed between the extension's own components (e.g., from the options p
 
 ## 5. Future Hardening & Recommendations
 
-- **Client-Side Salt Encryption:** To raise the bar for salt exfiltration, a future version could encrypt the `salt` before storing it. An encryption key could be derived from a user-provided password via a strong KDF like Argon2, with the derived key held only in memory.
-- **Dedicated Salt Rotation:** A non-destructive "Rotate Salt" feature would improve usability by allowing users to invalidate a potentially compromised salt without deleting all their custom-set markers.
 - **UI-Level Context:** To counter user habituation, the extension popup could provide more context about the current marker, such as the date it was first generated or last changed, to help users make more informed judgments.
