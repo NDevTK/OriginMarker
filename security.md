@@ -89,7 +89,3 @@ The extension demonstrates robust handling of asynchronous operations to prevent
 Messages passed between the extension's own components (e.g., from the options page `options.js` to the service worker `background.js`) are validated to ensure they originate from the extension itself. This is achieved by the service worker verifying that the `sender.origin` of an incoming message is identical to its own `self.origin` (or `location.origin`). This check effectively prevents the service worker from processing messages sent by content scripts (which would have the origin of the web page they are injected into) or other extensions, ensuring that handlers for internal messages are not improperly triggered.
 
 ---
-
-## 5. Future Hardening & Recommendations
-
-- **UI-Level Context:** To counter user habituation, the extension popup could provide more context about the current marker, such as the date it was first generated or last changed, to help users make more informed judgments.
