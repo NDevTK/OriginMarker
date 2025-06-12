@@ -5,10 +5,6 @@
 Allows you to easily identify phishing domains with a marker in the bookmarks bar that changes based off the active origin/domain your currently on.
 It can be renamed per origin manually or automatic using the hash of the origin encoded in emoji.
 
-# Security Policy
-
-For information on how security is handled in this project, please review our [Security Policy](security.md).
-
 ## Introduction
 
 OriginMarker is a Google Chrome extension designed to enhance user security by providing a clear, dynamic visual indicator for the current website's origin (domain). This indicator, displayed as a specially designated bookmark in the bookmarks bar, changes its title (the "marker") based on the site being visited. The primary goal is to help users quickly verify the authenticity of the website they are on and to offer an early warning against potential phishing attacks or misdirection to malicious sites. By making it easier to spot when a domain is not what it seems, OriginMarker aims to add a layer of confidence and security to the browsing experience.
