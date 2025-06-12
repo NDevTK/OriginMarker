@@ -28,7 +28,7 @@ The audit covers the following components of the OriginMarker Chrome Extension, 
 
 ### 1.3. Audit Date
 
-October 2023
+June 2025
 
 ### 1.4. Auditing Agent/Tool
 
