@@ -32,7 +32,7 @@ The OriginMarker extension operates through a combination of background scripts 
     - **Automatic Mode (`*`):**
       - If no user-defined custom marker exists for the current origin, the SHA-256 hash is encoded into a short, visually distinct string of emojis. This is achieved using a `base2base` conversion function (details in `static.js`), which maps the hexadecimal hash characters to an emoji alphabet.
       - An asterisk (`*`) is appended to these automatically generated emoji markers to distinguish them from manually set or default markers.
-    - **Manual Mode (`**`):\*\*
+    - **Manual Mode (`**`):**
       - If no user-defined custom marker exists for the current origin, a default "unknown" marker (e.g., a generic symbol or placeholder text defined in `static.js`) is displayed.
       - In this mode, the marker does not automatically change based on the origin's hash unless a custom marker has been previously set.
     - **Custom Markers:** The system checks if a user has previously set a custom marker for the current origin. If so, this custom marker takes precedence over any automatic or default marker.
